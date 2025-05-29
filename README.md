@@ -1,1 +1,1 @@
-# querypilot
+# QueryPilot

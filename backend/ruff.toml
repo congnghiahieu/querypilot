@@ -1,0 +1,60 @@
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+]
+
+line-length = 100
+indent-width = 4
+
+target-version = "py310"
+
+[format]
+quote-style = "double"
+indent-style = "tab"
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[lint]
+select = [
+    # pycodestyle
+    "E",
+    # isort
+    "I",
+    # Unused import
+    "F401",
+    # Absolute import
+    "TID252"
+]
+extend-ignore = ["E101", "E501", "E722", "E721", "E402"]
+fixable = ["ALL"]
+unfixable = []
+
+[lint.flake8-tidy-imports]
+# Disallow all relative imports.
+ban-relative-imports = "all"
