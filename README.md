@@ -1,25 +1,21 @@
 # QueryPilot
 
-## Backend
-
-### Requirements
+## Requirements
 
 - Python >= 3.10
 - Backend project use Makefile so need `make`
 - [Recommend] Backend use [uv](https://docs.astral.sh/uv/) package manager. Install via `pipx install uv` or `pip install uv`
 - [Optional] Use `pip` to install dependencies instead of `uv`. Instruction below
 
-### Set up environment
+## Set up environment
 
 - Copy `.env` file from `.env.sample` and fill out at least required variable
 
-### Install dependencies
+## Install dependencies
 
 - Create virtual env, install dependencies and activate:
 
 ```bash
-cd backend/
-
 # if use uv
 uv sync
 source ./.venv/bin/activate
