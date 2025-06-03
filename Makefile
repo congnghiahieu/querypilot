@@ -23,5 +23,5 @@ format: lint
 	@ruff format .
 
 freeze:
-	@uv export --format requirements-txt --no-dev > requirements.lock
-	@uv export --format requirements-txt --dev > requirements.dev.lock
+	@uv export --format requirements-txt --no-annotate --no-header --no-hashes --no-dev --output-file requirements.lock
+	@uv export --format requirements-txt --no-annotate --no-header --no-hashes --output-file requirements.dev.lock
