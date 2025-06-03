@@ -1,5 +1,5 @@
-
 def get_sql_generation_prompt_template():
+	# Placeholder template, change later
 	sql_generation_prompt = """
         Given the conversation context, create a syntactically correct {dialect} query to help find the answer to the user's question.
         If the user specifies a number of results, adjust the query accordingly.
@@ -34,7 +34,9 @@ def get_sql_generation_prompt_template():
         """
 	return sql_generation_prompt
 
+
 def get_summary_generation_prompt_template() -> str:
+	# Placeholder template, change later
 	"""Generate a prompt template for summary generation."""
 	return """
     You are an expert data analyst. Given the following table and user question, generate a concise summary in markdown format.

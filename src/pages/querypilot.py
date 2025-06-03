@@ -1,38 +1,42 @@
 import time
+from typing import Optional
 
+import pandas as pd
 import streamlit as st
 
-from src.text2sql import convert_text_to_sql
 from src.prompt import construct_full_prompt
 from src.prompt_templates import get_sql_generation_prompt_template
-from src.database_schema import get_database_schema
-from src.sql_validator import validate_sql
-from src.sql_executor import execute_sql
+from src.render_utils import generate_fake_chart, generate_fake_table, generate_text_stream
+from src.sql_utils import (
+	analyze_query_plan,
+	execute_select_query,
+	export_schema_to_string,
+	get_sqlite_connection,
+	validate_sql_query,
+)
+from src.text2sql import convert_text_to_sql
 
-# Initialize chat history
+st.title("Query Pilot")
+
 if "messages" not in st.session_state:
 	st.session_state.messages = []
 
 
-def save_feedback(index):
+def save_feedback(index: int):
 	st.session_state.messages[index]["feedback"] = st.session_state[f"feedback_{index}"]
 
 
-st.title("Query Pilot")
+for i, validate_message in enumerate(st.session_state.messages):
+	with st.chat_message(validate_message["role"]):
+		if "text" in validate_message:
+			st.write(validate_message["text"])
+		if "table" in validate_message:
+			st.dataframe(validate_message["table"])
+		if "chart" in validate_message:
+			st.line_chart(validate_message["chart"])
 
-
-# Display chat messages from history on app rerun
-for i, message in enumerate(st.session_state.messages):
-	with st.chat_message(message["role"]):
-		if "text" in message:
-			st.write(message["text"])
-		if "table" in message:
-			st.dataframe(message["table"])
-		if "chart" in message:
-			st.line_chart(message["chart"])
-
-		if message["role"] == "assistant":
-			feedback = message.get("feedback", None)
+		if validate_message["role"] == "assistant":
+			feedback = validate_message.get("feedback", None)
 			st.session_state[f"feedback_{i}"] = feedback
 			st.feedback(
 				"stars",
@@ -50,74 +54,99 @@ if prompt := st.chat_input("What is up?"):
 	st.session_state.messages.append({"role": "user", "text": prompt})
 
 	# Step 2: Frontend show a thinking animation, Backend translate text to SQL
-	with st.spinner("Translating text to SQL", show_time=True):
-		error_counter = 0
-		is_valid_sql_generated = False
-		retry_counter = 1
-		retry_limit = 3
+	final_sql_query = ""
+	with get_sqlite_connection("./Chinook.db") as conn:
+		with st.spinner("Translating text to SQL", show_time=True):
+			error_counter = 0
+			is_valid_sql_generated = False
+			retry_counter = 1
+			retry_limit = 3
 
-		while not is_valid_sql_generated and retry_counter <= retry_limit:
-			# Construct full prompt
-			sql_generation_prompt_template = get_sql_generation_prompt_template()
-			database_schema = get_database_schema()
-			full_prompt = construct_full_prompt(
-				system_prompt=sql_generation_prompt_template,
-				database_schema=database_schema,
-				user_prompt=prompt
+			while not is_valid_sql_generated and retry_counter <= retry_limit:
+				time.sleep(1)  # Fake loading state
+
+				# Construct full prompt
+				sql_generation_prompt_template = get_sql_generation_prompt_template()
+				database_schema = export_schema_to_string(conn)
+				full_prompt = construct_full_prompt(
+					system_prompt=sql_generation_prompt_template,
+					database_schema=database_schema,
+					user_prompt=prompt,
+				)
+
+				# Convert text (prompt) to SQL
+				generated_sql = convert_text_to_sql(full_prompt)
+
+				# Validate sql
+				is_valid_sql_in_loop, validate_message = validate_sql_query(conn, generated_sql)
+				if not is_valid_sql_in_loop:
+					st.write(f"Can not generate valid SQL in #{retry_counter} attempt(s).")
+					st.write(f"Reason: {validate_message}")
+					continue
+
+				# If SQL is performant and valid, break the loop
+				is_performant_query, analyze_messgae = analyze_query_plan(conn, generated_sql)
+				if not is_performant_query:
+					st.write(f"Generated SQL is not performant in #{retry_counter} attempt(s).")
+					st.write(f"Reason: {validate_message}")
+					continue
+
+				is_valid_sql_generated = True
+				final_sql_query = generated_sql
+
+			if not is_valid_sql_generated:
+				st.write(f"Failed to generate valid SQL after {retry_limit} attempts.")
+				st.stop()
+
+		st.write(f"Generated SQL query: `{final_sql_query}`")
+
+		# Step 3: Execute SQL query and get results
+		execute_result: Optional[pd.DataFrame] = None
+		with st.spinner("Executing generated SQL Query", show_time=True):
+			try:
+				time.sleep(1)
+				execute_result = execute_select_query(conn, final_sql_query)
+			except Exception as err:
+				st.write(f"Can't execute the generated SQL: {final_sql_query} due to {err}")
+				st.stop()
+
+		st.write(f"Executing SQL successfully: `{final_sql_query}`")
+		assert execute_result is not None, "Execute result should not be None"
+
+		with st.chat_message("assistant"):
+			st.write(f"Text Answer:")
+
+			# Mock data generation for text, table, and chart
+			text_stream = generate_text_stream("This is a text answer to the query.")
+			table_data = generate_fake_table()
+			chart_data = generate_fake_chart()
+
+			# Real
+			# text_stream = st.write_stream(text_stream)
+			# table_data = execute_result
+			# chart_data = execute_result
+
+			full_text = ""
+			if text_stream is not None:
+				full_text = st.write_stream(text_stream)
+
+			if table_data is not None:
+				st.write("Table Answer:")
+				st.dataframe(table_data)
+
+			if chart_data is not None:
+				st.write("Chart Answer:")
+				st.line_chart(chart_data)
+
+			# Feedback
+			st.feedback(
+				"stars",
+				key=f"feedback_{len(st.session_state.messages)}",
+				on_change=save_feedback,
+				args=[len(st.session_state.messages)],
 			)
-
-			# Convert text (prompt) to SQL
-			sql = convert_text_to_sql(full_prompt)
-
-			# Validate sql
-			is_valid_sql_generated = validate_sql(sql)
-
-			# Fake loading state
-			time.sleep(1)
-
-		if not is_valid_sql_generated:
-			st.write(f"Can not generate valid SQL")
-			st.stop()
-	st.write(f"Generated SQL query: `{sql}`")
-
-	# Step 3: Execute SQL query and get results
-	with st.spinner("Executing generated SQL Query", show_time=True):
-		try:
-			execute_result = execute_sql(sql)
-			time.sleep(1)
-		except Exception as err:
-			st.write(f"Can't execute the generated SQL: {sql} due to {err}")
-			st.stop()
-	st.write(f"Executing SQL successfully: `{sql}`")
-
-	with st.chat_message("assistant"):
-		st.write(f"Text Answer:")
-
-		text_stream, table_data, chart_data = execute_sql(sql)
-
-		text_data = None
-		if text_stream is not None:
-			text_data = st.write_stream(text_stream)
-
-		res_table = None
-		if table_data is not None:
-			st.write("Table Answer:")
-			res_table = st.dataframe(table_data)
-		
-		res_chart = None
-		if chart_data is not None:
-			st.write("Chart Answer:")
-			res_chart = st.line_chart(chart_data)
-
-		# Feedback
-		st.feedback(
-			"stars",
-			key=f"feedback_{len(st.session_state.messages)}",
-			on_change=save_feedback,
-			args=[len(st.session_state.messages)],
-		)
 
 	# Add assistant response to chat history
 	st.session_state.messages.append(
-		{"role": "assistant", "text": text_data, "table": table_data, "chart": chart_data}
+		{"role": "assistant", "text": full_text, "table": table_data, "chart": chart_data}
 	)
