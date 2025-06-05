@@ -55,10 +55,10 @@ if prompt := st.chat_input("What is up?"):
 
 	# Step 2: Frontend show a thinking animation, Backend translate text to SQL
 	final_sql_query = ""
+	is_valid_sql_generated = False
+
 	with get_sqlite_connection("./Chinook.db") as conn:
 		with st.spinner("Translating text to SQL", show_time=True):
-			error_counter = 0
-			is_valid_sql_generated = False
 			retry_counter = 1
 			retry_limit = 3
 
@@ -82,6 +82,7 @@ if prompt := st.chat_input("What is up?"):
 				if not is_valid_sql_in_loop:
 					st.write(f"Can not generate valid SQL in #{retry_counter} attempt(s).")
 					st.write(f"Reason: {validate_message}")
+					retry_counter += 1
 					continue
 
 				# If SQL is performant and valid, break the loop
@@ -89,14 +90,15 @@ if prompt := st.chat_input("What is up?"):
 				if not is_performant_query:
 					st.write(f"Generated SQL is not performant in #{retry_counter} attempt(s).")
 					st.write(f"Reason: {validate_message}")
+					retry_counter += 1
 					continue
 
 				is_valid_sql_generated = True
 				final_sql_query = generated_sql
 
-			if not is_valid_sql_generated:
-				st.write(f"Failed to generate valid SQL after {retry_limit} attempts.")
-				st.stop()
+		if not is_valid_sql_generated:
+			st.write(f"Failed to generate valid SQL after {retry_limit} attempts.")
+			st.stop()
 
 		st.write(f"Generated SQL query: `{final_sql_query}`")
 
