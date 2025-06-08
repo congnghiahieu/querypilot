@@ -8,9 +8,14 @@ dependencies = [
     "numpy>=2.2.6",
     "openai>=1.82.1",
     "pandas>=2.2.3",
+    "plotly>=6.1.2",
+    "psycopg2-binary>=2.9.10",
+    "pygwalker>=0.4.9.15",
     "python-dotenv>=1.1.0",
+    "sqlalchemy>=2.0.41",
     "sqlparse>=0.5.3",
     "streamlit>=1.45.1",
+    "streamlit-chat>=0.1.1",
 ]
 
 [dependency-groups]

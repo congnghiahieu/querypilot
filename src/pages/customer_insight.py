@@ -1,3 +1,4 @@
 import streamlit as st
 
-st.title("Customer Insight")
+st.set_page_config(page_title="Customer Insight", page_icon="📈", layout="wide")
+st.title("Customer Insight", anchor="customer-insight")

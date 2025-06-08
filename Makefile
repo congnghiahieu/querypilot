@@ -16,7 +16,11 @@ run:
 dev:
 	$(STREAMLIT_RUN) --server.runOnSave true
 
-lint:
+tab:
+	@chmod +x ./scripts/tab.sh
+	@./scripts/tab.sh
+
+lint: tab
 	@ruff check . --fix
 
 format: lint
