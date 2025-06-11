@@ -77,21 +77,21 @@ if prompt := st.chat_input("What is up?"):
 				# Convert text (prompt) to SQL
 				generated_sql = convert_text_to_sql(full_prompt)
 
-				# Validate sql
-				is_valid_sql_in_loop, validate_message = validate_sql_query(conn, generated_sql)
-				if not is_valid_sql_in_loop:
-					st.write(f"Can not generate valid SQL in #{retry_counter} attempt(s).")
-					st.write(f"Reason: {validate_message}")
-					retry_counter += 1
-					continue
+				# # Validate sql
+				# is_valid_sql_in_loop, validate_message = validate_sql_query(conn, generated_sql)
+				# if not is_valid_sql_in_loop:
+				# 	st.write(f"Can not generate valid SQL in #{retry_counter} attempt(s).")
+				# 	st.write(f"Reason: {validate_message}")
+				# 	retry_counter += 1
+				# 	continue
 
-				# If SQL is performant and valid, break the loop
-				is_performant_query, analyze_messgae = analyze_query_plan(conn, generated_sql)
-				if not is_performant_query:
-					st.write(f"Generated SQL is not performant in #{retry_counter} attempt(s).")
-					st.write(f"Reason: {validate_message}")
-					retry_counter += 1
-					continue
+				# # If SQL is performant and valid, break the loop
+				# is_performant_query, analyze_message = analyze_query_plan(conn, generated_sql)
+				# if not is_performant_query:
+				# 	st.write(f"Generated SQL is not performant in #{retry_counter} attempt(s).")
+				# 	st.write(f"Reason: {analyze_message}")
+				# 	retry_counter += 1
+				# 	continue
 
 				is_valid_sql_generated = True
 				final_sql_query = generated_sql
@@ -120,13 +120,8 @@ if prompt := st.chat_input("What is up?"):
 
 			# Mock data generation for text, table, and chart
 			text_stream = generate_text_stream("This is a text answer to the query.")
-			table_data = generate_fake_table()
-			chart_data = generate_fake_chart()
-
-			# Real
-			# text_stream = st.write_stream(text_stream)
-			# table_data = execute_result
-			# chart_data = execute_result
+			table_data = execute_result
+			chart_data = execute_result
 
 			full_text = ""
 			if text_stream is not None:
