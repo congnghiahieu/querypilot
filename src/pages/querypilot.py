@@ -6,13 +6,11 @@ import streamlit as st
 
 from src.prompt import construct_full_prompt
 from src.prompt_templates import get_sql_generation_prompt_template
-from src.render_utils import generate_fake_chart, generate_fake_table, generate_text_stream
+from src.render_utils import generate_text_stream
 from src.sql_utils import (
-	analyze_query_plan,
 	execute_select_query,
 	export_schema_to_string,
 	get_sqlite_connection,
-	validate_sql_query,
 )
 from src.text2sql import convert_text_to_sql
 
