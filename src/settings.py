@@ -38,7 +38,5 @@ class Settings:
 		)
 
 
-# Load the settings
 SETTINGS = Settings.load()
-
 LLM_CLIENT = OpenAI(api_key=SETTINGS.LLM_API_KEY, base_url=SETTINGS.LLM_BASE_URL)

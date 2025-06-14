@@ -33,7 +33,7 @@ def get_sqlite_connection(db_path: str) -> Generator[sqlite3.Connection, None, N
 			print("Database connection closed.")
 
 
-def execute_select_query(conn: sqlite3.Connection, query: str) -> pd.DataFrame:
+def execute_sql_select(conn: sqlite3.Connection, query: str) -> pd.DataFrame:
 	"""
 	Execute a SQL SELECT query and return results as a Pandas DataFrame.
 
@@ -48,7 +48,7 @@ def execute_select_query(conn: sqlite3.Connection, query: str) -> pd.DataFrame:
 	return pd.read_sql_query(query, conn)
 
 
-def export_schema_to_string(conn: sqlite3.Connection) -> str:
+def export_database_schema(conn: sqlite3.Connection) -> str:
 	"""
 	Export the database schema as a multiline string.
 
@@ -93,6 +93,8 @@ def export_schema_to_string(conn: sqlite3.Connection) -> str:
 def validate_sql_query(
 	conn: sqlite3.Connection, query: str, user_permissions: Optional[set] = None
 ) -> Tuple[bool, str]:
+	"""Hàm này dùng Grok gen ra, đang lỗi, để làm placeholder nếu có sử dụng"""
+
 	"""
 	Validate SQL query for syntax, table/column existence, query type, advanced injection risks,
 	schema compatibility, permissions, subqueries, table/column aliases, and foreign keys.
@@ -285,6 +287,8 @@ def validate_sql_query(
 def analyze_query_plan(
 	conn: sqlite3.Connection, query: str, cost_threshold: float = 1000.0
 ) -> Tuple[bool, str]:
+	"""Hàm này dùng Grok gen ra, đang lỗi, để làm placeholder nếu có sử dụng"""
+
 	"""
 	Analyze the query plan of a validated SQL SELECT query and estimate its execution cost.
 	Returns False if the estimated cost exceeds the threshold (indicating a slow query).

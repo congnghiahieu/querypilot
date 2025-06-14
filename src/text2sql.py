@@ -8,8 +8,7 @@ def convert_text_to_sql(text: str) -> str:
 	Returns:
 	    str: The generated SQL query.
 	"""
-	# Placeholder for the actual conversion logic
-	# In a real implementation, this would involve NLP processing and SQL generation
+
 	return f"""
 SELECT c.Email, SUM(il.Quantity * il.UnitPrice) AS TotalSpent
 FROM Customer c
