@@ -172,3 +172,4 @@ cython_debug/
 .pypirc
 **/.streamlit/secrets.toml
 querypilot.db
+dataset/

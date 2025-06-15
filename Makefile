@@ -29,3 +29,6 @@ format: lint
 freeze:
 	@uv export --format requirements-txt --no-annotate --no-header --no-hashes --no-dev --output-file requirements.lock
 	@uv export --format requirements-txt --no-annotate --no-header --no-hashes --output-file requirements.dev.lock
+
+test:
+	@pytest tests/

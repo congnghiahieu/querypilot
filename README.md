@@ -1,5 +1,17 @@
 # QueryPilot
 
+## Dataset Prepare
+
+- Download dataset at https://bull-text-to-sql-benchmark.github.io/, put it under `dataset/` directory
+- This repo use English dataset only
+- Then the file structure should look like this:
+
+```bash
+. dataset/
+├── BULL-en
+├── database_en
+```
+
 ## Requirements
 
 - Python >= 3.10
@@ -9,7 +21,13 @@
 
 ## Set up environment
 
-- Copy `.env` file from `.env.sample` and fill out at least required variable
+- Copy `.env` file from `.env.sample` and fill out at least required variable. For example:
+
+```bash
+LLM_API_KEY = "abcdefgh123456789"
+LLM_BASE_URL = "https://api.deepseek.com"
+LLM_MODEL_NAME = "deepseek-chat"
+```
 
 ## Install dependencies
 
@@ -32,4 +50,11 @@ pip install -r requirements.dev.lock # for dev environment
 make dev # for dev environment
 
 make run # for prod environment
+```
+
+- Run test (no pytest):
+
+```bash
+cd tests/
+python3 test_text2sql.py
 ```
