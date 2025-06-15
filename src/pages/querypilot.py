@@ -18,14 +18,14 @@ st.title("Query Pilot")
 
 if "messages" not in st.session_state:
 	"""
-	st.session_state.messages = [
-	{
-		"role": "user" | "assistant",
-		"text": str",
-		"table": None | pd.DataFrame(...),
-		"chart": None | pd.DataFrame(...),
-	}]
-	"""
+    st.session_state.messages = [
+    {
+        "role": "user" | "assistant",
+        "text": str",
+        "table": None | pd.DataFrame(...),
+        "chart": None | pd.DataFrame(...),
+    }]
+    """
 	st.session_state.messages = []
 
 for _, msg in enumerate(st.session_state.messages):
@@ -69,18 +69,18 @@ if prompt := st.chat_input("What do you want to know?"):
 				# # Validate sql syntax
 				# is_valid_sql_in_loop, validate_message = validate_sql_query(conn, generated_sql)
 				# if not is_valid_sql_in_loop:
-				# 	st.write(f"Can not generate valid SQL in #{retry_counter} attempt(s).")
-				# 	st.write(f"Reason: {validate_message}")
-				# 	retry_counter += 1
-				# 	continue
+				#   st.write(f"Can not generate valid SQL in #{retry_counter} attempt(s).")
+				#   st.write(f"Reason: {validate_message}")
+				#   retry_counter += 1
+				#   continue
 
 				# # Analyze sql performance
 				# is_performant_query, analyze_message = analyze_query_plan(conn, generated_sql)
 				# if not is_performant_query:
-				# 	st.write(f"Generated SQL is not performant in #{retry_counter} attempt(s).")
-				# 	st.write(f"Reason: {analyze_message}")
-				# 	retry_counter += 1
-				# 	continue
+				#   st.write(f"Generated SQL is not performant in #{retry_counter} attempt(s).")
+				#   st.write(f"Reason: {analyze_message}")
+				#   retry_counter += 1
+				#   continue
 
 				is_valid_sql_generated = True
 				final_sql_select = generated_sql_select

@@ -96,18 +96,18 @@ def validate_sql_query(
 	"""Hàm này dùng Grok gen ra, đang lỗi, để làm placeholder nếu có sử dụng"""
 
 	"""
-	Validate SQL query for syntax, table/column existence, query type, advanced injection risks,
-	schema compatibility, permissions, subqueries, table/column aliases, and foreign keys.
+    Validate SQL query for syntax, table/column existence, query type, advanced injection risks,
+    schema compatibility, permissions, subqueries, table/column aliases, and foreign keys.
 
-	Args:
-	    conn (sqlite3.Connection): Active SQLite connection
-	    query (str): SQL query to validate
-	    user_permissions (Optional[set]): Set of table names the user can access (None means all tables allowed)
+    Args:
+        conn (sqlite3.Connection): Active SQLite connection
+        query (str): SQL query to validate
+        user_permissions (Optional[set]): Set of table names the user can access (None means all tables allowed)
 
-	Returns:
-	    Tuple[bool, str]: (is_valid, message) where is_valid indicates if query is valid,
-	                      and message provides details on validation result or errors
-	"""
+    Returns:
+        Tuple[bool, str]: (is_valid, message) where is_valid indicates if query is valid,
+                          and message provides details on validation result or errors
+    """
 	try:
 		# Step 1: Check for multiple statements (basic SQL injection detection)
 		parsed = sqlparse.parse(query)
@@ -290,18 +290,18 @@ def analyze_query_plan(
 	"""Hàm này dùng Grok gen ra, đang lỗi, để làm placeholder nếu có sử dụng"""
 
 	"""
-	Analyze the query plan of a validated SQL SELECT query and estimate its execution cost.
-	Returns False if the estimated cost exceeds the threshold (indicating a slow query).
+    Analyze the query plan of a validated SQL SELECT query and estimate its execution cost.
+    Returns False if the estimated cost exceeds the threshold (indicating a slow query).
 
-	Args:
-	    conn (sqlite3.Connection): Active SQLite connection
-	    query (str): Validated SQL SELECT query to analyze
-	    cost_threshold (float): Maximum acceptable cost (default: 1000.0, tunable)
+    Args:
+        conn (sqlite3.Connection): Active SQLite connection
+        query (str): Validated SQL SELECT query to analyze
+        cost_threshold (float): Maximum acceptable cost (default: 1000.0, tunable)
 
-	Returns:
-	    Tuple[bool, str]: (is_acceptable, message) where is_acceptable indicates if the query's
-	                      estimated cost is below the threshold, and message provides details
-	"""
+    Returns:
+        Tuple[bool, str]: (is_acceptable, message) where is_acceptable indicates if the query's
+                          estimated cost is below the threshold, and message provides details
+    """
 	try:
 		cursor = conn.cursor()
 
