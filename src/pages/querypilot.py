@@ -3,15 +3,12 @@ from typing import Optional
 import pandas as pd
 import streamlit as st
 
-from src.prompt import construct_full_prompt
-from src.prompt_templates import get_sql_generation_prompt_template
 from src.render_utils import generate_text_stream
 from src.sql_utils import (
 	execute_sql_select,
-	export_database_schema,
 	get_sqlite_connection,
 )
-from src.text2sql import convert_text_to_sql
+from src.nl2sql.nl2sql import convert_nl2sql
 
 st.title("Query Pilot")
 
@@ -48,23 +45,14 @@ if prompt := st.chat_input("What do you want to know?"):
 	final_sql_select = ""
 	is_valid_sql_generated = False
 
-	with get_sqlite_connection("./Chinook.db") as conn:
+	with get_sqlite_connection("./dataset/bull/database_en/ccks_fund/ccks_fund.sqlite") as conn:
 		with st.spinner("Translating text to SQL ...", show_time=True):
 			retry_counter = 1
 			retry_limit = 3
 
 			while not is_valid_sql_generated and retry_counter <= retry_limit:
-				# Construct full prompt
-				sql_generation_prompt_template = get_sql_generation_prompt_template()
-				database_schema = export_database_schema(conn)
-				full_prompt = construct_full_prompt(
-					system_prompt=sql_generation_prompt_template,
-					database_schema=database_schema,
-					user_prompt=prompt,
-				)
-
 				# Convert text (prompt) to SQL
-				generated_sql_select = convert_text_to_sql(full_prompt)
+				generated_sql_select = convert_nl2sql(prompt)
 
 				# # Validate sql syntax
 				# is_valid_sql_in_loop, validate_message = validate_sql_query(conn, generated_sql)
@@ -118,9 +106,9 @@ if prompt := st.chat_input("What do you want to know?"):
 				st.write("Table Answer:")
 				st.dataframe(table_data)
 
-			if chart_data is not None:
-				st.write("Chart Answer:")
-				st.line_chart(chart_data)
+			#if chart_data is not None:
+			#	st.write("Chart Answer:")
+			#	st.line_chart(chart_data)
 
 	# Add assistant response to chat history
 	st.session_state.messages.append(

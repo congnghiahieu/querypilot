@@ -1,5 +1,8 @@
 # QueryPilot
 
+## Dataset
+Please download dataset at [here]() and put it in the top-level of directory
+
 ## Requirements
 
 - Python >= 3.10
