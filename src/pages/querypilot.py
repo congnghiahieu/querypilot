@@ -1,5 +1,4 @@
 from typing import Optional
-import time
 
 import pandas as pd
 import streamlit as st

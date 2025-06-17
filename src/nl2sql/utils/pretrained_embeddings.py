@@ -1,13 +1,11 @@
 import abc
 import functools
-import os
 import time
 from typing import Optional
 
 import torch
 from sentence_transformers import SentenceTransformer
 import spacy
-import requests
 from requests.exceptions import HTTPError
 
 # Load spaCy model

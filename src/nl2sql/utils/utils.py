@@ -3,10 +3,8 @@ import os
 import re
 import sqlite3
 
-from transformers import AutoTokenizer
 from src.nl2sql.utils.enums import LLM
 from sql_metadata import Parser
-
 
 class SqliteTable(dict):
     __getattr__ = dict.__getitem__
