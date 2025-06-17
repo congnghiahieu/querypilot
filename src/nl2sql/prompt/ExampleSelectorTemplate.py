@@ -1,5 +1,6 @@
 import numpy as np
 import random
+import json
 
 from src.nl2sql.utils.utils import jaccard_similarity
 from src.nl2sql.utils.linking_utils.application import mask_question_with_schema_linking
@@ -8,9 +9,38 @@ from src.nl2sql.utils.linking_utils.application import mask_question_with_schema
 class BasicExampleSelector(object):
     def __init__(self, data, *args, **kwargs):
         self.data = data
-        self.train_json = self.data.get_train_json()
+        self.train_json_file = "train_json.json"
+        self.train_questions_file = "train_questions.txt"
+        
+        # Try to load train_json from file, if not found get from data and save
+        try:
+            print("Loading train_json from file...")
+            with open(self.train_json_file, 'r') as f:
+                self.train_json = json.load(f)
+            print("Successfully loaded train_json from file")
+        except FileNotFoundError:
+            print("train_json file not found, getting from data...")
+            self.train_json = self.data.get_train_json()
+            print("Saving train_json to file...")
+            with open(self.train_json_file, 'w') as f:
+                json.dump(self.train_json, f)
+            print("Successfully saved train_json to file")
+            
+        # Try to load train_questions from file, if not found get from data and save
+        try:
+            print("Loading train_questions from file...")
+            with open(self.train_questions_file, 'r') as f:
+                self.train_questions = f.read().splitlines()
+            print("Successfully loaded train_questions from file")
+        except FileNotFoundError:
+            print("train_questions file not found, getting from data...")
+            self.train_questions = self.data.get_train_questions()
+            print("Saving train_questions to file...")
+            with open(self.train_questions_file, 'w') as f:
+                f.write('\n'.join(self.train_questions))
+            print("Successfully saved train_questions to file")
+            
         self.db_ids = [d["db_id"] for d in self.train_json]
-        self.train_questions = self.data.get_train_questions()
 
     def get_examples(self, question, num_example, cross_domain=False):
         pass
@@ -202,16 +232,31 @@ class EuclideanDistanceSkeletonSimilarThresholdSelector(BasicExampleSelector):
 
 class EuclideanDistanceQuestionMaskSelector(BasicExampleSelector):
     def __init__(self, data, *args, **kwargs):
+        print("start init selector")
         super().__init__(data)
+        print("end init selector")
 
         self.SELECT_MODEL = "sentence-transformers/all-mpnet-base-v2"
         self.mask_token = "<mask>"  # the "<mask>" is the mask token of all-mpnet-base-v2
         self.value_token = "<unk>" # the "<unk>" is the unknown token of all-mpnet-base-v2
+        self.embeddings_file = "train_embeddings.npy"
 
         from sentence_transformers import SentenceTransformer
+        print("start loading bert model")
         train_mask_questions = mask_question_with_schema_linking(self.train_json, mask_tag=self.mask_token, value_tag=self.value_token)
         self.bert_model = SentenceTransformer(self.SELECT_MODEL, device="cpu")
-        self.train_embeddings = self.bert_model.encode(train_mask_questions)
+        
+        # Try to load embeddings from file, if not found compute and save them
+        try:
+            print("Loading embeddings from file...")
+            self.train_embeddings = np.load(self.embeddings_file)
+            print("Successfully loaded embeddings from file")
+        except FileNotFoundError:
+            print("Embeddings file not found, computing embeddings...")
+            self.train_embeddings = self.bert_model.encode(train_mask_questions)
+            print("Saving embeddings to file...")
+            np.save(self.embeddings_file, self.train_embeddings)
+            print("Successfully saved embeddings to file")
 
     def get_examples(self, target, num_example, cross_domain=False):
         target_mask_question = mask_question_with_schema_linking([target], mask_tag=self.mask_token, value_tag=self.value_token)

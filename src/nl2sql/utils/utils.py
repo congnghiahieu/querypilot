@@ -167,8 +167,6 @@ def get_sql_for_database(path_db=None, cur=None):
 
 def get_tokenizer(tokenizer_type: str):
     return 0
-    tokenizer = AutoTokenizer.from_pretrained(tokenizer_type, use_fast=False)
-    return tokenizer
 
 
 def count_tokens(string: str, tokenizer_type: str=None, tokenizer=None):

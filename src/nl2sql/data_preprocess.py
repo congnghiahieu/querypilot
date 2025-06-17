@@ -47,7 +47,7 @@ def schema_linking_producer(data_item, table, db, dataset_dir, compute_cv_link=T
             compute_cv_link=compute_cv_link)
 
     # build schema-linking
-    db_id = "ccks_fund"
+    db_id = "financial"
     schema = schemas[db_id]
     preprocessed = linking_processor.preprocess_item(data_item, schema)
 

@@ -116,8 +116,9 @@ def prompt_factory(repr_type: str, k_shot: int, example_format: str, selector_ty
             name = cls_name
             NUM_EXAMPLE = k_shot
             def __init__(self, *args, **kwargs):
+                print("init selector")
                 selector_cls.__init__(self, *args, **kwargs)
-                # init tokenizer
+                print("init tokenizer")
                 BasicICLPrompt.__init__(self, *args, **kwargs)
     
     return PromptClass

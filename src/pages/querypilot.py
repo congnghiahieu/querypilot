@@ -1,4 +1,5 @@
 from typing import Optional
+import time
 
 import pandas as pd
 import streamlit as st
@@ -9,10 +10,37 @@ from src.sql_utils import (
 	get_sqlite_connection,
 )
 from src.nl2sql.nl2sql import convert_nl2sql
+from src.nl2sql.utils.data_builder import load_data
+from src.nl2sql.utils.enums import REPR_TYPE, EXAMPLE_TYPE, SELECTOR_TYPE
+from src.nl2sql.prompt.prompt_builder import prompt_factory
 
 st.title("Query Pilot")
 
+PATH_DATA = "BIRD_dataset/"
+prompt_repr = REPR_TYPE.CODE_REPRESENTATION
+example_type = EXAMPLE_TYPE.QA
+selector_type = SELECTOR_TYPE.EUC_DISTANCE_QUESTION_MASK
+k_shot = 7
 
+# Initialize session state variables
+if "initialized" not in st.session_state:
+	st.session_state.initialized = False
+	st.session_state.data = None
+	st.session_state.prompt = None
+
+# Run initialization steps if not done yet
+if not st.session_state.initialized:
+	with st.spinner("Initializing Query Pilot..."):
+		st.session_state.data = load_data("bird", PATH_DATA, None)
+		databases = st.session_state.data.get_databases()
+		print("start getting prompt")
+		st.session_state.prompt = prompt_factory(prompt_repr, k_shot, example_type, selector_type)(data=st.session_state.data, tokenizer="None")
+		print("done getting prompt")
+
+		# Mark initialization as complete
+		st.session_state.initialized = True
+
+# Initialize chat messages if not present
 if "messages" not in st.session_state:
 	"""
 	st.session_state.messages = [
@@ -35,24 +63,24 @@ for _, msg in enumerate(st.session_state.messages):
 			st.line_chart(msg["chart"])
 
 # React to user input
-if prompt := st.chat_input("What do you want to know?"):
+if question := st.chat_input("What do you want to know?"):
 	# Step 1: User provides a prompt
 	with st.chat_message("user"):
-		st.markdown(prompt)
-	st.session_state.messages.append({"role": "user", "text": prompt})
+		st.markdown(question)
+	st.session_state.messages.append({"role": "user", "text": question})
 
 	# Step 2: UI show loading animation, backend translate text to SQL
 	final_sql_select = ""
 	is_valid_sql_generated = False
 
-	with get_sqlite_connection("./dataset/bull/database_en/ccks_fund/ccks_fund.sqlite") as conn:
+	with get_sqlite_connection("./BIRD_dataset/databases/financial/financial.sqlite") as conn:
 		with st.spinner("Translating text to SQL ...", show_time=True):
 			retry_counter = 1
 			retry_limit = 3
 
 			while not is_valid_sql_generated and retry_counter <= retry_limit:
 				# Convert text (prompt) to SQL
-				generated_sql_select = convert_nl2sql(prompt)
+				generated_sql_select = convert_nl2sql(question, st.session_state.data, st.session_state.prompt)
 
 				# # Validate sql syntax
 				# is_valid_sql_in_loop, validate_message = validate_sql_query(conn, generated_sql)

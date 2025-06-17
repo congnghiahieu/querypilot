@@ -1,10 +1,14 @@
 import abc
 import functools
 import os
+import time
+from typing import Optional
 
 import torch
 from sentence_transformers import SentenceTransformer
 import spacy
+import requests
+from requests.exceptions import HTTPError
 
 # Load spaCy model
 try:
@@ -14,6 +18,34 @@ except OSError:
     import subprocess
     subprocess.run(["python", "-m", "spacy", "download", "en_core_web_sm"])
     nlp = spacy.load("en_core_web_sm")
+
+def load_sentence_transformer(model_name: str, max_retries: int = 3, retry_delay: int = 5) -> Optional[SentenceTransformer]:
+    """
+    Load a sentence transformer model with retry logic for handling rate limits.
+    
+    Args:
+        model_name: Name of the model to load
+        max_retries: Maximum number of retry attempts
+        retry_delay: Delay between retries in seconds
+        
+    Returns:
+        Loaded SentenceTransformer model or None if all retries failed
+    """
+    for attempt in range(max_retries):
+        try:
+            return SentenceTransformer(model_name)
+        except HTTPError as e:
+            if e.response.status_code == 429:  # Rate limit error
+                if attempt < max_retries - 1:
+                    print(f"Rate limit hit, retrying in {retry_delay} seconds... (Attempt {attempt + 1}/{max_retries})")
+                    time.sleep(retry_delay)
+                    continue
+                else:
+                    print("Max retries reached. Please try again later.")
+                    return None
+            else:
+                raise
+    return None
 
 class Embedder(metaclass=abc.ABCMeta):
 
@@ -51,7 +83,10 @@ class TransformerEmbedder(Embedder):
             model_name: Name of the Sentence Transformer model to use
             lemmatize: Whether to lemmatize tokens before embedding
         """
-        self.model = SentenceTransformer(model_name)
+        self.model = load_sentence_transformer(model_name)
+        if self.model is None:
+            raise RuntimeError(f"Failed to load model {model_name} after multiple retries")
+            
         self.dim = self.model.get_sentence_embedding_dimension()
         self.lemmatize = lemmatize
         self.nlp = nlp

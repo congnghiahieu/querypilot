@@ -7,8 +7,8 @@ from src.nl2sql.utils.linking_utils.application import get_question_pattern_with
 
 class BasicDataset(object):
     def __init__(self, path_data, pre_test_result=None):
-        self.path_data = os.path.join(path_data, self.name)
-        self.path_db = os.path.join(self.path_data, "database_en")
+        self.path_data = path_data
+        self.path_db = os.path.join(self.path_data, "databases")
         self.test_json = os.path.join(self.path_data, self.test_json)
         self.test_gold = os.path.join(self.path_data, self.test_gold)
         self.train_json = os.path.join(self.path_data, self.train_json)

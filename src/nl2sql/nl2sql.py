@@ -16,7 +16,7 @@ bull_table = "BULL-en/tables.json"
 bull_db = "database_en"
 PATH_DATA = "dataset/"
 
-db_id = "ccks_fund"
+db_id = "financial"
 
 def clean_sql_query(sql_str):
     """
@@ -55,24 +55,18 @@ def get_databases(table_json):
             databases[db_id] = get_tables(db_id)
     return databases
 
-def convert_nl2sql(question: str) -> str:
+def convert_nl2sql(question: str, data, prompt) -> str:
     data_item = dict()
     data_item["db_id"] = db_id
     data_item["question"] = question
     data_item["question_toks"] = ""
-    print("Start schema linking")
-    #preprocessed = schema_linking_producer(data_item, bull_table, bull_db, bull_dir)
     
-    k_shot = 9
     max_sequence_len = 65000
     max_ans_len = 4000
-    prompt_repr = REPR_TYPE.CODE_REPRESENTATION
-    example_type = EXAMPLE_TYPE.QA
-    selector_type = SELECTOR_TYPE.EUC_DISTANCE_QUESTION_MASK
 
-    data = load_data("bull", PATH_DATA, None)
-    databases = data.get_databases()
-    prompt = prompt_factory(prompt_repr, k_shot, example_type, selector_type)(data=data, tokenizer="None")
+    #data = load_data("bull", PATH_DATA, None)
+    #databases = data.get_databases()
+    #prompt = prompt_factory(prompt_repr, k_shot, example_type, selector_type)(data=data, tokenizer="None")
     print("End prompt factory")
 
     tests = [
