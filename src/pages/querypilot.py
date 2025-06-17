@@ -20,6 +20,7 @@ prompt_repr = REPR_TYPE.CODE_REPRESENTATION
 example_type = EXAMPLE_TYPE.QA
 selector_type = SELECTOR_TYPE.EUC_DISTANCE_QUESTION_MASK
 k_shot = 7
+MAX_ROWS = 100  # Maximum number of rows to return
 
 # Initialize session state variables
 if "initialized" not in st.session_state:
@@ -110,7 +111,21 @@ if question := st.chat_input("What do you want to know?"):
 		sql_execution_result: Optional[pd.DataFrame] = None
 		with st.spinner("Executing generated SQL Query", show_time=True):
 			try:
+				# First, get total count of rows
+				count_query = f"SELECT COUNT(*) as total_rows FROM ({final_sql_select}) as subquery"
+				total_rows = execute_sql_select(conn, count_query).iloc[0]['total_rows']
+				
+				# Add LIMIT clause if not present
+				if "LIMIT" not in final_sql_select.upper():
+					final_sql_select = f"{final_sql_select} LIMIT {MAX_ROWS}"
+				
 				sql_execution_result = execute_sql_select(conn, final_sql_select)
+				
+				# Add warning if results are truncated
+				if total_rows > MAX_ROWS:
+					st.warning(f"⚠️ Results are limited to {MAX_ROWS} rows out of {total_rows} total rows. Please refine your query for more specific results.")
+				st.write(f"Total rows: {total_rows}")
+				
 			except Exception as err:
 				st.write(f"Can't execute the generated SQL: {final_sql_select} due to {err}")
 				st.stop()
