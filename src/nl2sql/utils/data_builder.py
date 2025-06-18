@@ -37,9 +37,7 @@ class BasicDataset(object):
             #     self.databases[db_id] = self.get_tables(db_id)
             with open(self.table_json) as f:
                 tables = json.load(f)
-                for tj in tables:
-                    db_id = tj["db_id"]
-                    self.databases[db_id] = self.get_tables(db_id)
+                self.databases["financial"] = self.get_tables("financial")
         return self.databases
 
     def get_tables(self, db_id):

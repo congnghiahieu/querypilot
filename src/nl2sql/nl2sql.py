@@ -27,7 +27,19 @@ def clean_sql_query(sql_str):
     
     return sql_str
 
-def convert_nl2sql(question: str, data, prompt) -> str:
+def convert_nl2sql(question: str, data, prompt, task_tracker=None) -> str:
+    """
+    Convert natural language to SQL query with optional task tracking.
+    
+    Args:
+        question (str): Natural language query
+        data: Data object for processing
+        prompt: Prompt template
+        task_tracker: Optional TaskTracker instance for performance monitoring
+        
+    Returns:
+        str: Generated SQL query
+    """
     data_item = dict()
     data_item["db_id"] = db_id
     data_item["question"] = question
@@ -59,5 +71,10 @@ def convert_nl2sql(question: str, data, prompt) -> str:
     sql = " ".join(sql.replace("\n", " ").split())
     sql = process_duplication(sql)
     sql = clean_sql_query(sql)
+    
+    # Record SQL generation completion if task tracker is provided
+    if task_tracker:
+        task_tracker.record_sql_generation(sql)
+    
     print(sql)
     return sql
