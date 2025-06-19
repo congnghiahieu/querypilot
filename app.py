@@ -1,6 +1,6 @@
 import streamlit as st
 
-querypilot_page = st.Page("./src/pages/querypilot.py", title="Query Pilot", icon="🤖")
+chat_page = st.Page("./src/pages/chat.py", title="Query Pilot", icon="🤖")
 
 customer_insight_page = st.Page(
 	"./src/pages/customer_insight.py", title="Customer Insight", icon="📈"
@@ -9,7 +9,7 @@ customer_insight_page = st.Page(
 # Set up navigation
 pg = st.navigation(
 	[
-		querypilot_page,
+		chat_page,
 		# customer_insight_page
 	]
 )
