@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import datetime
 from contextlib import contextmanager
 from typing import Generator, Optional, Tuple
 
@@ -33,19 +34,41 @@ def get_sqlite_connection(db_path: str) -> Generator[sqlite3.Connection, None, N
 			print("Database connection closed.")
 
 
-def execute_sql_select(conn: sqlite3.Connection, query: str) -> pd.DataFrame:
+def execute_sql_select(conn: sqlite3.Connection, query: str, task_tracker=None) -> pd.DataFrame:
 	"""
-	Execute a SQL SELECT query and return results as a Pandas DataFrame.
+	Execute a SQL SELECT query and return results as a Pandas DataFrame with optional task tracking.
 
 	Args:
 	    conn (sqlite3.Connection): Active SQLite connection
 	    query (str): SQL SELECT query to execute
+	    task_tracker: Optional TaskTracker instance for performance monitoring
 
 	Returns:
-	    Optional[pd.DataFrame]: DataFrame containing query results, or None if an error occurs
+	    pd.DataFrame: DataFrame containing query results
 	"""
-	# Execute query and load results into DataFrame
-	return pd.read_sql_query(query, conn)
+	# Record execution start if task tracker is provided
+	if task_tracker:
+		task_tracker.record_sql_execution_start()
+	
+	start_time = datetime.now()
+	try:
+		start_time = datetime.now()
+		# Execute query and load results into DataFrame
+		result = pd.read_sql_query(query, conn)
+		execution_duration_s = (datetime.now() - start_time).total_seconds()
+		print(f"execution_duration_s: {execution_duration_s}")
+		
+		# Record execution completion if task tracker is provided
+		if task_tracker:
+			task_tracker.record_sql_execution_complete(len(result), execution_duration_s)
+		
+		return result
+		
+	except Exception as e:
+		# Record error if task tracker is provided
+		if task_tracker:
+			task_tracker.record_error(str(e))
+		raise e
 
 
 def export_database_schema(conn: sqlite3.Connection) -> str:

@@ -5,7 +5,7 @@ export
 STREAMLIT_SERVER_ADDRESS ?= 0.0.0.0
 STREAMLIT_SERVER_PORT ?= 8080
 
-STREAMLIT_RUN = @streamlit run app.py --server.port $(STREAMLIT_SERVER_PORT) --server.address $(STREAMLIT_SERVER_ADDRESS)
+STREAMLIT_RUN = @streamlit run app.py --server.port $(STREAMLIT_SERVER_PORT) --server.address $(STREAMLIT_SERVER_ADDRESS) --server.fileWatcherType none
 
 env:
 	@echo "ADDRESS: $(STREAMLIT_SERVER_ADDRESS), PORT: $(STREAMLIT_SERVER_PORT)"
