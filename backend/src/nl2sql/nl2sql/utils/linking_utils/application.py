@@ -1,4 +1,4 @@
-from src.nl2sql.utils.linking_utils.spider_match_utils import match_shift
+from src.nl2sql.nl2sql.utils.linking_utils.spider_match_utils import match_shift
 
 
 def mask_question_with_schema_linking(data_jsons, mask_tag, value_tag):

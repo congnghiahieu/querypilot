@@ -1,7 +1,7 @@
 import os
 
-from src.nl2sql.llm.chatgpt import ask_deepseek
-from src.nl2sql.utils.post_process import process_duplication
+from src.nl2sql.nl2sql.llm.chatgpt import ask_deepseek
+from src.nl2sql.nl2sql.utils.post_process import process_duplication
 
 db_id = "financial"
 

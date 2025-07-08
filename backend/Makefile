@@ -1,7 +1,3 @@
-# This will pull variables from a .env file into the Makefile — but env vars passed from the shell still override those.
-include .env
-export
-
 SHELL := /bin/bash
 
 # Variables definitions

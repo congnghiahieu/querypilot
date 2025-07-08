@@ -1,4 +1,4 @@
-from src.nl2sql.utils.utils import get_sql_for_database
+from src.nl2sql.nl2sql.utils.utils import get_sql_for_database
 
 
 class BasicPrompt:

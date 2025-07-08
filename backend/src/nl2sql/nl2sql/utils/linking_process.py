@@ -4,8 +4,8 @@ import os
 
 import attr
 
-from src.nl2sql.utils.linking_utils import abstract_preproc, serialization
-from src.nl2sql.utils.linking_utils.spider_match_utils import (
+from src.nl2sql.nl2sql.utils.linking_utils import abstract_preproc, serialization
+from src.nl2sql.nl2sql.utils.linking_utils.spider_match_utils import (
     compute_cell_value_linking,
     compute_schema_linking,
 )

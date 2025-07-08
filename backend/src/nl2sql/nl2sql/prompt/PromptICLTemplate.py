@@ -1,6 +1,6 @@
 import numpy as np
 
-from src.nl2sql.utils.utils import count_tokens, get_tokenizer, jaccard_similarity
+from src.nl2sql.nl2sql.utils.utils import count_tokens, get_tokenizer, jaccard_similarity
 
 
 class BasicICLPrompt:

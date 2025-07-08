@@ -1,8 +1,10 @@
 import json
 import os
 
-from src.nl2sql.utils.linking_utils.application import get_question_pattern_with_schema_linking
-from src.nl2sql.utils.utils import get_tables_from_db, sql2skeleton
+from src.nl2sql.nl2sql.utils.linking_utils.application import (
+    get_question_pattern_with_schema_linking,
+)
+from src.nl2sql.nl2sql.utils.utils import get_tables_from_db, sql2skeleton
 
 
 class BasicDataset:
