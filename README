@@ -1,44 +1,68 @@
-```bash
-git submodule update --init --recursive
-```
-
-
 # QueryPilot
 
-## Dataset
-Please download dataset at [here](https://drive.google.com/drive/folders/1ULVZNXlYoXFdZBoDg87rwTbGXiO11yFb?usp=sharing) and put it (BIRD_dataset) in the top-level of directory
-Download 3 files [1](https://drive.google.com/file/d/1UmYvqLLxEoRsYnkde3rsnzEwEQn6I4xz/view?usp=sharing), [2](https://drive.google.com/file/d/1hAE7vK485lRaGZ521gZUabe4sa8JmRJf/view?usp=sharing), [3](https://drive.google.com/file/d/1wYj-zm7izgjuyBwJr8o-N_dmmSepB99P/view?usp=sharing) and put it in root folder
+## Frontend Installation
 
-## Requirements
+- Frontend live in different repo so we need to clone that using `git submodule`
+
+```bash
+git clone https://github.com/congnghiahieu/querypilot.git
+cd querypilot/
+git submodule init
+git submodule update
+```
+
+- After clone frontend
+
+```bash
+npm install
+npm run dev
+```
+
+- For more actions, see `scripts` in `frontend/package.json`
+
+## Backend Installation
+
+```bash
+# First cd in backend/
+cd querypilot/backend
+```
+
+### Dowload dataset
+
+- Please download dataset at [here](https://drive.google.com/drive/folders/1ULVZNXlYoXFdZBoDg87rwTbGXiO11yFb?usp=sharing) and put it (BIRD_dataset) in the top-level of directory
+- Download 3 files [1](https://drive.google.com/file/d/1UmYvqLLxEoRsYnkde3rsnzEwEQn6I4xz/view?usp=sharing), [2](https://drive.google.com/file/d/1hAE7vK485lRaGZ521gZUabe4sa8JmRJf/view?usp=sharing), [3](https://drive.google.com/file/d/1wYj-zm7izgjuyBwJr8o-N_dmmSepB99P/view?usp=sharing) and put it in `backend` folder
+
+### Requirements
 
 - Python >= 3.10
 - Backend project use Makefile so need `make`
-- [Recommend] Backend use [uv](https://docs.astral.sh/uv/) package manager. Install via `pipx install uv` or `pip install uv`
-- [Optional] Use `pip` to install dependencies instead of `uv`. Instruction below
+- Backend use [uv](https://docs.astral.sh/uv/) package manager. Install via `pipx install uv` or `pip install uv`. Please use `uv` instead of `pip`
 
-## Set up environment
+- Some `uv` usage example:
 
-- Copy `.env` file from `.env.sample` and fill out at least required variable
+```bash
+uv add numpy # add a new dependency, equals to `pip install`
+uv add ruff --dev # add a new dev dependency, equals to `pip install`
+uv venv # create new venv, equals to `python -m venv .venv`
+uv sync # dowload all dependencies listed in pyproject.toml, equals to `pip install -r requirements`
+```
 
-## Install dependencies
+### Set up environment
+
+- Copy `.env` file from `.env.sample` and fill out required variable
+
+### Install dependencies
 
 - Create virtual env, install dependencies and activate:
 
 ```bash
-# if use uv
 uv sync
 source ./.venv/bin/activate
-
-# if use pip
-python3 -m venv .venv
-source ./.venv/bin/activate
-pip install -r requirements.dev.txt # for dev environment
 ```
 
 - Run backend:
 
 ```bash
 make dev # for dev environment
-
 make run # for prod environment
 ```
