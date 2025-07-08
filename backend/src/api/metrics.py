@@ -3,10 +3,10 @@ import shutil
 import psutil
 from fastapi import APIRouter
 
-metrics_router = APIRouter()
+metrics_router = APIRouter(prefix="/metrics", tags=["Metrics"])
 
 
-@metrics_router.get("/healthz")
+@metrics_router.get("/health", summary="Health Check")
 def health_check():
     cpu_percent = psutil.cpu_percent(interval=0.1)
     memory = psutil.virtual_memory()
@@ -26,13 +26,3 @@ def health_check():
             "percent": round(disk.used / disk.total * 100, 2),
         },
     }
-
-
-@metrics_router.get("/system")
-def system_metrics():
-    pass
-
-
-@metrics_router.get("/logs")
-def get_logs():
-    pass

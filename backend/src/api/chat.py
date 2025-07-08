@@ -1,8 +1,6 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 
-from src.core.deps import get_current_user
-
-chat_router = APIRouter(prefix="/chat", tags=["Chat"], dependencies=[Depends[get_current_user]])
+chat_router = APIRouter(prefix="/chat", tags=["Chat"])
 
 
 @chat_router.post("/message")

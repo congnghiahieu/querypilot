@@ -11,7 +11,6 @@ class AppSettings(BaseSettings):
         "env_file_encoding": "utf-8",
         "env_ignore_empty": True,
         "case_sensitive": False,
-        "secrets_dir": "env/",
     }
 
 

@@ -17,6 +17,7 @@ dependencies = [
     "psutil>=7.0.0",
     "python-jose>=3.5.0",
     "passlib[bcrypt]>=1.7.4",
+    "bcrypt==4.0.1",
     "nltk>=3.9.1",
     "attr>=0.3.2",
 ]

@@ -1,10 +1,6 @@
-from fastapi import APIRouter, Depends, UploadFile
+from fastapi import APIRouter, UploadFile
 
-from src.core.deps import get_current_user
-
-kb_router = APIRouter(
-    prefix="/kb", tags=["KnowledgeBase"], dependencies=[Depends[get_current_user]]
-)
+kb_router = APIRouter(prefix="/kb", tags=["KnowledgeBase"])
 
 
 @kb_router.post("/upload")

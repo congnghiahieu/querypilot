@@ -1,8 +1,6 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 
-from src.core.deps import get_current_user
-
-query_router = APIRouter(prefix="/query", tags=["Query"], dependencies=[Depends[get_current_user]])
+query_router = APIRouter(prefix="/query", tags=["Query"])
 
 
 @query_router.post("/execute")

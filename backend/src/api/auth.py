@@ -5,7 +5,6 @@ from src.core import security
 
 auth_router = APIRouter(prefix="/auth", tags=["Auth"])
 
-# In-memory store for MVP
 fake_user_db = {
     "admin": {"username": "admin", "hashed_password": security.hash_password("admin123")}
 }

@@ -7,6 +7,7 @@ from src.api.kb import kb_router
 from src.api.metrics import metrics_router
 from src.api.query import query_router
 from src.api.user import user_router
+from src.core.middlewares import AuthMiddleware
 
 app = FastAPI()
 
@@ -17,6 +18,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(AuthMiddleware)
 
 app.include_router(auth_router)
 app.include_router(chat_router)

@@ -1,14 +1,14 @@
 import pandas as pd
 import streamlit as st
 
-from src.components.performance_metrics import render_performance_metrics
-from src.components.task_tracker import TaskTracker
+from src.nl2sql.components.performance_metrics import render_performance_metrics
+from src.nl2sql.components.task_tracker import TaskTracker
 from src.nl2sql.nl2sql.nl2sql import convert_nl2sql
 from src.nl2sql.nl2sql.prompt.prompt_builder import prompt_factory
 from src.nl2sql.nl2sql.utils.data_builder import load_data
 from src.nl2sql.nl2sql.utils.enums import EXAMPLE_TYPE, REPR_TYPE, SELECTOR_TYPE
-from src.render_utils import generate_text_stream
-from src.sql_utils import execute_sql_select, get_sqlite_connection
+from src.nl2sql.render_utils import generate_text_stream
+from src.nl2sql.sql_utils import execute_sql_select, get_sqlite_connection
 
 
 class QueryPilotChat:
