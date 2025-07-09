@@ -2,9 +2,8 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from src.core.deps import get_current_user
-
-PRIVATE_PATHS = ["/chat", "/kb", "/query", "/user", "/auth/logout"]
+from src.api.deps import get_current_user
+from src.core.settings import PRIVATE_PATHS
 
 
 class AuthMiddleware(BaseHTTPMiddleware):

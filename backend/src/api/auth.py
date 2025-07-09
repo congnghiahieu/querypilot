@@ -1,13 +1,12 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
-from src.core import security
+from src.core.db import get_db_conn
+from src.core.security import create_access_token, hash_password, verify_password
 
 auth_router = APIRouter(prefix="/auth", tags=["Auth"])
 
-fake_user_db = {
-    "admin": {"username": "admin", "hashed_password": security.hash_password("admin123")}
-}
+fake_user_db = {"admin": {"username": "admin", "hashed_password": hash_password("admin123")}}
 
 
 class LoginRequest(BaseModel):
@@ -22,30 +21,41 @@ class RegisterRequest(BaseModel):
 
 @auth_router.post("/register")
 def register(payload: RegisterRequest):
-    if payload.username in fake_user_db:
-        raise HTTPException(status_code=400, detail="User already exists")
-    fake_user_db[payload.username] = {
-        "username": payload.username,
-        "hashed_password": security.hash_password(payload.password),
-    }
+    conn = get_db_conn()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            "INSERT INTO users (username, hashed_password) VALUES (?, ?)",
+            (payload.username, hash_password(payload.password)),
+        )
+        conn.commit()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Username already exists")
+    finally:
+        conn.close()
     return {"msg": "User registered"}
 
 
 @auth_router.post("/login")
 def login(payload: LoginRequest):
-    user = fake_user_db.get(payload.username)
-    if not user or not security.verify_password(payload.password, user["hashed_password"]):
+    conn = get_db_conn()
+    cursor = conn.cursor()
+    cursor.execute("SELECT hashed_password FROM users WHERE username = ?", (payload.username,))
+    row = cursor.fetchone()
+    conn.close()
+
+    if not row or not verify_password(payload.password, row[0]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    token = security.create_access_token({"sub": payload.username})
+    token = create_access_token({"sub": payload.username})
     return {"access_token": token, "token_type": "bearer"}
 
 
 @auth_router.post("/logout")
 def logout():
-    return {"msg": "Stateless logout – delete token on client side"}
+    return {"msg": "Stateless logout – client must delete token"}
 
 
 @auth_router.get("/me")
-def me(username: str = "anonymous"):
-    return {"username": username}
+def get_me():
+    return {"msg": "user info"}
