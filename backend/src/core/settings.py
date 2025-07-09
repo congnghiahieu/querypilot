@@ -29,7 +29,8 @@ APP_SETTINGS = AppSettings()
 
 ALLOWED_ORIGINS = ["*" if APP_SETTINGS.is_dev else APP_SETTINGS.CLIENT_URL]
 
-DB_PATH = "app.db"
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
+ALLOWED_EXTENSIONS = {".txt", ".csv", ".json", ".md", ".pdf", ".docx"}
 
 LLM_BASE_URL = "https://api.deepseek.com"
 LLM_MODEL_NAME = "deepseek-chat"

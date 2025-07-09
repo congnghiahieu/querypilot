@@ -1,7 +1,7 @@
 [project]
 name = "backend"
 version = "0.1.0"
-description = "Add your description here"
+description = "QueryPilot - Text2SQL Chatbot Backend"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
@@ -23,6 +23,10 @@ dependencies = [
     "sqlmodel>=0.0.8",
     "psycopg2-binary>=2.9.6",
     "alembic>=1.11.1",
+    "openpyxl>=3.1.2",
+    "email-validator>=2.0.0",
+    "python-multipart>=0.0.6",
+    "streamlit>=1.28.0",
 ]
 
 [dependency-groups]
@@ -78,6 +82,7 @@ line-ending = "auto"
 select = [
     "W",  # pycodestyle warnings
     "I",  # isort
+    "F401", # Unused imports
     # "E", # https://github.com/charliermarsh/ruff#pycodestylet
     # "F", # https://github.com/charliermarsh/ruff#pyflakes
     # "UP", # https://github.com/charliermarsh/ruff#pyupgrade

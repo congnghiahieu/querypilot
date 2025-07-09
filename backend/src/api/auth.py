@@ -1,4 +1,8 @@
+from datetime import datetime, timedelta
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 from sqlmodel import Session, select
 
@@ -6,45 +10,169 @@ from src.core.db import get_session
 from src.core.security import create_access_token, hash_password, verify_password
 from src.models.user import User
 
-auth_router = APIRouter(prefix="/auth", tags=["Auth"])
+auth_router = APIRouter(prefix="/auth", tags=["Authentication"])
+
+security = HTTPBearer()
 
 
-class LoginRequest(BaseModel):
+class UserCreate(BaseModel):
+    username: str
+    password: str
+    email: str = ""  # Optional
+    full_name: str = ""  # Optional
+
+
+class UserLogin(BaseModel):
     username: str
     password: str
 
 
-class RegisterRequest(BaseModel):
+class UserResponse(BaseModel):
+    id: str
     username: str
-    password: str
+    email: str
+    full_name: str
+    created_at: datetime
+    role: str = "user"
 
 
-@auth_router.post("/register")
-def register(payload: RegisterRequest, session: Session = Depends(get_session)):
-    user = session.exec(select(User).where(User.username == payload.username)).first()
-    if user:
-        raise HTTPException(status_code=400, detail="Username already exists")
-    new_user = User(username=payload.username, hashed_password=hash_password(payload.password))
+@auth_router.post("/register", response_model=UserResponse)
+def register(user: UserCreate, session: Session = Depends(get_session)):
+    """Register new user"""
+    # Check if user already exists
+    existing_user = session.exec(select(User).where(User.username == user.username)).first()
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Username already registered"
+        )
+
+    # Create new user with hashed password
+    hashed_password = hash_password(user.password)
+    new_user = User(
+        username=user.username,
+        hashed_password=hashed_password,
+        email=user.email,
+        full_name=user.full_name,
+        role="user",
+        is_active=True,
+    )
+
     session.add(new_user)
     session.commit()
     session.refresh(new_user)
-    return {"msg": "User registered"}
+
+    return UserResponse(
+        id=str(new_user.id),
+        username=new_user.username,
+        email=new_user.email or "",
+        full_name=new_user.full_name or "",
+        created_at=new_user.created_at,
+        role=new_user.role,
+    )
 
 
 @auth_router.post("/login")
-def login(payload: LoginRequest, session: Session = Depends(get_session)):
-    user = session.exec(select(User).where(User.username == payload.username)).first()
-    if not user or not verify_password(payload.password, user.hashed_password):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-    token = create_access_token({"sub": payload.username})
-    return {"access_token": token, "token_type": "bearer"}
+def login(user: UserLogin, session: Session = Depends(get_session)):
+    """Login user"""
+    # Find user by username
+    db_user = session.exec(select(User).where(User.username == user.username)).first()
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # Verify password using security module
+    if not verify_password(user.password, db_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # Check if user is active
+    if not db_user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="User account is disabled"
+        )
+
+    # Create access token using security module
+    access_token_expires = timedelta(hours=24)  # 24 hours for MVP demo
+    access_token = create_access_token(
+        data={"sub": db_user.username, "user_id": str(db_user.id)},
+        expires_delta=access_token_expires,
+    )
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "expires_in": access_token_expires.total_seconds(),
+        "user": UserResponse(
+            id=str(db_user.id),
+            username=db_user.username,
+            email=db_user.email or "",
+            full_name=db_user.full_name or "",
+            created_at=db_user.created_at,
+            role=db_user.role,
+        ),
+    }
 
 
 @auth_router.post("/logout")
 def logout():
-    return {"msg": "Stateless logout – client must delete token"}
+    """Logout user (client-side token removal)"""
+    return {"message": "Successfully logged out. Please remove token from client."}
 
 
-@auth_router.get("/me")
-def get_me():
-    return {"msg": "user info"}
+def get_current_user(
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    session: Session = Depends(get_session),
+) -> User:
+    """Get current user from JWT token"""
+    from jose import JWTError
+
+    from src.core.security import decode_access_token
+
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+    try:
+        # Extract token from Authorization header
+        token_str = (
+            credentials.credentials if hasattr(credentials, "credentials") else str(credentials)
+        )
+        payload = decode_access_token(token_str)
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+
+    # Get user from database
+    user = session.exec(select(User).where(User.username == username)).first()
+    if user is None:
+        raise credentials_exception
+
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="User account is disabled"
+        )
+
+    return user
+
+
+@auth_router.get("/me", response_model=UserResponse)
+def get_current_user_info(current_user: User = Depends(get_current_user)):
+    """Get current user info"""
+    return UserResponse(
+        id=str(current_user.id),
+        username=current_user.username,
+        email=current_user.email or "",
+        full_name=current_user.full_name or "",
+        created_at=current_user.created_at,
+        role=current_user.role,
+    )

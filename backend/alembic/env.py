@@ -5,7 +5,6 @@ from sqlmodel import SQLModel
 
 from alembic import context
 from src.core.settings import APP_SETTINGS
-from src.models.user import User  # Import your models here
 
 config = context.config
 config.set_main_option("sqlalchemy.url", APP_SETTINGS.DATABASE_URL)
