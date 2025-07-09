@@ -1,12 +1,27 @@
-version: "3"
+version: "3.8"
 
 services:
-  app:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: querypilot
+      POSTGRES_PASSWORD: querypilot
+      POSTGRES_DB: querypilot
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  backend:
     build:
       context: .
       dockerfile: Dockerfile
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8080
+    environment:
+      DATABASE_URL: postgresql+psycopg2://querypilot:querypilot@db:5432/querypilot
+    depends_on:
+      - db
     ports:
       - "8080:8080"
-    env_file:
-      - .env
-    command: uvicorn main:app --reload --host 0.0.0.0 --port 8080
+
+volumes:
+  pgdata:

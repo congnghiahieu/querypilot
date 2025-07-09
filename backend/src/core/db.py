@@ -1,21 +1,11 @@
-import sqlite3
+from sqlalchemy.engine import Engine
+from sqlmodel import Session, SQLModel, create_engine
 
-from src.core.settings import DB_PATH
+from src.core.settings import APP_SETTINGS
 
-
-def init_db():
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            hashed_password TEXT NOT NULL
-        );
-    """)
-    conn.commit()
-    conn.close()
+engine: Engine = create_engine(APP_SETTINGS.DATABASE_URL, echo=True)
 
 
-def get_db_conn():
-    return sqlite3.connect(DB_PATH, check_same_thread=False)
+def get_session():
+    with Session(engine) as session:
+        yield session

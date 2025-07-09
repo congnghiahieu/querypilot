@@ -15,6 +15,7 @@ class AppSettings(BaseSettings):
     DEEPSEEK_API_KEY: str
     SECRET_KEY: str
     CLIENT_URL: str = "http://localhost:3000"
+    DATABASE_URL: str = "postgresql+psycopg2://querypilot:querypilot@localhost:5432/querypilot"
 
     model_config = {
         "env_file": ".env",
