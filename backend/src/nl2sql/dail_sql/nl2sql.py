@@ -1,7 +1,5 @@
-import os
-
-from src.nl2sql.nl2sql.llm.chatgpt import ask_deepseek
-from src.nl2sql.nl2sql.utils.post_process import process_duplication
+from src.nl2sql.dail_sql.utils.post_process import process_duplication
+from src.nl2sql.llm import ask_deepseek
 
 db_id = "financial"
 
@@ -61,8 +59,7 @@ def convert_nl2sql(question: str, data, prompt, task_tracker=None) -> str:
         cross_domain=False,
     )
 
-    api_key = os.getenv("DEEPSEEK_API_KEY")
-    res = ask_deepseek(api_key, question_format["prompt"], 0.0)
+    res = ask_deepseek(question_format["prompt"], 0.0)
     sql = res["response"]
     sql = " ".join(sql.replace("\n", " ").split())
     sql = process_duplication(sql)

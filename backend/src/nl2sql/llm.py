@@ -1,10 +1,9 @@
 import time
 
-from openai import OpenAI
+from src.core.settings import LLM_CLIENT
 
 
-def ask_deepseek(api_key, prompt, temperature):
-    client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
+def ask_deepseek(prompt: str, temperature: float):
     trial = 5
     system_prompt = """You are an expert SQL developer specializing in SQLite. Your task is to convert natural language questions into valid SQLite SQL queries.
 
@@ -26,7 +25,7 @@ IMPORTANT RESTRICTIONS:
 
     while trial > 0:
         try:
-            response = client.chat.completions.create(
+            response = LLM_CLIENT.chat.completions.create(
                 model="deepseek-chat",
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=1000,

@@ -3,8 +3,8 @@ import random
 
 import numpy as np
 
-from src.nl2sql.nl2sql.utils.linking_utils.application import mask_question_with_schema_linking
-from src.nl2sql.nl2sql.utils.utils import jaccard_similarity
+from src.nl2sql.dail_sql.utils.linking_utils.application import mask_question_with_schema_linking
+from src.nl2sql.dail_sql.utils.utils import jaccard_similarity
 
 
 class BasicExampleSelector:

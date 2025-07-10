@@ -1,8 +1,8 @@
-from src.nl2sql.nl2sql.prompt.ExampleFormatTemplate import *
-from src.nl2sql.nl2sql.prompt.ExampleSelectorTemplate import *
-from src.nl2sql.nl2sql.prompt.PromptICLTemplate import BasicICLPrompt
-from src.nl2sql.nl2sql.prompt.PromptReprTemplate import *
-from src.nl2sql.nl2sql.utils.enums import EXAMPLE_TYPE, REPR_TYPE, SELECTOR_TYPE
+from src.nl2sql.dail_sql.prompt.ExampleFormatTemplate import *
+from src.nl2sql.dail_sql.prompt.ExampleSelectorTemplate import *
+from src.nl2sql.dail_sql.prompt.PromptICLTemplate import BasicICLPrompt
+from src.nl2sql.dail_sql.prompt.PromptReprTemplate import *
+from src.nl2sql.dail_sql.utils.enums import EXAMPLE_TYPE, REPR_TYPE, SELECTOR_TYPE
 
 
 def get_repr_cls(repr_type: str):

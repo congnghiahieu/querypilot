@@ -5,7 +5,7 @@ import sqlite3
 
 from sql_metadata import Parser
 
-from src.nl2sql.nl2sql.utils.enums import LLM
+from src.nl2sql.dail_sql.utils.enums import LLM
 
 
 class SqliteTable(dict):
