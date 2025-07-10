@@ -1,35 +1,70 @@
+import json
 import os
 import shutil
-from datetime import datetime
-from typing import List
+from typing import List, Optional
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from pydantic import BaseModel
+from sqlmodel import Session, select
 
 from src.api.auth import get_current_user
+from src.core.db import get_session
 from src.core.settings import ALLOWED_EXTENSIONS, KB_FOLDER, MAX_FILE_SIZE
+from src.models.knowledge_base import KnowledgeBase, KnowledgeBaseInsight
 from src.models.user import User
 
 kb_router = APIRouter(prefix="/kb", tags=["Knowledge Base"])
 
 
 class FileInfo(BaseModel):
+    id: str
     filename: str
+    original_filename: str
     size: int
     upload_date: str
     file_type: str
+    processing_status: str
+    has_insight: bool
+
+
+class KnowledgeBaseInsightResponse(BaseModel):
+    id: str
+    summary: str
+    key_insights: List[str]
+    entities: Optional[List[str]] = None
+    topics: Optional[List[str]] = None
+    processing_time: Optional[float] = None
+    created_at: str
+
+
+# TODO: This will be implemented later - placeholder for document processing
+def process_document_insights(file_path: str, file_type: str) -> dict:
+    """
+    Placeholder for document processing logic.
+    This will implement RAG and LLM processing later.
+    """
+    return {
+        "summary": "This document contains placeholder content. Processing logic will be implemented later.",
+        "key_insights": [
+            "Document successfully uploaded and parsed",
+            "Awaiting implementation of RAG processing",
+            "LLM analysis will be added in future updates",
+        ],
+        "entities": ["placeholder", "document", "analysis"],
+        "topics": ["document processing", "knowledge management"],
+        "processing_time": 1.5,
+    }
 
 
 def validate_file(file: UploadFile) -> None:
     """Validate uploaded file"""
-    # Check file size
     if file.size and file.size > MAX_FILE_SIZE:
         raise HTTPException(
             status_code=413,
             detail=f"File too large. Maximum size is {MAX_FILE_SIZE / (1024 * 1024):.1f}MB",
         )
 
-    # Check file extension
     if file.filename:
         file_ext = os.path.splitext(file.filename)[1].lower()
         if file_ext not in ALLOWED_EXTENSIONS:
@@ -40,9 +75,12 @@ def validate_file(file: UploadFile) -> None:
 
 
 @kb_router.post("/upload")
-def upload_kb(file: UploadFile = File(...), current_user: User = Depends(get_current_user)):
+def upload_kb(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
     """Upload knowledge base file"""
-    # Validate file
     validate_file(file)
 
     if not file.filename:
@@ -52,82 +90,208 @@ def upload_kb(file: UploadFile = File(...), current_user: User = Depends(get_cur
     user_kb_folder = os.path.join(KB_FOLDER, str(current_user.id))
     os.makedirs(user_kb_folder, exist_ok=True)
 
-    # Save file with user prefix to avoid conflicts
-    safe_filename = f"{current_user.id}_{file.filename}"
-    file_path = os.path.join(user_kb_folder, file.filename)
+    # Create knowledge base record
+    kb_record = KnowledgeBase(
+        user_id=current_user.id,
+        original_filename=file.filename,
+        file_type=os.path.splitext(file.filename)[1][1:].lower(),
+        file_size=file.size or 0,
+        processing_status="pending",
+    )
+    session.add(kb_record)
+    session.commit()
+    session.refresh(kb_record)
+
+    # Generate unique filename
+    file_extension = os.path.splitext(file.filename)[1]
+    safe_filename = f"{kb_record.id}{file_extension}"
+    file_path = os.path.join(user_kb_folder, safe_filename)
 
     try:
+        # Save file
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
+        # Update file path and filename
+        kb_record.filename = safe_filename
+        kb_record.file_path = file_path
+        kb_record.processing_status = "processing"
+        session.commit()
+
+        # Process document for insights (placeholder)
+        try:
+            insights_data = process_document_insights(file_path, kb_record.file_type)
+
+            # Create insight record
+            insight = KnowledgeBaseInsight(
+                knowledge_base_id=kb_record.id,
+                summary=insights_data["summary"],
+                key_insights=json.dumps(insights_data["key_insights"]),
+                entities=json.dumps(insights_data.get("entities", [])),
+                topics=json.dumps(insights_data.get("topics", [])),
+                processing_time=insights_data.get("processing_time", 0.0),
+            )
+            session.add(insight)
+
+            # Update processing status
+            kb_record.processing_status = "completed"
+            session.commit()
+
+        except Exception as e:
+            kb_record.processing_status = "failed"
+            session.commit()
+            print(f"Error processing document insights: {e}")
+
         return {
+            "id": str(kb_record.id),
             "message": "File uploaded successfully",
             "filename": file.filename,
             "size": os.path.getsize(file_path),
-            "path": file_path,
+            "processing_status": kb_record.processing_status,
         }
+
     except Exception as e:
+        # Cleanup on error
+        session.delete(kb_record)
+        session.commit()
+        if os.path.exists(file_path):
+            os.remove(file_path)
         raise HTTPException(status_code=500, detail=f"Failed to save file: {str(e)}")
 
 
 @kb_router.get("/list", response_model=List[FileInfo])
-def list_kb(current_user: User = Depends(get_current_user)):
+def list_kb(
+    current_user: User = Depends(get_current_user), session: Session = Depends(get_session)
+):
     """List knowledge base files for current user"""
-    user_kb_folder = os.path.join(KB_FOLDER, str(current_user.id))
-
-    if not os.path.exists(user_kb_folder):
-        return []
+    statement = (
+        select(KnowledgeBase)
+        .where(KnowledgeBase.user_id == current_user.id)
+        .order_by(KnowledgeBase.upload_date.desc())
+    )
+    kb_records = session.exec(statement).all()
 
     files_info = []
-    for filename in os.listdir(user_kb_folder):
-        file_path = os.path.join(user_kb_folder, filename)
-        if os.path.isfile(file_path):
-            stat = os.stat(file_path)
-            files_info.append(
-                FileInfo(
-                    filename=filename,
-                    size=stat.st_size,
-                    upload_date=datetime.fromtimestamp(stat.st_mtime).isoformat(),
-                    file_type=os.path.splitext(filename)[1][1:] or "unknown",
-                )
+    for kb in kb_records:
+        files_info.append(
+            FileInfo(
+                id=str(kb.id),
+                filename=kb.filename,
+                original_filename=kb.original_filename,
+                size=kb.file_size,
+                upload_date=kb.upload_date.isoformat(),
+                file_type=kb.file_type,
+                processing_status=kb.processing_status,
+                has_insight=kb.insight is not None,
             )
+        )
 
     return files_info
 
 
-@kb_router.delete("/{filename}")
-def delete_kb(filename: str, current_user: User = Depends(get_current_user)):
+@kb_router.get("/{kb_id}/insight")
+def get_kb_insight(
+    kb_id: str,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """Get insight for a knowledge base file"""
+    try:
+        kb_uuid = UUID(kb_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid knowledge base ID format")
+
+    statement = (
+        select(KnowledgeBase)
+        .where(KnowledgeBase.id == kb_uuid)
+        .where(KnowledgeBase.user_id == current_user.id)
+    )
+    kb_record = session.exec(statement).first()
+
+    if not kb_record:
+        raise HTTPException(status_code=404, detail="Knowledge base not found")
+
+    if not kb_record.insight:
+        raise HTTPException(status_code=404, detail="Insight not found")
+
+    insight = kb_record.insight
+    return KnowledgeBaseInsightResponse(
+        id=str(insight.id),
+        summary=insight.summary,
+        key_insights=json.loads(insight.key_insights),
+        entities=json.loads(insight.entities) if insight.entities else None,
+        topics=json.loads(insight.topics) if insight.topics else None,
+        processing_time=insight.processing_time,
+        created_at=insight.created_at.isoformat(),
+    )
+
+
+@kb_router.delete("/{kb_id}")
+def delete_kb(
+    kb_id: str,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
     """Delete knowledge base file"""
-    user_kb_folder = os.path.join(KB_FOLDER, str(current_user.id))
-    file_path = os.path.join(user_kb_folder, filename)
+    try:
+        kb_uuid = UUID(kb_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid knowledge base ID format")
 
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="File not found")
+    statement = (
+        select(KnowledgeBase)
+        .where(KnowledgeBase.id == kb_uuid)
+        .where(KnowledgeBase.user_id == current_user.id)
+    )
+    kb_record = session.exec(statement).first()
 
-    # Security check: ensure file belongs to current user
-    if not file_path.startswith(user_kb_folder):
-        raise HTTPException(status_code=403, detail="Access denied")
+    if not kb_record:
+        raise HTTPException(status_code=404, detail="Knowledge base not found")
 
     try:
-        os.remove(file_path)
-        return {"message": "File deleted successfully", "filename": filename}
+        # Delete file
+        if os.path.exists(kb_record.file_path):
+            os.remove(kb_record.file_path)
+
+        # Delete database record (cascade will handle insight)
+        session.delete(kb_record)
+        session.commit()
+
+        return {"message": "Knowledge base deleted successfully"}
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to delete file: {str(e)}")
 
 
-@kb_router.get("/download/{filename}")
-def download_kb(filename: str, current_user: User = Depends(get_current_user)):
+@kb_router.get("/download/{kb_id}")
+def download_kb(
+    kb_id: str,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
     """Download knowledge base file"""
     from fastapi.responses import FileResponse
 
-    user_kb_folder = os.path.join(KB_FOLDER, str(current_user.id))
-    file_path = os.path.join(user_kb_folder, filename)
+    try:
+        kb_uuid = UUID(kb_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid knowledge base ID format")
 
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="File not found")
+    statement = (
+        select(KnowledgeBase)
+        .where(KnowledgeBase.id == kb_uuid)
+        .where(KnowledgeBase.user_id == current_user.id)
+    )
+    kb_record = session.exec(statement).first()
 
-    # Security check: ensure file belongs to current user
-    if not file_path.startswith(user_kb_folder):
-        raise HTTPException(status_code=403, detail="Access denied")
+    if not kb_record:
+        raise HTTPException(status_code=404, detail="Knowledge base not found")
 
-    return FileResponse(path=file_path, filename=filename, media_type="application/octet-stream")
+    if not os.path.exists(kb_record.file_path):
+        raise HTTPException(status_code=404, detail="File not found on disk")
+
+    return FileResponse(
+        path=kb_record.file_path,
+        filename=kb_record.original_filename,
+        media_type="application/octet-stream",
+    )

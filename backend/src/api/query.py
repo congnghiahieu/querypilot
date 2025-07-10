@@ -1,16 +1,17 @@
 from io import BytesIO
+from uuid import UUID
 
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
+from sqlmodel import Session, select
 
 from src.api.auth import get_current_user
+from src.core.db import get_session
+from src.models.chat import ChatDataResult, ChatMessage, ChatSession
 from src.models.user import User
 
 query_router = APIRouter(prefix="/query", tags=["Query"])
-
-# Import chat_data from chat module
-from src.api.chat import chat_data, chat_history
 
 
 @query_router.get("/download/{chat_id}")
@@ -18,17 +19,32 @@ def download_chat_data(
     chat_id: str,
     format: str = Query(..., enum=["csv", "excel", "pdf"]),
     current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
 ):
     """Download chat data in specified format"""
-    if chat_id not in chat_data:
+    try:
+        chat_uuid = UUID(chat_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid chat ID format")
+
+    # Get the latest assistant message with data for this chat
+    statement = (
+        select(ChatMessage)
+        .join(ChatSession)
+        .join(ChatDataResult)
+        .where(ChatSession.id == chat_uuid)
+        .where(ChatSession.user_id == current_user.id)
+        .where(ChatMessage.role == "assistant")
+        .order_by(ChatMessage.created_at.desc())
+    )
+    message = session.exec(statement).first()
+
+    if not message or not message.data_result:
         raise HTTPException(status_code=404, detail="Chat data not found")
 
-    # Check if user owns this chat
-    chat = chat_history.get(chat_id)
-    if chat and chat.get("user_id") != current_user.id:
-        raise HTTPException(status_code=403, detail="Access denied")
-
-    df = chat_data[chat_id]
+    # Load data from database
+    data_result = message.data_result
+    df = pd.read_json(data_result.data_json)
 
     if df.empty:
         raise HTTPException(status_code=400, detail="No data to download")
@@ -58,8 +74,7 @@ def download_chat_data(
         )
 
     elif format == "pdf":
-        # For PDF, we'll create a simple HTML table and convert to PDF
-        # For now, return as CSV with PDF extension (placeholder)
+        # For PDF, create a simple CSV for now (placeholder implementation)
         output = BytesIO()
         df.to_csv(output, index=False)
         output.seek(0)
@@ -90,12 +105,31 @@ def download_sample():
 @query_router.get("/validate")
 def validate_query(sql_query: str):
     """Validate SQL query syntax"""
-    from src.nl2sql.sql_utils import get_sqlite_connection, validate_sql_query
-
+    # TODO: Implement proper SQL validation logic
+    # This is a placeholder implementation
     try:
-        with get_sqlite_connection("./BIRD_dataset/databases/financial/financial.sqlite") as conn:
-            is_valid, message = validate_sql_query(conn, sql_query)
-            return {"is_valid": is_valid, "message": message, "query": sql_query}
+        # Basic validation - check for dangerous keywords
+        dangerous_keywords = ["DROP", "DELETE", "UPDATE", "INSERT", "ALTER", "CREATE"]
+        sql_upper = sql_query.upper()
+
+        for keyword in dangerous_keywords:
+            if keyword in sql_upper:
+                return {
+                    "is_valid": False,
+                    "message": f"Query contains potentially dangerous keyword: {keyword}",
+                    "query": sql_query,
+                }
+
+        # Basic syntax check - must contain SELECT
+        if "SELECT" not in sql_upper:
+            return {
+                "is_valid": False,
+                "message": "Query must contain SELECT statement",
+                "query": sql_query,
+            }
+
+        return {"is_valid": True, "message": "Query appears to be valid", "query": sql_query}
+
     except Exception as e:
         return {
             "is_valid": False,

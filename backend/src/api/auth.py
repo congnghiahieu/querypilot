@@ -1,18 +1,15 @@
 from datetime import datetime, timedelta
-from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 from sqlmodel import Session, select
 
+from src.api.deps import get_current_user
 from src.core.db import get_session
 from src.core.security import create_access_token, hash_password, verify_password
 from src.models.user import User
 
 auth_router = APIRouter(prefix="/auth", tags=["Authentication"])
-
-security = HTTPBearer()
 
 
 class UserCreate(BaseModel):
@@ -83,7 +80,7 @@ def login(user: UserLogin, session: Session = Depends(get_session)):
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    # Verify password using security module
+    # Verify password
     if not verify_password(user.password, db_user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -97,8 +94,8 @@ def login(user: UserLogin, session: Session = Depends(get_session)):
             status_code=status.HTTP_401_UNAUTHORIZED, detail="User account is disabled"
         )
 
-    # Create access token using security module
-    access_token_expires = timedelta(hours=24)  # 24 hours for MVP demo
+    # Create access token
+    access_token_expires = timedelta(hours=24)
     access_token = create_access_token(
         data={"sub": db_user.username, "user_id": str(db_user.id)},
         expires_delta=access_token_expires,
@@ -123,46 +120,6 @@ def login(user: UserLogin, session: Session = Depends(get_session)):
 def logout():
     """Logout user (client-side token removal)"""
     return {"message": "Successfully logged out. Please remove token from client."}
-
-
-def get_current_user(
-    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
-    session: Session = Depends(get_session),
-) -> User:
-    """Get current user from JWT token"""
-    from jose import JWTError
-
-    from src.core.security import decode_access_token
-
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-
-    try:
-        # Extract token from Authorization header
-        token_str = (
-            credentials.credentials if hasattr(credentials, "credentials") else str(credentials)
-        )
-        payload = decode_access_token(token_str)
-        username: str = payload.get("sub")
-        if username is None:
-            raise credentials_exception
-    except JWTError:
-        raise credentials_exception
-
-    # Get user from database
-    user = session.exec(select(User).where(User.username == username)).first()
-    if user is None:
-        raise credentials_exception
-
-    if not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="User account is disabled"
-        )
-
-    return user
 
 
 @auth_router.get("/me", response_model=UserResponse)

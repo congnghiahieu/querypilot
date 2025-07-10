@@ -1,43 +1,18 @@
-from typing import Literal
-from uuid import uuid4
+import json
+from typing import Literal, Optional
+from uuid import UUID
 
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
+from sqlmodel import Session, select
 
 from src.api.auth import get_current_user
+from src.core.db import get_session
+from src.models.chat import ChatDataResult, ChatMessage, ChatSession
 from src.models.user import User
-from src.nl2sql.components.task_tracker import TaskTracker
-from src.nl2sql.nl2sql.nl2sql import convert_nl2sql
-from src.nl2sql.nl2sql.prompt.prompt_builder import prompt_factory
-from src.nl2sql.nl2sql.utils.data_builder import load_data
-from src.nl2sql.nl2sql.utils.enums import EXAMPLE_TYPE, REPR_TYPE, SELECTOR_TYPE
-from src.nl2sql.sql_utils import execute_sql_select, get_sqlite_connection
 
 chat_router = APIRouter(prefix="/chat", tags=["Chat"])
-
-# Global storage for chat history (in production, use database)
-chat_history = {}
-chat_data = {}  # Store actual data for downloads
-
-# Initialize nl2sql components
-PATH_DATA = "BIRD_dataset/"
-DATABASE_PATH = "./BIRD_dataset/databases/financial/financial.sqlite"
-data_instance = None
-prompt_instance = None
-
-
-def initialize_nl2sql():
-    """Initialize the nl2sql components"""
-    global data_instance, prompt_instance
-    if data_instance is None:
-        data_instance = load_data("bird", PATH_DATA, None)
-        prompt_instance = prompt_factory(
-            REPR_TYPE.CODE_REPRESENTATION,
-            7,
-            EXAMPLE_TYPE.QA,
-            SELECTOR_TYPE.EUC_DISTANCE_QUESTION_MASK,
-        )(data=data_instance, tokenizer="None")
 
 
 class ChatRequest(BaseModel):
@@ -52,186 +27,320 @@ class ChatResponse(BaseModel):
     rows_count: int = 0
 
 
-def text2sql_pipeline(prompt: str) -> ChatResponse:
+class ChatSessionResponse(BaseModel):
+    id: str
+    title: str
+    created_at: str
+    updated_at: str
+    message_count: int
+
+
+class ChatMessageResponse(BaseModel):
+    id: str
+    role: str
+    content: str
+    sql_query: Optional[str] = None
+    response_type: Optional[str] = None
+    execution_time: Optional[float] = None
+    rows_count: Optional[int] = None
+    created_at: str
+
+
+# TODO: This will be implemented later - placeholder for nl2sql domain logic
+def process_nl2sql_message(message: str) -> ChatResponse:
     """
-    Enhanced text2sql pipeline using the existing nl2sql components
+    Placeholder for nl2sql processing logic.
+    This will be implemented with proper domain separation later.
     """
-    initialize_nl2sql()
-
-    # Create task tracker for performance monitoring
-    task_tracker = TaskTracker()
-    task_id = task_tracker.start_task(prompt)
-
-    try:
-        # Stage 1: Convert natural language to SQL
-        sql_query = convert_nl2sql(prompt, data_instance, prompt_instance, task_tracker)
-
-        # Stage 2: Execute SQL query
-        with get_sqlite_connection(DATABASE_PATH) as conn:
-            # Add limit to prevent large result sets
-            if "LIMIT" not in sql_query.upper():
-                sql_query = f"{sql_query} LIMIT 1000"
-
-            result_df = execute_sql_select(conn, sql_query, task_tracker)
-
-            # Get task summary for performance metrics
-            task_summary = task_tracker.get_task_summary()
-
-            # Determine response type based on query and results
-            response_type = determine_response_type(sql_query, result_df)
-
-            # Format content based on type
-            if response_type == "table":
-                content = result_df.to_json(orient="records", indent=2)
-            elif response_type == "chart":
-                # For chart, we still return the data but mark it as chart type
-                content = result_df.to_json(orient="records", indent=2)
-            else:
-                # Text response with summary
-                content = f"Query executed successfully. Found {len(result_df)} rows."
-                if len(result_df) > 0:
-                    content += f"\n\nSample data:\n{result_df.head().to_string()}"
-
-            return ChatResponse(
-                type=response_type,
-                content=content,
-                sql_query=sql_query,
-                execution_time=task_summary.get("total_duration_s", 0),
-                rows_count=len(result_df),
-            )
-
-    except Exception as e:
-        task_tracker.record_error(str(e))
-        return ChatResponse(
-            type="text",
-            content=f"Error processing query: {str(e)}",
-            sql_query=sql_query if "sql_query" in locals() else "",
-            execution_time=0.0,
-            rows_count=0,
-        )
-
-
-def determine_response_type(sql_query: str, result_df: pd.DataFrame) -> str:
-    """
-    Determine the appropriate response type based on query and results
-    """
-    sql_lower = sql_query.lower()
-
-    # Check for chart indicators
-    if any(keyword in sql_lower for keyword in ["sum", "count", "avg", "max", "min", "group by"]):
-        if len(result_df.columns) >= 2 and len(result_df) > 1:
-            return "chart"
-
-    # Check for table indicators
-    if "select *" in sql_lower or len(result_df.columns) > 3:
-        return "table"
-
-    # Default to text for simple queries
-    return "text"
+    return ChatResponse(
+        type="text",
+        content="This is a placeholder response. NL2SQL logic will be implemented later.",
+        sql_query="",
+        execution_time=0.0,
+        rows_count=0,
+    )
 
 
 @chat_router.post("/message")
-def send_message(payload: ChatRequest, current_user: User = Depends(get_current_user)):
+def send_message(
+    payload: ChatRequest,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
     """Send a message and get response from text2sql pipeline"""
-    chat_id = str(uuid4())
 
-    # Process the message through text2sql pipeline
-    result = text2sql_pipeline(payload.message)
+    # Create new chat session if this is a new conversation
+    chat_session = ChatSession(
+        user_id=current_user.id,
+        title=payload.message[:50] + "..." if len(payload.message) > 50 else payload.message,
+    )
+    session.add(chat_session)
+    session.commit()
+    session.refresh(chat_session)
 
-    # Store chat history with user association
-    chat_history[chat_id] = {
-        "user_id": current_user.id,
-        "username": current_user.username,
-        "question": payload.message,
-        "response": result.dict(),
-        "timestamp": pd.Timestamp.now().isoformat(),
-    }
+    # Add user message
+    user_message = ChatMessage(
+        chat_session_id=chat_session.id, role="user", content=payload.message
+    )
+    session.add(user_message)
 
-    # Store data for potential download
-    if result.content and result.type in ["table", "chart"]:
+    # Process message through nl2sql pipeline (placeholder)
+    result = process_nl2sql_message(payload.message)
+
+    # Add assistant message
+    assistant_message = ChatMessage(
+        chat_session_id=chat_session.id,
+        role="assistant",
+        content=result.content,
+        sql_query=result.sql_query if result.sql_query else None,
+        response_type=result.type,
+        execution_time=result.execution_time,
+        rows_count=result.rows_count,
+    )
+    session.add(assistant_message)
+    session.commit()
+    session.refresh(assistant_message)
+
+    # Store data if it's table or chart type
+    if result.type in ["table", "chart"] and result.content:
         try:
-            chat_data[chat_id] = pd.read_json(result.content)
-        except:
-            chat_data[chat_id] = pd.DataFrame()
+            # Parse JSON data for storage
+            data_df = pd.read_json(result.content)
+            data_result = ChatDataResult(
+                message_id=assistant_message.id,
+                data_json=result.content,
+                columns=json.dumps(data_df.columns.tolist()),
+                shape_rows=len(data_df),
+                shape_cols=len(data_df.columns),
+            )
+            session.add(data_result)
+            session.commit()
+        except Exception as e:
+            # Log error but don't fail the request
+            print(f"Error storing data result: {e}")
 
-    return {"chat_id": chat_id, **chat_history[chat_id]}
+    return {
+        "chat_id": str(chat_session.id),
+        "message_id": str(assistant_message.id),
+        "response": result.dict(),
+    }
 
 
 @chat_router.get("/history")
-def get_chat_history(current_user: User = Depends(get_current_user)):
+def get_chat_history(
+    current_user: User = Depends(get_current_user), session: Session = Depends(get_session)
+):
     """Get chat history for current user"""
-    user_chats = [chat for chat in chat_history.values() if chat.get("user_id") == current_user.id]
-    return user_chats
+    statement = (
+        select(ChatSession)
+        .where(ChatSession.user_id == current_user.id)
+        .where(ChatSession.is_active == True)
+        .order_by(ChatSession.updated_at.desc())
+    )
+    chat_sessions = session.exec(statement).all()
+
+    result = []
+    for chat_session in chat_sessions:
+        # Count messages
+        message_count = len(chat_session.messages)
+
+        result.append(
+            ChatSessionResponse(
+                id=str(chat_session.id),
+                title=chat_session.title,
+                created_at=chat_session.created_at.isoformat(),
+                updated_at=chat_session.updated_at.isoformat(),
+                message_count=message_count,
+            )
+        )
+
+    return result
 
 
-@chat_router.get("/history/{id}")
-def get_chat_by_id(id: str, current_user: User = Depends(get_current_user)):
+@chat_router.get("/history/{chat_id}")
+def get_chat_by_id(
+    chat_id: str,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
     """Get specific chat by ID for current user"""
-    chat = chat_history.get(id, {})
-    if chat and chat.get("user_id") != current_user.id:
-        raise HTTPException(status_code=403, detail="Access denied")
-    return chat
+    try:
+        chat_uuid = UUID(chat_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid chat ID format")
 
+    statement = (
+        select(ChatSession)
+        .where(ChatSession.id == chat_uuid)
+        .where(ChatSession.user_id == current_user.id)
+    )
+    chat_session = session.exec(statement).first()
 
-@chat_router.delete("/history/{id}")
-def delete_chat_by_id(id: str, current_user: User = Depends(get_current_user)):
-    """Delete specific chat by ID for current user"""
-    chat = chat_history.get(id)
-    if not chat:
+    if not chat_session:
         raise HTTPException(status_code=404, detail="Chat not found")
 
-    if chat.get("user_id") != current_user.id:
-        raise HTTPException(status_code=403, detail="Access denied")
+    # Get messages
+    messages = []
+    for message in chat_session.messages:
+        messages.append(
+            ChatMessageResponse(
+                id=str(message.id),
+                role=message.role,
+                content=message.content,
+                sql_query=message.sql_query,
+                response_type=message.response_type,
+                execution_time=message.execution_time,
+                rows_count=message.rows_count,
+                created_at=message.created_at.isoformat(),
+            )
+        )
 
-    chat_history.pop(id, None)
-    chat_data.pop(id, None)
-    return {"msg": "deleted"}
+    return {
+        "id": str(chat_session.id),
+        "title": chat_session.title,
+        "created_at": chat_session.created_at.isoformat(),
+        "updated_at": chat_session.updated_at.isoformat(),
+        "messages": messages,
+    }
+
+
+@chat_router.delete("/history/{chat_id}")
+def delete_chat_by_id(
+    chat_id: str,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """Delete specific chat by ID for current user"""
+    try:
+        chat_uuid = UUID(chat_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid chat ID format")
+
+    statement = (
+        select(ChatSession)
+        .where(ChatSession.id == chat_uuid)
+        .where(ChatSession.user_id == current_user.id)
+    )
+    chat_session = session.exec(statement).first()
+
+    if not chat_session:
+        raise HTTPException(status_code=404, detail="Chat not found")
+
+    # Soft delete
+    chat_session.is_active = False
+    session.commit()
+
+    return {"message": "Chat deleted successfully"}
 
 
 @chat_router.post("/continue/{chat_id}")
 def continue_chat(
-    chat_id: str, payload: ChatRequest, current_user: User = Depends(get_current_user)
+    chat_id: str,
+    payload: ChatRequest,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
 ):
     """Continue an existing chat conversation"""
-    if chat_id not in chat_history:
+    try:
+        chat_uuid = UUID(chat_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid chat ID format")
+
+    statement = (
+        select(ChatSession)
+        .where(ChatSession.id == chat_uuid)
+        .where(ChatSession.user_id == current_user.id)
+        .where(ChatSession.is_active == True)
+    )
+    chat_session = session.exec(statement).first()
+
+    if not chat_session:
         raise HTTPException(status_code=404, detail="Chat not found")
 
-    chat = chat_history[chat_id]
-    if chat.get("user_id") != current_user.id:
-        raise HTTPException(status_code=403, detail="Access denied")
+    # Add user message
+    user_message = ChatMessage(
+        chat_session_id=chat_session.id, role="user", content=payload.message
+    )
+    session.add(user_message)
 
-    # Process the new message
-    result = text2sql_pipeline(payload.message)
+    # Process message through nl2sql pipeline (placeholder)
+    result = process_nl2sql_message(payload.message)
 
-    # Update chat history
-    chat_history[chat_id]["response"] = result.dict()
-    chat_history[chat_id]["question"] = payload.message
-    chat_history[chat_id]["timestamp"] = pd.Timestamp.now().isoformat()
+    # Add assistant message
+    assistant_message = ChatMessage(
+        chat_session_id=chat_session.id,
+        role="assistant",
+        content=result.content,
+        sql_query=result.sql_query if result.sql_query else None,
+        response_type=result.type,
+        execution_time=result.execution_time,
+        rows_count=result.rows_count,
+    )
+    session.add(assistant_message)
 
-    # Update data for download
-    if result.content and result.type in ["table", "chart"]:
+    # Update chat session timestamp
+    from datetime import datetime
+
+    chat_session.updated_at = datetime.utcnow()
+
+    session.commit()
+    session.refresh(assistant_message)
+
+    # Store data if needed
+    if result.type in ["table", "chart"] and result.content:
         try:
-            chat_data[chat_id] = pd.read_json(result.content)
-        except:
-            chat_data[chat_id] = pd.DataFrame()
+            data_df = pd.read_json(result.content)
+            data_result = ChatDataResult(
+                message_id=assistant_message.id,
+                data_json=result.content,
+                columns=json.dumps(data_df.columns.tolist()),
+                shape_rows=len(data_df),
+                shape_cols=len(data_df.columns),
+            )
+            session.add(data_result)
+            session.commit()
+        except Exception as e:
+            print(f"Error storing data result: {e}")
 
-    return {"chat_id": chat_id, **chat_history[chat_id]}
+    return {
+        "chat_id": str(chat_session.id),
+        "message_id": str(assistant_message.id),
+        "response": result.dict(),
+    }
 
 
 @chat_router.get("/data/{chat_id}")
-def get_chat_data(chat_id: str, current_user: User = Depends(get_current_user)):
+def get_chat_data(
+    chat_id: str,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
     """Get the data associated with a chat for download purposes"""
-    if chat_id not in chat_data:
+    try:
+        chat_uuid = UUID(chat_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid chat ID format")
+
+    # Get the latest assistant message with data
+    statement = (
+        select(ChatMessage)
+        .join(ChatSession)
+        .join(ChatDataResult)
+        .where(ChatSession.id == chat_uuid)
+        .where(ChatSession.user_id == current_user.id)
+        .where(ChatMessage.role == "assistant")
+        .order_by(ChatMessage.created_at.desc())
+    )
+    message = session.exec(statement).first()
+
+    if not message or not message.data_result:
         raise HTTPException(status_code=404, detail="Chat data not found")
 
-    chat = chat_history.get(chat_id)
-    if chat and chat.get("user_id") != current_user.id:
-        raise HTTPException(status_code=403, detail="Access denied")
+    data_result = message.data_result
 
-    df = chat_data[chat_id]
     return {
         "chat_id": chat_id,
-        "data": df.to_dict(orient="records"),
-        "columns": df.columns.tolist(),
-        "shape": df.shape,
+        "data": json.loads(data_result.data_json),
+        "columns": json.loads(data_result.columns),
+        "shape": [data_result.shape_rows, data_result.shape_cols],
     }
