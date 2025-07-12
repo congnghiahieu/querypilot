@@ -15,8 +15,8 @@ auth_router = APIRouter(prefix="/auth", tags=["Authentication"])
 class UserCreate(BaseModel):
     username: str
     password: str
-    email: str = ""  # Optional
-    full_name: str = ""  # Optional
+    email: str = ""
+    full_name: str = ""
 
 
 class UserLogin(BaseModel):

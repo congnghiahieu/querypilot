@@ -6,13 +6,14 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from pydantic import BaseModel
-from sqlmodel import Session, select
+from sqlmodel import Session, desc, select
 
 from src.api.auth import get_current_user
 from src.core.db import get_session
 from src.core.settings import ALLOWED_EXTENSIONS, KB_FOLDER, MAX_FILE_SIZE
 from src.models.knowledge_base import KnowledgeBase, KnowledgeBaseInsight
 from src.models.user import User
+from src.nl2sql.rag import rag_service
 
 kb_router = APIRouter(prefix="/kb", tags=["Knowledge Base"])
 
@@ -38,23 +39,21 @@ class KnowledgeBaseInsightResponse(BaseModel):
     created_at: str
 
 
-# TODO: This will be implemented later - placeholder for document processing
-def process_document_insights(file_path: str, file_type: str) -> dict:
+class TextUploadRequest(BaseModel):
+    text: str
+    title: str = "Text Input"
+
+
+def process_document_insights(
+    file_path: str, file_type: str, kb_id: str, filename: str, user_id: UUID
+) -> dict:
     """
-    Placeholder for document processing logic.
-    This will implement RAG and LLM processing later.
+    Process document using RAG service to extract insights
     """
-    return {
-        "summary": "This document contains placeholder content. Processing logic will be implemented later.",
-        "key_insights": [
-            "Document successfully uploaded and parsed",
-            "Awaiting implementation of RAG processing",
-            "LLM analysis will be added in future updates",
-        ],
-        "entities": ["placeholder", "document", "analysis"],
-        "topics": ["document processing", "knowledge management"],
-        "processing_time": 1.5,
-    }
+    try:
+        return rag_service.process_document(file_path, file_type, kb_id, filename, user_id)
+    except Exception as e:
+        raise Exception(f"Error processing document: {str(e)}")
 
 
 def validate_file(file: UploadFile) -> None:
@@ -90,10 +89,15 @@ def upload_kb(
     user_kb_folder = os.path.join(KB_FOLDER, str(current_user.id))
     os.makedirs(user_kb_folder, exist_ok=True)
 
-    # Create knowledge base record
+    # Generate unique filename first
+    file_extension = os.path.splitext(file.filename)[1]
+
+    # Create knowledge base record with proper filename and file_path
     kb_record = KnowledgeBase(
         user_id=current_user.id,
+        filename="",  # Will be updated after generating unique name
         original_filename=file.filename,
+        file_path="",  # Will be updated after generating path
         file_type=os.path.splitext(file.filename)[1][1:].lower(),
         file_size=file.size or 0,
         processing_status="pending",
@@ -102,8 +106,7 @@ def upload_kb(
     session.commit()
     session.refresh(kb_record)
 
-    # Generate unique filename
-    file_extension = os.path.splitext(file.filename)[1]
+    # Now generate unique filename using the ID
     safe_filename = f"{kb_record.id}{file_extension}"
     file_path = os.path.join(user_kb_folder, safe_filename)
 
@@ -118,9 +121,15 @@ def upload_kb(
         kb_record.processing_status = "processing"
         session.commit()
 
-        # Process document for insights (placeholder)
+        # Process document for insights using RAG
         try:
-            insights_data = process_document_insights(file_path, kb_record.file_type)
+            insights_data = process_document_insights(
+                file_path,
+                kb_record.file_type,
+                str(kb_record.id),
+                kb_record.original_filename,
+                current_user.id,
+            )
 
             # Create insight record
             insight = KnowledgeBaseInsight(
@@ -129,6 +138,7 @@ def upload_kb(
                 key_insights=json.dumps(insights_data["key_insights"]),
                 entities=json.dumps(insights_data.get("entities", [])),
                 topics=json.dumps(insights_data.get("topics", [])),
+                processed_content=insights_data.get("processed_content", ""),
                 processing_time=insights_data.get("processing_time", 0.0),
             )
             session.add(insight)
@@ -141,13 +151,15 @@ def upload_kb(
             kb_record.processing_status = "failed"
             session.commit()
             print(f"Error processing document insights: {e}")
+            raise HTTPException(status_code=500, detail=f"Failed to process document: {str(e)}")
 
         return {
             "id": str(kb_record.id),
-            "message": "File uploaded successfully",
+            "message": "File uploaded and processed successfully",
             "filename": file.filename,
             "size": os.path.getsize(file_path),
             "processing_status": kb_record.processing_status,
+            "chunks_count": insights_data.get("chunks_count", 0),
         }
 
     except Exception as e:
@@ -159,6 +171,67 @@ def upload_kb(
         raise HTTPException(status_code=500, detail=f"Failed to save file: {str(e)}")
 
 
+@kb_router.post("/upload-text")
+def upload_text_kb(
+    payload: TextUploadRequest,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """Upload text as knowledge base"""
+    if not payload.text.strip():
+        raise HTTPException(status_code=400, detail="Text content cannot be empty")
+
+    # Create knowledge base record for text
+    kb_record = KnowledgeBase(
+        user_id=current_user.id,
+        filename=payload.title,
+        original_filename=payload.title,
+        file_path="",  # No file path for text
+        file_type="text",
+        file_size=len(payload.text.encode("utf-8")),
+        processing_status="processing",
+    )
+    session.add(kb_record)
+    session.commit()
+    session.refresh(kb_record)
+
+    try:
+        # Process text using RAG
+        insights_data = rag_service.process_text(payload.text, str(kb_record.id), current_user.id)
+
+        # Create insight record
+        insight = KnowledgeBaseInsight(
+            knowledge_base_id=kb_record.id,
+            summary=insights_data["summary"],
+            key_insights=json.dumps(insights_data["key_insights"]),
+            entities=json.dumps(insights_data.get("entities", [])),
+            topics=json.dumps(insights_data.get("topics", [])),
+            processed_content=insights_data.get("processed_content", ""),
+            processing_time=insights_data.get("processing_time", 0.0),
+        )
+        session.add(insight)
+
+        # Update processing status
+        kb_record.processing_status = "completed"
+        session.commit()
+
+        return {
+            "id": str(kb_record.id),
+            "message": "Text uploaded and processed successfully",
+            "title": payload.title,
+            "size": len(payload.text.encode("utf-8")),
+            "processing_status": kb_record.processing_status,
+            "chunks_count": insights_data.get("chunks_count", 0),
+        }
+
+    except Exception as e:
+        # Cleanup on error
+        session.delete(kb_record)
+        session.commit()
+        print(f"Error processing text: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to process text: {str(e)}")
+
+
 @kb_router.get("/list", response_model=List[FileInfo])
 def list_kb(
     current_user: User = Depends(get_current_user), session: Session = Depends(get_session)
@@ -167,7 +240,7 @@ def list_kb(
     statement = (
         select(KnowledgeBase)
         .where(KnowledgeBase.user_id == current_user.id)
-        .order_by(KnowledgeBase.upload_date.desc())
+        .order_by(desc(KnowledgeBase.upload_date))
     )
     kb_records = session.exec(statement).all()
 
@@ -249,8 +322,11 @@ def delete_kb(
         raise HTTPException(status_code=404, detail="Knowledge base not found")
 
     try:
-        # Delete file
-        if os.path.exists(kb_record.file_path):
+        # Remove from vector store
+        rag_service.remove_knowledge_base(str(kb_record.id), current_user.id)
+
+        # Delete file if it exists
+        if kb_record.file_path and os.path.exists(kb_record.file_path):
             os.remove(kb_record.file_path)
 
         # Delete database record (cascade will handle insight)

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import Optional
+from uuid import UUID, uuid4
 
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -10,7 +11,9 @@ from src.models.knowledge_base import KnowledgeBase
 
 
 class User(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    __tablename__ = "users"
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
     username: str = Field(unique=True, index=True)  # Primary authentication field
     hashed_password: str  # For authentication
 
@@ -30,8 +33,10 @@ class User(SQLModel, table=True):
 
 
 class UserSettings(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    user_id: int = Field(foreign_key="user.id")
+    __tablename__ = "user_settings"
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    user_id: UUID = Field(foreign_key="users.id")
     vai_tro: str = Field(default="Nhân viên")
     chi_nhanh: str = Field(default="Hà Nội")
     pham_vi: str = Field(default="Cá nhân")

@@ -1,3 +1,12 @@
+- Cài đặt hoàn thiện phần RAG cho tính năng upload knowledge base và trả lời câu hỏi dựa trên knowledge_base từ vector store:
+1. Khi người dùng upload knowledge base, bao gồm 3 định dạng PDF, CSV, EXCEL, hoặc là 1 đoạn text thì tôi muốn cài đặt RAG để xử lý 4 loại dữ liệu này. Với 3 loại file thì chunking để implement RAG
+3. Ngoài chunking thì tôi muốn từ dữ liệu của file hoặc dữ liệu text đã được chunking, tôi muốn call đến LLM để biết được insight hữu ích suy luận được từ tài liệu là gì
+4. Để gọi đến LLM hãy xem file settings.py, tôi là LLM_CLIENT, LLM_* để bạn sử dụng. Chú ý tôi sử dụng Deepseek LLM
+5. Sau khi tiền xử lý tài liệu thì tôi muốn lưu vào database 2 thông tin, 1 là thông tin về knowledge base (file hoặc text), 2 là insight của tài liệu đó. Hãy sử dụng file knowledge_base.py gồm 2 class KnowledgeBase và KnowledgeBaseInsight
+6. Tôi đã có cài đặt phần RAG trong file rag.py
+7. Hàm `process_document_insights` trong `kb.py` thãy thay thế bằng logic rag thật
+7. Phần chức năng trả lời câu hỏi dựa trên RAG, hiện tại hàm `process_nl2sql_message` đang để placehodler. Hãy cài đặt thêm cho hàm này tính năng RAG với vector store từ knowledge base để thêm context. Còn phần giải pháp nl2sql thực sự thì vẫn để nguyên tôi sẽ cài đặt sau
+
 # QueryPilot
 
 ## Dowload dataset

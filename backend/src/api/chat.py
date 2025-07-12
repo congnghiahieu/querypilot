@@ -5,12 +5,13 @@ from uuid import UUID
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from sqlmodel import Session, select
+from sqlmodel import Session, desc, select
 
 from src.api.auth import get_current_user
 from src.core.db import get_session
 from src.models.chat import ChatDataResult, ChatMessage, ChatSession
 from src.models.user import User
+from src.nl2sql.rag import rag_service
 
 chat_router = APIRouter(prefix="/chat", tags=["Chat"])
 
@@ -46,19 +47,60 @@ class ChatMessageResponse(BaseModel):
     created_at: str
 
 
-# TODO: This will be implemented later - placeholder for nl2sql domain logic
-def process_nl2sql_message(message: str) -> ChatResponse:
+def process_nl2sql_message(message: str, user_id: UUID) -> ChatResponse:
     """
-    Placeholder for nl2sql processing logic.
-    This will be implemented with proper domain separation later.
+    Process nl2sql message with RAG context from knowledge base.
+    This integrates RAG functionality while keeping nl2sql logic for future implementation.
     """
-    return ChatResponse(
-        type="text",
-        content="This is a placeholder response. NL2SQL logic will be implemented later.",
-        sql_query="",
-        execution_time=0.0,
-        rows_count=0,
-    )
+    try:
+        # Get relevant context from knowledge base using RAG
+        context = rag_service.get_context_for_query(message, user_id)
+
+        # Build enhanced message with context
+        enhanced_message = message
+        if context:
+            enhanced_message = f"""
+Context from knowledge base:
+{context}
+
+User question: {message}
+
+Please provide a helpful response based on the context above and the user's question.
+"""
+
+        # For now, return a text response with context
+        # TODO: Implement actual nl2sql logic here
+        if context:
+            response_content = f"""Based on your knowledge base, here's what I found relevant to your question:
+
+{context}
+
+This context has been retrieved from your uploaded documents. The actual NL2SQL functionality will be implemented next to provide structured queries and data analysis.
+
+Your question: {message}"""
+        else:
+            response_content = f"""I couldn't find relevant information in your knowledge base for this query: "{message}"
+
+Please make sure you have uploaded relevant documents to your knowledge base, or try rephrasing your question.
+
+The actual NL2SQL functionality will be implemented next to provide structured queries and data analysis."""
+
+        return ChatResponse(
+            type="text",
+            content=response_content,
+            sql_query="",
+            execution_time=0.0,
+            rows_count=0,
+        )
+
+    except Exception as e:
+        return ChatResponse(
+            type="text",
+            content=f"Error processing your message: {str(e)}. Please try again.",
+            sql_query="",
+            execution_time=0.0,
+            rows_count=0,
+        )
 
 
 @chat_router.post("/message")
@@ -84,8 +126,8 @@ def send_message(
     )
     session.add(user_message)
 
-    # Process message through nl2sql pipeline (placeholder)
-    result = process_nl2sql_message(payload.message)
+    # Process message through nl2sql pipeline with RAG
+    result = process_nl2sql_message(payload.message, current_user.id)
 
     # Add assistant message
     assistant_message = ChatMessage(
@@ -135,7 +177,7 @@ def get_chat_history(
         select(ChatSession)
         .where(ChatSession.user_id == current_user.id)
         .where(ChatSession.is_active == True)
-        .order_by(ChatSession.updated_at.desc())
+        .order_by(desc(ChatSession.updated_at))
     )
     chat_sessions = session.exec(statement).all()
 
@@ -263,8 +305,8 @@ def continue_chat(
     )
     session.add(user_message)
 
-    # Process message through nl2sql pipeline (placeholder)
-    result = process_nl2sql_message(payload.message)
+    # Process message through nl2sql pipeline with RAG
+    result = process_nl2sql_message(payload.message, current_user.id)
 
     # Add assistant message
     assistant_message = ChatMessage(
@@ -329,7 +371,7 @@ def get_chat_data(
         .where(ChatSession.id == chat_uuid)
         .where(ChatSession.user_id == current_user.id)
         .where(ChatMessage.role == "assistant")
-        .order_by(ChatMessage.created_at.desc())
+        .order_by(desc(ChatMessage.created_at))
     )
     message = session.exec(statement).first()
 
