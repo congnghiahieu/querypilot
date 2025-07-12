@@ -28,7 +28,16 @@ class AppSettings(BaseSettings):
     DEEPSEEK_API_KEY: str
     SECRET_KEY: str
     CLIENT_URL: str = "http://localhost:3000"
+
+    # Local Database Configuration
     DATABASE_URL: str = "postgresql+psycopg2://querypilot:querypilot@localhost:5432/querypilot"
+
+    # AWS RDS Configuration
+    AWS_RDS_HOST: str = ""
+    AWS_RDS_PORT: int = 5432
+    AWS_RDS_DB_NAME: str = ""
+    AWS_RDS_USERNAME: str = ""
+    AWS_RDS_PASSWORD: str = ""
 
     # AWS S3 Configuration
     AWS_ACCESS_KEY_ID: str = ""
@@ -36,6 +45,12 @@ class AppSettings(BaseSettings):
     AWS_REGION: str = "us-east-1"
     AWS_S3_BUCKET_NAME: str = ""
     AWS_S3_BUCKET_URL: str = ""  # Optional: Custom S3 URL
+
+    @property
+    def get_database_url(self) -> str:
+        if self.is_aws:
+            return f"postgresql+psycopg2://{self.AWS_RDS_USERNAME}:{self.AWS_RDS_PASSWORD}@{self.AWS_RDS_HOST}:{self.AWS_RDS_PORT}/{self.AWS_RDS_DB_NAME}"
+        return self.DATABASE_URL
 
     model_config = {
         "env_file": ".env",
