@@ -28,11 +28,19 @@ uv sync # dowload all dependencies listed in pyproject.toml, equals to `pip inst
 ```bash
 # .env
 
-ENV=dev # dev | prod
+ENV=local # local | aws
+STAGE=dev # dev | prod
 DEEPSEEK_API_KEY=<real_api_key>
 SECRET_KEY=<real_secret_string>
 CLIENT_URL=http://localhost:3000 # Frontend address for CORS settings
 DATABASE_URL=postgresql+psycopg2://querypilot:querypilot@localhost:5432/querypilot # Recommend run postgreSQL locally using `docker-compose.yml`, run before backend
+
+# AWS S3 Configuration (only required when ENV=aws)
+AWS_ACCESS_KEY_ID=<your_aws_access_key>
+AWS_SECRET_ACCESS_KEY=<your_aws_secret_key>
+AWS_REGION=us-east-1
+AWS_S3_BUCKET_NAME=<your_s3_bucket_name>
+AWS_S3_BUCKET_URL=<optional_custom_s3_url>
 ```
 
 ## Install dependencies

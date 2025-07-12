@@ -14,13 +14,28 @@ class AppSettings(BaseSettings):
         return self.STAGE == "dev"
 
     @property
+    def is_prod(self):
+        return self.STAGE == "prod"
+
+    @property
     def is_local(self):
         return self.ENV == "local"
+
+    @property
+    def is_aws(self):
+        return self.ENV == "aws"
 
     DEEPSEEK_API_KEY: str
     SECRET_KEY: str
     CLIENT_URL: str = "http://localhost:3000"
     DATABASE_URL: str = "postgresql+psycopg2://querypilot:querypilot@localhost:5432/querypilot"
+
+    # AWS S3 Configuration
+    AWS_ACCESS_KEY_ID: str = ""
+    AWS_SECRET_ACCESS_KEY: str = ""
+    AWS_REGION: str = "us-east-1"
+    AWS_S3_BUCKET_NAME: str = ""
+    AWS_S3_BUCKET_URL: str = ""  # Optional: Custom S3 URL
 
     model_config = {
         "env_file": ".env",
