@@ -7,6 +7,8 @@ from sqlmodel import Session, select
 
 from src.api.auth import get_current_user
 from src.core.db import get_session
+from src.core.iam_service import get_iam_service
+from src.core.settings import APP_SETTINGS
 from src.models.user import User, UserSettings
 
 user_router = APIRouter(prefix="/user", tags=["User"])
@@ -119,6 +121,20 @@ def update_settings(
     user_settings.datasource_permissions = json.dumps(settings.datasource_permissions)
 
     session.commit()
+
+    # Update IAM permissions if in AWS environment
+    if APP_SETTINGS.is_aws:
+        iam_service = get_iam_service()
+        if iam_service and hasattr(current_user, "cognito_user_id"):
+            iam_result = iam_service.update_user_role_permissions(
+                user_id=current_user.cognito_user_id,
+                username=current_user.username,
+                new_permissions=settings.datasource_permissions,
+            )
+
+            if not iam_result["success"]:
+                print(f"Warning: Could not update IAM permissions: {iam_result['error']}")
+
     return {"message": "Settings updated successfully"}
 
 
@@ -239,3 +255,30 @@ def get_user_profile(
         "total_datasources": len(datasources_db),
         "access_level": user_settings.du_lieu if user_settings else "basic",
     }
+
+
+@user_router.get("/iam-role-info")
+def get_user_iam_role_info(
+    current_user: User = Depends(get_current_user),
+):
+    """Get user IAM role information (AWS only)"""
+    if not APP_SETTINGS.is_aws:
+        raise HTTPException(
+            status_code=400, detail="IAM role info only available in AWS environment"
+        )
+
+    if not hasattr(current_user, "cognito_user_id") or not current_user.cognito_user_id:
+        raise HTTPException(status_code=400, detail="User not associated with Cognito")
+
+    iam_service = get_iam_service()
+    if not iam_service:
+        raise HTTPException(status_code=500, detail="IAM service not available")
+
+    result = iam_service.get_user_role_info(
+        user_id=current_user.cognito_user_id, username=current_user.username
+    )
+
+    if not result["success"]:
+        raise HTTPException(status_code=404, detail=result["error"])
+
+    return result

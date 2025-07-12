@@ -5,17 +5,19 @@ from typing import Any, Dict, Optional, Tuple
 import boto3
 from botocore.exceptions import NoCredentialsError
 
+from src.core.iam_service import get_iam_service
 from src.core.settings import APP_SETTINGS
 
 
 class SQLExecutionService:
     """Service for executing SQL queries on various platforms"""
 
-    def __init__(self):
+    def __init__(self, user_context: Optional[Dict[str, Any]] = None):
         self.database = APP_SETTINGS.AWS_ATHENA_DATABASE
         self.workgroup = APP_SETTINGS.AWS_ATHENA_WORKGROUP
         self.output_location = APP_SETTINGS.AWS_ATHENA_OUTPUT_LOCATION
         self.timeout = APP_SETTINGS.AWS_ATHENA_TIMEOUT
+        self.user_context = user_context or {}
 
         if APP_SETTINGS.is_aws:
             self._initialize_aws_clients()
@@ -46,8 +48,71 @@ class SQLExecutionService:
                 aws_secret_access_key=APP_SETTINGS.AWS_SECRET_ACCESS_KEY,
                 region_name=APP_SETTINGS.AWS_REGION,
             )
+
+            # If user context is provided, try to use user's IAM role
+            if self.user_context and "cognito_user_id" in self.user_context:
+                self._initialize_user_role_clients()
+
         except NoCredentialsError:
             raise Exception("AWS credentials not found")
+
+    def _initialize_user_role_clients(self):
+        """Initialize AWS clients using user's IAM role"""
+        try:
+            # Get user's IAM role ARN
+            iam_service = get_iam_service()
+            if iam_service:
+                user_id = self.user_context["cognito_user_id"]
+                username = self.user_context["username"]
+
+                role_info = iam_service.get_user_role_info(user_id, username)
+
+                if role_info["success"]:
+                    # Assume the user's role for better security
+                    sts_client = boto3.client(
+                        "sts",
+                        aws_access_key_id=APP_SETTINGS.AWS_ACCESS_KEY_ID,
+                        aws_secret_access_key=APP_SETTINGS.AWS_SECRET_ACCESS_KEY,
+                        region_name=APP_SETTINGS.AWS_REGION,
+                    )
+
+                    assumed_role = sts_client.assume_role(
+                        RoleArn=role_info["role_arn"],
+                        RoleSessionName=f"QueryPilot-{username}",
+                        ExternalId=user_id,
+                    )
+
+                    credentials = assumed_role["Credentials"]
+
+                    # Override clients with user role credentials
+                    self.athena_client = boto3.client(
+                        "athena",
+                        aws_access_key_id=credentials["AccessKeyId"],
+                        aws_secret_access_key=credentials["SecretAccessKey"],
+                        aws_session_token=credentials["SessionToken"],
+                        region_name=APP_SETTINGS.AWS_REGION,
+                    )
+
+                    self.s3_client = boto3.client(
+                        "s3",
+                        aws_access_key_id=credentials["AccessKeyId"],
+                        aws_secret_access_key=credentials["SecretAccessKey"],
+                        aws_session_token=credentials["SessionToken"],
+                        region_name=APP_SETTINGS.AWS_REGION,
+                    )
+
+                    self.glue_client = boto3.client(
+                        "glue",
+                        aws_access_key_id=credentials["AccessKeyId"],
+                        aws_secret_access_key=credentials["SecretAccessKey"],
+                        aws_session_token=credentials["SessionToken"],
+                        region_name=APP_SETTINGS.AWS_REGION,
+                    )
+
+                    print(f"Using user role: {role_info['role_arn']}")
+
+        except Exception as e:
+            print(f"Warning: Could not assume user role, using default credentials: {e}")
 
     async def execute_query(self, sql_query: str) -> Dict[str, Any]:
         """
@@ -310,13 +375,24 @@ class SQLExecutionService:
 sql_execution_service = None
 
 
-def get_sql_execution_service() -> Optional[SQLExecutionService]:
-    """Get SQL execution service instance"""
-    global sql_execution_service
-    if sql_execution_service is None:
+def get_sql_execution_service(
+    user_context: Optional[Dict[str, Any]] = None,
+) -> Optional[SQLExecutionService]:
+    """Get SQL execution service instance with user context"""
+    # Always create a new instance with user context for security
+    if APP_SETTINGS.is_aws:
         try:
-            sql_execution_service = SQLExecutionService()
+            return SQLExecutionService(user_context=user_context)
         except Exception as e:
             print(f"Failed to initialize SQL execution service: {e}")
             return None
-    return sql_execution_service
+    else:
+        # For local environment, use global instance
+        global sql_execution_service
+        if sql_execution_service is None:
+            try:
+                sql_execution_service = SQLExecutionService()
+            except Exception as e:
+                print(f"Failed to initialize SQL execution service: {e}")
+                return None
+        return sql_execution_service

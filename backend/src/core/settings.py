@@ -55,6 +55,19 @@ class AppSettings(BaseSettings):
     )
     AWS_ATHENA_TIMEOUT: int = Field(default=300, description="Athena query timeout in seconds")
 
+    # AWS Cognito Configuration
+    AWS_COGNITO_USER_POOL_ID: str = Field(default="", description="AWS Cognito User Pool ID")
+    AWS_COGNITO_CLIENT_ID: str = Field(default="", description="AWS Cognito App Client ID")
+    AWS_COGNITO_CLIENT_SECRET: str = Field(default="", description="AWS Cognito App Client Secret")
+    AWS_COGNITO_REGION: str = Field(default="", description="AWS Cognito Region")
+    AWS_COGNITO_DOMAIN: str = Field(default="", description="AWS Cognito Domain")
+
+    # AWS IAM Configuration for user roles
+    AWS_IAM_ROLE_PREFIX: str = Field(
+        default="QueryPilot-User-", description="Prefix for user IAM roles"
+    )
+    AWS_IAM_POLICY_ARN_BASE: str = Field(default="", description="Base policy ARN for users")
+
     @property
     def get_database_url(self) -> str:
         if self.is_aws:
