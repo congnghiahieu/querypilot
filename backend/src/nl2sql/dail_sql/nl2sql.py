@@ -28,7 +28,7 @@ def clean_sql_query(sql_str):
     return sql_str
 
 
-def convert_nl2sql(question: str, data, prompt, task_tracker=None) -> str:
+def convert_nl2sql(question: str, data, prompt, task_tracker=None, schema_info=None) -> str:
     """
     Convert natural language to SQL query with optional task tracking.
 
@@ -37,6 +37,7 @@ def convert_nl2sql(question: str, data, prompt, task_tracker=None) -> str:
         data: Data object for processing
         prompt: Prompt template
         task_tracker: Optional TaskTracker instance for performance monitoring
+        schema_info: Optional database schema information for better SQL generation
 
     Returns:
         str: Generated SQL query
@@ -51,6 +52,11 @@ def convert_nl2sql(question: str, data, prompt, task_tracker=None) -> str:
 
     tests = [{"db_id": db_id, "question": question, "question_toks": "", "query": ""}]
     pre_processes_question = data.get_question_json(tests)
+
+    # Include schema information in the prompt if available
+    if schema_info:
+        pre_processes_question[0]["schema_info"] = schema_info
+
     question_format = prompt.format(
         target=pre_processes_question[0],
         max_seq_len=max_sequence_len,

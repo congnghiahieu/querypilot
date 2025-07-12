@@ -11,9 +11,10 @@ from sqlmodel import Session, desc, select
 
 from src.api.auth import get_current_user
 from src.core.db import get_session
+from src.core.rag import rag_service
+from src.core.sql_execution import get_sql_execution_service
 from src.models.chat import ChatDataResult, ChatMessage, ChatSession
 from src.models.user import User
-from src.nl2sql.rag import rag_service
 
 chat_router = APIRouter(prefix="/chat", tags=["Chat"])
 
@@ -50,7 +51,7 @@ class ChatMessageResponse(BaseModel):
     has_data: bool = False  # Indicates if this message has downloadable data
 
 
-def process_nl2sql_message(message: str, user_id: UUID) -> ChatResponse:
+async def process_nl2sql_message(message: str, user_id: UUID) -> ChatResponse:
     """
     Process nl2sql message with RAG context from knowledge base.
     Returns either text response or data response with JSON.
@@ -59,49 +60,89 @@ def process_nl2sql_message(message: str, user_id: UUID) -> ChatResponse:
         # Get relevant context from knowledge base using RAG
         context = rag_service.get_context_for_query(message, user_id)
 
-        # TODO: Implement actual nl2sql logic here
-        # For now, simulate different response types based on message content
+        # Check if we're in AWS environment and can use SQL execution service
+        sql_service = get_sql_execution_service()
 
-        # Simulate SQL query execution for demo
-        if "table" in message.lower() or "data" in message.lower():
-            # Simulate table/chart response with JSON data
-            sample_data = [
-                {"name": "Alice", "age": 25, "city": "Hanoi"},
-                {"name": "Bob", "age": 30, "city": "HCMC"},
-                {"name": "Charlie", "age": 35, "city": "Da Nang"},
-            ]
+        if sql_service:
+            try:
+                # Get database schema for better SQL generation
+                schema_info = sql_service.get_database_schema()
 
-            return ChatResponse(
-                type="table",  # or "chart" based on analysis
-                content=json.dumps(sample_data),  # JSON data
-                sql_query="SELECT name, age, city FROM users LIMIT 3",
-                execution_time=0.5,
-                rows_count=len(sample_data),
-            )
-        else:
-            # Text response
-            if context:
-                response_content = f"""Based on your knowledge base, here's what I found relevant to your question:
+                # TODO: Implement actual NL2SQL conversion with schema
+                # For now, we'll use a placeholder SQL generation
+                # In the real implementation, you would use your NL2SQL model here
+                # sql_query = convert_nl2sql(message, data, prompt, schema_info=schema_info)
+
+                # Placeholder SQL generation based on message content
+                sql_query = generate_placeholder_sql(message, schema_info)
+
+                if sql_query:
+                    # Validate query against schema
+                    is_valid, validation_message = sql_service.validate_query_against_schema(
+                        sql_query
+                    )
+
+                    if not is_valid:
+                        return ChatResponse(
+                            type="text",
+                            content=f"Generated SQL query is invalid: {validation_message}\n\nSQL: {sql_query}",
+                            sql_query=sql_query,
+                            execution_time=0.0,
+                            rows_count=0,
+                        )
+
+                    # Execute SQL query
+                    result = await sql_service.execute_query(sql_query)
+
+                    if result["status"] == "success":
+                        return ChatResponse(
+                            type="table",
+                            content=json.dumps(result["data"]),
+                            sql_query=sql_query,
+                            execution_time=result["execution_time"],
+                            rows_count=result["row_count"],
+                        )
+                    else:
+                        return ChatResponse(
+                            type="text",
+                            content=f"Error executing SQL query: {result['error']}\n\nSQL: {sql_query}",
+                            sql_query=sql_query,
+                            execution_time=result["execution_time"],
+                            rows_count=0,
+                        )
+
+            except Exception as e:
+                return ChatResponse(
+                    type="text",
+                    content=f"Error processing query with SQL execution service: {str(e)}",
+                    sql_query="",
+                    execution_time=0.0,
+                    rows_count=0,
+                )
+
+        # Fallback to context-based response if SQL execution service is not available
+        if context:
+            response_content = f"""Based on your knowledge base, here's what I found relevant to your question:
 
 {context}
 
-This context has been retrieved from your uploaded documents. The actual NL2SQL functionality will be implemented next to provide structured queries and data analysis.
+Note: SQL execution service is not configured. To execute SQL queries on your data lake, please configure AWS Athena settings.
 
 Your question: {message}"""
-            else:
-                response_content = f"""I couldn't find relevant information in your knowledge base for this query: "{message}"
+        else:
+            response_content = f"""I couldn't find relevant information in your knowledge base for this query: "{message}"
 
-Please make sure you have uploaded relevant documents to your knowledge base, or try rephrasing your question.
+Please make sure you have uploaded relevant documents to your knowledge base, or configure AWS Athena to query your data lake.
 
-The actual NL2SQL functionality will be implemented next to provide structured queries and data analysis."""
+The SQL execution functionality requires AWS configuration to execute queries on your data sources."""
 
-            return ChatResponse(
-                type="text",
-                content=response_content,
-                sql_query="",
-                execution_time=0.0,
-                rows_count=0,
-            )
+        return ChatResponse(
+            type="text",
+            content=response_content,
+            sql_query="",
+            execution_time=0.0,
+            rows_count=0,
+        )
 
     except Exception as e:
         return ChatResponse(
@@ -113,8 +154,42 @@ The actual NL2SQL functionality will be implemented next to provide structured q
         )
 
 
+def generate_placeholder_sql(message: str, schema_info: dict) -> str:
+    """
+    Generate placeholder SQL based on message content and schema.
+    This is a temporary implementation until the full NL2SQL pipeline is integrated.
+    """
+    if not schema_info or not schema_info.get("tables"):
+        return ""
+
+    # Get first table for demo
+    first_table = schema_info["tables"][0]
+    table_name = first_table["name"]
+    columns = [col["name"] for col in first_table["columns"]]
+
+    # Simple keyword-based SQL generation for demo
+    if any(keyword in message.lower() for keyword in ["count", "total", "number"]):
+        return f"SELECT COUNT(*) as total_count FROM {table_name}"
+    elif any(keyword in message.lower() for keyword in ["all", "show", "list"]):
+        column_list = ", ".join(columns[:5])  # Limit to first 5 columns
+        return f"SELECT {column_list} FROM {table_name} LIMIT 10"
+    elif "average" in message.lower() or "avg" in message.lower():
+        # Find numeric columns
+        numeric_cols = [
+            col["name"]
+            for col in first_table["columns"]
+            if col["type"].lower() in ["int", "bigint", "double", "float", "decimal"]
+        ]
+        if numeric_cols:
+            return f"SELECT AVG({numeric_cols[0]}) as average FROM {table_name}"
+
+    # Default query
+    column_list = ", ".join(columns[:3])  # Limit to first 3 columns
+    return f"SELECT {column_list} FROM {table_name} LIMIT 5"
+
+
 @chat_router.post("/message")
-def send_message(
+async def send_message(
     payload: ChatRequest,
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
@@ -136,8 +211,8 @@ def send_message(
     )
     session.add(user_message)
 
-    # Process message through nl2sql pipeline with RAG
-    result = process_nl2sql_message(payload.message, current_user.id)
+    # Process message through nl2sql pipeline with RAG and SQL execution service
+    result = await process_nl2sql_message(payload.message, current_user.id)
 
     # Add assistant message
     assistant_message = ChatMessage(
@@ -288,7 +363,7 @@ def delete_chat_by_id(
 
 
 @chat_router.post("/continue/{chat_id}")
-def continue_chat(
+async def continue_chat(
     chat_id: str,
     payload: ChatRequest,
     current_user: User = Depends(get_current_user),
@@ -317,8 +392,8 @@ def continue_chat(
     )
     session.add(user_message)
 
-    # Process message through nl2sql pipeline with RAG
-    result = process_nl2sql_message(payload.message, current_user.id)
+    # Process message through nl2sql pipeline with RAG and SQL execution service
+    result = await process_nl2sql_message(payload.message, current_user.id)
 
     # Add assistant message
     assistant_message = ChatMessage(

@@ -9,25 +9,30 @@ def construct_full_prompt(system_prompt: str, database_schema: str, user_prompt:
 
 
 def get_sql_generation_prompt_template():
-    """Placeholder template, change later"""
+    """Template for generating SQL queries for AWS Athena"""
 
     return """
-Given the conversation context, create a syntactically correct {dialect} query to help find the answer to the user's question.
+Given the conversation context, create a syntactically correct SQL query for AWS Athena to help find the answer to the user's question.
 If the user specifies a number of results, adjust the query accordingly.
-Limit the results to a maximum of 5 if not specified.
+Limit the results to a maximum of 10 if not specified.
+
 <<MUST CRUCIAL INSTRUCTIONS>>
-- By Default Always use LIMIT 5 if the user does not specify the number of records for every question, unless the user mentions.
+- By Default Always use LIMIT 10 if the user does not specify the number of records for every question, unless the user mentions.
 - Only provide the SQL query inside the 'query' JSON key. Do not include any additional text or explanation.
 - Validate how many records the user is asking, and use `LIMIT` and `OFFSET` to approximate results, especially for cases like percentiles.
 
-**Important Notes for SQLite**:
+**Important Notes for AWS Athena**:
 - Always limit your answer to only Top 10 records if the user does not specify the number of records.
-- SQLite does not support advanced functions like `PERCENTILE_CONT` or window functions.
-- Ensure any complex calculations or percentile calculations are replaced with SQLite-compatible logic (e.g., subqueries or custom aggregations).
-- Avoid using non-SQLite syntax or unsupported functions.
+- Use Athena/Presto SQL syntax (supports window functions, CTEs, advanced aggregations).
+- All table and column names should be properly quoted if they contain special characters.
+- Use appropriate data types for comparisons and calculations.
+- Be mindful of case sensitivity in string comparisons.
 
-**Table Schema**:
+**Database Schema**:
 {table_info}
+
+**Available Tables and Columns**:
+{schema_info}
 
 **Example Scenarios**:
 {example_scenarios}

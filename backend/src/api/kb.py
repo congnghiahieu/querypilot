@@ -11,10 +11,10 @@ from sqlmodel import Session, desc, select
 from src.api.auth import get_current_user
 from src.core.db import get_session
 from src.core.file_storage import S3FileStorage, file_storage
+from src.core.rag import rag_service
 from src.core.settings import ALLOWED_EXTENSIONS, APP_SETTINGS, MAX_FILE_SIZE
 from src.models.knowledge_base import KnowledgeBase, KnowledgeBaseInsight
 from src.models.user import User
-from src.nl2sql.rag import rag_service
 
 kb_router = APIRouter(prefix="/kb", tags=["Knowledge Base"])
 

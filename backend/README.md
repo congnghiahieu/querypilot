@@ -41,6 +41,12 @@ AWS_SECRET_ACCESS_KEY=<your_aws_secret_key>
 AWS_REGION=us-east-1
 AWS_S3_BUCKET_NAME=<your_s3_bucket_name>
 AWS_S3_BUCKET_URL=<optional_custom_s3_url>
+
+# AWS Athena Configuration (only required when ENV=aws)
+AWS_ATHENA_DATABASE=<your_athena_database>
+AWS_ATHENA_WORKGROUP=primary
+AWS_ATHENA_OUTPUT_LOCATION=s3://<your-athena-results-bucket>/query-results/
+AWS_ATHENA_TIMEOUT=300
 ```
 
 ## Install dependencies

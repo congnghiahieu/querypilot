@@ -2,6 +2,7 @@ import os
 from typing import Literal
 
 from openai import OpenAI
+from pydantic import Field
 from pydantic_settings import BaseSettings
 
 
@@ -45,6 +46,14 @@ class AppSettings(BaseSettings):
     AWS_REGION: str = "us-east-1"
     AWS_S3_BUCKET_NAME: str = ""
     AWS_S3_BUCKET_URL: str = ""  # Optional: Custom S3 URL
+
+    # AWS Athena Configuration
+    AWS_ATHENA_DATABASE: str = Field(default="default", description="Athena database name")
+    AWS_ATHENA_WORKGROUP: str = Field(default="primary", description="Athena workgroup")
+    AWS_ATHENA_OUTPUT_LOCATION: str = Field(
+        default="", description="S3 bucket for Athena query results"
+    )
+    AWS_ATHENA_TIMEOUT: int = Field(default=300, description="Athena query timeout in seconds")
 
     @property
     def get_database_url(self) -> str:
