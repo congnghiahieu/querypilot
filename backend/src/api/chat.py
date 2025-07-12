@@ -1,9 +1,11 @@
 import json
+from io import BytesIO
 from typing import Literal, Optional
 from uuid import UUID
 
 import pandas as pd
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlmodel import Session, desc, select
 
@@ -45,53 +47,61 @@ class ChatMessageResponse(BaseModel):
     execution_time: Optional[float] = None
     rows_count: Optional[int] = None
     created_at: str
+    has_data: bool = False  # Indicates if this message has downloadable data
 
 
 def process_nl2sql_message(message: str, user_id: UUID) -> ChatResponse:
     """
     Process nl2sql message with RAG context from knowledge base.
-    This integrates RAG functionality while keeping nl2sql logic for future implementation.
+    Returns either text response or data response with JSON.
     """
     try:
         # Get relevant context from knowledge base using RAG
         context = rag_service.get_context_for_query(message, user_id)
 
-        # Build enhanced message with context
-        enhanced_message = message
-        if context:
-            enhanced_message = f"""
-Context from knowledge base:
-{context}
-
-User question: {message}
-
-Please provide a helpful response based on the context above and the user's question.
-"""
-
-        # For now, return a text response with context
         # TODO: Implement actual nl2sql logic here
-        if context:
-            response_content = f"""Based on your knowledge base, here's what I found relevant to your question:
+        # For now, simulate different response types based on message content
+
+        # Simulate SQL query execution for demo
+        if "table" in message.lower() or "data" in message.lower():
+            # Simulate table/chart response with JSON data
+            sample_data = [
+                {"name": "Alice", "age": 25, "city": "Hanoi"},
+                {"name": "Bob", "age": 30, "city": "HCMC"},
+                {"name": "Charlie", "age": 35, "city": "Da Nang"},
+            ]
+
+            return ChatResponse(
+                type="table",  # or "chart" based on analysis
+                content=json.dumps(sample_data),  # JSON data
+                sql_query="SELECT name, age, city FROM users LIMIT 3",
+                execution_time=0.5,
+                rows_count=len(sample_data),
+            )
+        else:
+            # Text response
+            if context:
+                response_content = f"""Based on your knowledge base, here's what I found relevant to your question:
 
 {context}
 
 This context has been retrieved from your uploaded documents. The actual NL2SQL functionality will be implemented next to provide structured queries and data analysis.
 
 Your question: {message}"""
-        else:
-            response_content = f"""I couldn't find relevant information in your knowledge base for this query: "{message}"
+            else:
+                response_content = f"""I couldn't find relevant information in your knowledge base for this query: "{message}"
 
 Please make sure you have uploaded relevant documents to your knowledge base, or try rephrasing your question.
 
 The actual NL2SQL functionality will be implemented next to provide structured queries and data analysis."""
 
-        return ChatResponse(
-            type="text",
-            content=response_content,
-            sql_query="",
-            execution_time=0.0,
-            rows_count=0,
-        )
+            return ChatResponse(
+                type="text",
+                content=response_content,
+                sql_query="",
+                execution_time=0.0,
+                rows_count=0,
+            )
 
     except Exception as e:
         return ChatResponse(
@@ -120,9 +130,9 @@ def send_message(
     session.commit()
     session.refresh(chat_session)
 
-    # Add user message
+    # Add user message (users only send text)
     user_message = ChatMessage(
-        chat_session_id=chat_session.id, role="user", content=payload.message
+        chat_session_id=chat_session.id, role="user", content=payload.message, response_type="text"
     )
     session.add(user_message)
 
@@ -143,7 +153,7 @@ def send_message(
     session.commit()
     session.refresh(assistant_message)
 
-    # Store data if it's table or chart type
+    # Store data if it's table or chart type (only for assistant messages with JSON data)
     if result.type in ["table", "chart"] and result.content:
         try:
             # Parse JSON data for storage
@@ -221,9 +231,10 @@ def get_chat_by_id(
     if not chat_session:
         raise HTTPException(status_code=404, detail="Chat not found")
 
-    # Get messages
+    # Get messages with data result info
     messages = []
     for message in chat_session.messages:
+        has_data = message.data_result is not None
         messages.append(
             ChatMessageResponse(
                 id=str(message.id),
@@ -234,6 +245,7 @@ def get_chat_by_id(
                 execution_time=message.execution_time,
                 rows_count=message.rows_count,
                 created_at=message.created_at.isoformat(),
+                has_data=has_data,
             )
         )
 
@@ -299,9 +311,9 @@ def continue_chat(
     if not chat_session:
         raise HTTPException(status_code=404, detail="Chat not found")
 
-    # Add user message
+    # Add user message (users only send text)
     user_message = ChatMessage(
-        chat_session_id=chat_session.id, role="user", content=payload.message
+        chat_session_id=chat_session.id, role="user", content=payload.message, response_type="text"
     )
     session.add(user_message)
 
@@ -328,7 +340,7 @@ def continue_chat(
     session.commit()
     session.refresh(assistant_message)
 
-    # Store data if needed
+    # Store data if needed (only for assistant messages with JSON data)
     if result.type in ["table", "chart"] and result.content:
         try:
             data_df = pd.read_json(result.content)
@@ -351,38 +363,119 @@ def continue_chat(
     }
 
 
-@chat_router.get("/data/{chat_id}")
-def get_chat_data(
-    chat_id: str,
+@chat_router.get("/data/{message_id}")
+def get_message_data(
+    message_id: str,
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
-    """Get the data associated with a chat for download purposes"""
+    """Get the data associated with a specific message for preview purposes"""
     try:
-        chat_uuid = UUID(chat_id)
+        message_uuid = UUID(message_id)
     except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid chat ID format")
+        raise HTTPException(status_code=400, detail="Invalid message ID format")
 
-    # Get the latest assistant message with data
+    # Get the message with data result and verify ownership
     statement = (
         select(ChatMessage)
         .join(ChatSession)
         .join(ChatDataResult)
-        .where(ChatSession.id == chat_uuid)
+        .where(ChatMessage.id == message_uuid)
         .where(ChatSession.user_id == current_user.id)
         .where(ChatMessage.role == "assistant")
-        .order_by(desc(ChatMessage.created_at))
     )
     message = session.exec(statement).first()
 
     if not message or not message.data_result:
-        raise HTTPException(status_code=404, detail="Chat data not found")
+        raise HTTPException(status_code=404, detail="Message data not found")
 
     data_result = message.data_result
 
     return {
-        "chat_id": chat_id,
+        "message_id": message_id,
         "data": json.loads(data_result.data_json),
         "columns": json.loads(data_result.columns),
         "shape": [data_result.shape_rows, data_result.shape_cols],
+        "sql_query": message.sql_query,
+        "response_type": message.response_type,
     }
+
+
+@chat_router.get("/download/{message_id}")
+def download_message_data(
+    message_id: str,
+    format: str = Query(..., enum=["json", "csv", "excel", "pdf"]),
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """Download message data in specified format"""
+    try:
+        message_uuid = UUID(message_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid message ID format")
+
+    # Get the message with data result and verify ownership
+    statement = (
+        select(ChatMessage)
+        .join(ChatSession)
+        .join(ChatDataResult)
+        .where(ChatMessage.id == message_uuid)
+        .where(ChatSession.user_id == current_user.id)
+        .where(ChatMessage.role == "assistant")
+    )
+    message = session.exec(statement).first()
+
+    if not message or not message.data_result:
+        raise HTTPException(status_code=404, detail="Message data not found")
+
+    # Load data from database
+    data_result = message.data_result
+
+    filename = f"message_{current_user.username}_{message_id[:8]}_data.{format}"
+
+    if format == "json":
+        return StreamingResponse(
+            BytesIO(data_result.data_json.encode()),
+            media_type="application/json",
+            headers={"Content-Disposition": f"attachment; filename={filename}"},
+        )
+
+    # For other formats, convert to DataFrame first
+    df = pd.read_json(data_result.data_json)
+
+    if df.empty:
+        raise HTTPException(status_code=400, detail="No data to download")
+
+    if format == "csv":
+        output = BytesIO()
+        df.to_csv(output, index=False)
+        output.seek(0)
+
+        return StreamingResponse(
+            BytesIO(output.read()),
+            media_type="text/csv",
+            headers={"Content-Disposition": f"attachment; filename={filename}"},
+        )
+
+    elif format == "excel":
+        output = BytesIO()
+        df.to_excel(output, index=False, engine="openpyxl")
+        output.seek(0)
+
+        return StreamingResponse(
+            BytesIO(output.read()),
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": f"attachment; filename={filename}"},
+        )
+
+    elif format == "pdf":
+        # For PDF, create a simple CSV for now (placeholder implementation)
+        output = BytesIO()
+        df.to_csv(output, index=False)
+        output.seek(0)
+
+        return StreamingResponse(
+            BytesIO(output.read()),
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename={filename}"},
+        )
