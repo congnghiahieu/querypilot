@@ -84,7 +84,7 @@ class AppSettings(BaseSettings):
 
 APP_SETTINGS = AppSettings()
 
-ALLOWED_ORIGINS = ["*" if APP_SETTINGS.is_dev else APP_SETTINGS.CLIENT_URL]
+ALLOWED_ORIGINS = [APP_SETTINGS.CLIENT_URL]
 
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 ALLOWED_EXTENSIONS = {".txt", ".csv", ".json", ".md", ".pdf", ".docx", ".xlsx", ".xls"}
