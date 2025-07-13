@@ -5,7 +5,6 @@ export default defineConfig({
   output: './src/api',
   plugins: [
     '@hey-api/typescript',
-    '@hey-api/schemas',
     {
       name: '@hey-api/sdk',
       transformer: true,
