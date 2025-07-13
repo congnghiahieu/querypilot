@@ -3,28 +3,33 @@
 import {
   type Options,
   registerAuthRegisterPost,
+  confirmSignupAuthConfirmSignupPost,
   loginAuthLoginPost,
   logoutAuthLogoutPost,
+  refreshTokenAuthRefreshPost,
+  forgotPasswordAuthForgotPasswordPost,
+  resetPasswordAuthResetPasswordPost,
   getCurrentUserInfoAuthMeGet,
   sendMessageChatMessagePost,
   getChatHistoryChatHistoryGet,
-  deleteChatByIdChatHistoryIdDelete,
-  getChatByIdChatHistoryIdGet,
+  deleteChatByIdChatHistoryChatIdDelete,
+  getChatByIdChatHistoryChatIdGet,
   continueChatChatContinueChatIdPost,
-  getChatDataChatDataChatIdGet,
-  uploadKbKbUploadPost,
+  getMessageDataChatDataMessageIdGet,
+  downloadMessageDataChatDownloadMessageIdGet,
+  uploadFileKbUploadPost,
+  uploadTextKbKbUploadTextPost,
   listKbKbListGet,
-  deleteKbKbFilenameDelete,
-  downloadKbKbDownloadFilenameGet,
-  downloadChatDataQueryDownloadChatIdGet,
-  downloadSampleQueryDownloadGet,
-  validateQueryQueryValidateGet,
+  getKbInsightKbKbIdInsightGet,
+  deleteKnowledgeBaseKbKbIdDelete,
+  downloadFileKbDownloadKbIdGet,
   getSettingsUserSettingsGet,
   updateSettingsUserSettingsPost,
   getDatasourcesUserDatasourcesGet,
   getAccessibleDatasourcesUserDatasourcesAccessibleGet,
   requestDatasourceAccessUserDatasourcesDatasourceIdRequestAccessPost,
   getUserProfileUserProfileGet,
+  getUserIamRoleInfoUserIamRoleInfoGet,
   healthCheckMetricsHealthGet,
   rootGet,
 } from '../sdk.gen';
@@ -32,29 +37,38 @@ import { queryOptions, type UseMutationOptions, type DefaultError } from '@tanst
 import type {
   RegisterAuthRegisterPostData,
   RegisterAuthRegisterPostError,
-  RegisterAuthRegisterPostResponse,
+  ConfirmSignupAuthConfirmSignupPostData,
+  ConfirmSignupAuthConfirmSignupPostError,
   LoginAuthLoginPostData,
   LoginAuthLoginPostError,
   LogoutAuthLogoutPostData,
+  RefreshTokenAuthRefreshPostData,
+  RefreshTokenAuthRefreshPostError,
+  ForgotPasswordAuthForgotPasswordPostData,
+  ForgotPasswordAuthForgotPasswordPostError,
+  ResetPasswordAuthResetPasswordPostData,
+  ResetPasswordAuthResetPasswordPostError,
   GetCurrentUserInfoAuthMeGetData,
   SendMessageChatMessagePostData,
   SendMessageChatMessagePostError,
   GetChatHistoryChatHistoryGetData,
-  DeleteChatByIdChatHistoryIdDeleteData,
-  DeleteChatByIdChatHistoryIdDeleteError,
-  GetChatByIdChatHistoryIdGetData,
+  DeleteChatByIdChatHistoryChatIdDeleteData,
+  DeleteChatByIdChatHistoryChatIdDeleteError,
+  GetChatByIdChatHistoryChatIdGetData,
   ContinueChatChatContinueChatIdPostData,
   ContinueChatChatContinueChatIdPostError,
-  GetChatDataChatDataChatIdGetData,
-  UploadKbKbUploadPostData,
-  UploadKbKbUploadPostError,
+  GetMessageDataChatDataMessageIdGetData,
+  DownloadMessageDataChatDownloadMessageIdGetData,
+  UploadFileKbUploadPostData,
+  UploadFileKbUploadPostError,
+  UploadFileKbUploadPostResponse,
+  UploadTextKbKbUploadTextPostData,
+  UploadTextKbKbUploadTextPostError,
   ListKbKbListGetData,
-  DeleteKbKbFilenameDeleteData,
-  DeleteKbKbFilenameDeleteError,
-  DownloadKbKbDownloadFilenameGetData,
-  DownloadChatDataQueryDownloadChatIdGetData,
-  DownloadSampleQueryDownloadGetData,
-  ValidateQueryQueryValidateGetData,
+  GetKbInsightKbKbIdInsightGetData,
+  DeleteKnowledgeBaseKbKbIdDeleteData,
+  DeleteKnowledgeBaseKbKbIdDeleteError,
+  DownloadFileKbDownloadKbIdGetData,
   GetSettingsUserSettingsGetData,
   UpdateSettingsUserSettingsPostData,
   UpdateSettingsUserSettingsPostError,
@@ -63,6 +77,7 @@ import type {
   RequestDatasourceAccessUserDatasourcesDatasourceIdRequestAccessPostData,
   RequestDatasourceAccessUserDatasourcesDatasourceIdRequestAccessPostError,
   GetUserProfileUserProfileGetData,
+  GetUserIamRoleInfoUserIamRoleInfoGetData,
   HealthCheckMetricsHealthGetData,
   RootGetData,
 } from '../types.gen';
@@ -108,7 +123,7 @@ export const registerAuthRegisterPostQueryKey = (options: Options<RegisterAuthRe
 
 /**
  * Register
- * Register new user
+ * Register a new user
  */
 export const registerAuthRegisterPostOptions = (options: Options<RegisterAuthRegisterPostData>) => {
   return queryOptions({
@@ -127,22 +142,75 @@ export const registerAuthRegisterPostOptions = (options: Options<RegisterAuthReg
 
 /**
  * Register
- * Register new user
+ * Register a new user
  */
 export const registerAuthRegisterPostMutation = (
   options?: Partial<Options<RegisterAuthRegisterPostData>>,
 ): UseMutationOptions<
-  RegisterAuthRegisterPostResponse,
+  unknown,
   AxiosError<RegisterAuthRegisterPostError>,
   Options<RegisterAuthRegisterPostData>
 > => {
   const mutationOptions: UseMutationOptions<
-    RegisterAuthRegisterPostResponse,
+    unknown,
     AxiosError<RegisterAuthRegisterPostError>,
     Options<RegisterAuthRegisterPostData>
   > = {
     mutationFn: async (localOptions) => {
       const { data } = await registerAuthRegisterPost({
+        ...options,
+        ...localOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const confirmSignupAuthConfirmSignupPostQueryKey = (
+  options: Options<ConfirmSignupAuthConfirmSignupPostData>,
+) => createQueryKey('confirmSignupAuthConfirmSignupPost', options);
+
+/**
+ * Confirm Signup
+ * Confirm user signup (AWS Cognito only)
+ */
+export const confirmSignupAuthConfirmSignupPostOptions = (
+  options: Options<ConfirmSignupAuthConfirmSignupPostData>,
+) => {
+  return queryOptions({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await confirmSignupAuthConfirmSignupPost({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: confirmSignupAuthConfirmSignupPostQueryKey(options),
+  });
+};
+
+/**
+ * Confirm Signup
+ * Confirm user signup (AWS Cognito only)
+ */
+export const confirmSignupAuthConfirmSignupPostMutation = (
+  options?: Partial<Options<ConfirmSignupAuthConfirmSignupPostData>>,
+): UseMutationOptions<
+  unknown,
+  AxiosError<ConfirmSignupAuthConfirmSignupPostError>,
+  Options<ConfirmSignupAuthConfirmSignupPostData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    unknown,
+    AxiosError<ConfirmSignupAuthConfirmSignupPostError>,
+    Options<ConfirmSignupAuthConfirmSignupPostData>
+  > = {
+    mutationFn: async (localOptions) => {
+      const { data } = await confirmSignupAuthConfirmSignupPost({
         ...options,
         ...localOptions,
         throwOnError: true,
@@ -208,7 +276,7 @@ export const logoutAuthLogoutPostQueryKey = (options?: Options<LogoutAuthLogoutP
 
 /**
  * Logout
- * Logout user (client-side token removal)
+ * Logout user
  */
 export const logoutAuthLogoutPostOptions = (options?: Options<LogoutAuthLogoutPostData>) => {
   return queryOptions({
@@ -227,7 +295,7 @@ export const logoutAuthLogoutPostOptions = (options?: Options<LogoutAuthLogoutPo
 
 /**
  * Logout
- * Logout user (client-side token removal)
+ * Logout user
  */
 export const logoutAuthLogoutPostMutation = (
   options?: Partial<Options<LogoutAuthLogoutPostData>>,
@@ -239,6 +307,165 @@ export const logoutAuthLogoutPostMutation = (
   > = {
     mutationFn: async (localOptions) => {
       const { data } = await logoutAuthLogoutPost({
+        ...options,
+        ...localOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const refreshTokenAuthRefreshPostQueryKey = (
+  options: Options<RefreshTokenAuthRefreshPostData>,
+) => createQueryKey('refreshTokenAuthRefreshPost', options);
+
+/**
+ * Refresh Token
+ * Refresh access token
+ */
+export const refreshTokenAuthRefreshPostOptions = (
+  options: Options<RefreshTokenAuthRefreshPostData>,
+) => {
+  return queryOptions({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await refreshTokenAuthRefreshPost({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: refreshTokenAuthRefreshPostQueryKey(options),
+  });
+};
+
+/**
+ * Refresh Token
+ * Refresh access token
+ */
+export const refreshTokenAuthRefreshPostMutation = (
+  options?: Partial<Options<RefreshTokenAuthRefreshPostData>>,
+): UseMutationOptions<
+  unknown,
+  AxiosError<RefreshTokenAuthRefreshPostError>,
+  Options<RefreshTokenAuthRefreshPostData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    unknown,
+    AxiosError<RefreshTokenAuthRefreshPostError>,
+    Options<RefreshTokenAuthRefreshPostData>
+  > = {
+    mutationFn: async (localOptions) => {
+      const { data } = await refreshTokenAuthRefreshPost({
+        ...options,
+        ...localOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const forgotPasswordAuthForgotPasswordPostQueryKey = (
+  options: Options<ForgotPasswordAuthForgotPasswordPostData>,
+) => createQueryKey('forgotPasswordAuthForgotPasswordPost', options);
+
+/**
+ * Forgot Password
+ * Initiate forgot password flow
+ */
+export const forgotPasswordAuthForgotPasswordPostOptions = (
+  options: Options<ForgotPasswordAuthForgotPasswordPostData>,
+) => {
+  return queryOptions({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await forgotPasswordAuthForgotPasswordPost({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: forgotPasswordAuthForgotPasswordPostQueryKey(options),
+  });
+};
+
+/**
+ * Forgot Password
+ * Initiate forgot password flow
+ */
+export const forgotPasswordAuthForgotPasswordPostMutation = (
+  options?: Partial<Options<ForgotPasswordAuthForgotPasswordPostData>>,
+): UseMutationOptions<
+  unknown,
+  AxiosError<ForgotPasswordAuthForgotPasswordPostError>,
+  Options<ForgotPasswordAuthForgotPasswordPostData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    unknown,
+    AxiosError<ForgotPasswordAuthForgotPasswordPostError>,
+    Options<ForgotPasswordAuthForgotPasswordPostData>
+  > = {
+    mutationFn: async (localOptions) => {
+      const { data } = await forgotPasswordAuthForgotPasswordPost({
+        ...options,
+        ...localOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const resetPasswordAuthResetPasswordPostQueryKey = (
+  options: Options<ResetPasswordAuthResetPasswordPostData>,
+) => createQueryKey('resetPasswordAuthResetPasswordPost', options);
+
+/**
+ * Reset Password
+ * Reset password with confirmation code
+ */
+export const resetPasswordAuthResetPasswordPostOptions = (
+  options: Options<ResetPasswordAuthResetPasswordPostData>,
+) => {
+  return queryOptions({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await resetPasswordAuthResetPasswordPost({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: resetPasswordAuthResetPasswordPostQueryKey(options),
+  });
+};
+
+/**
+ * Reset Password
+ * Reset password with confirmation code
+ */
+export const resetPasswordAuthResetPasswordPostMutation = (
+  options?: Partial<Options<ResetPasswordAuthResetPasswordPostData>>,
+): UseMutationOptions<
+  unknown,
+  AxiosError<ResetPasswordAuthResetPasswordPostError>,
+  Options<ResetPasswordAuthResetPasswordPostData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    unknown,
+    AxiosError<ResetPasswordAuthResetPasswordPostError>,
+    Options<ResetPasswordAuthResetPasswordPostData>
+  > = {
+    mutationFn: async (localOptions) => {
+      const { data } = await resetPasswordAuthResetPasswordPost({
         ...options,
         ...localOptions,
         throwOnError: true,
@@ -356,20 +583,20 @@ export const getChatHistoryChatHistoryGetOptions = (
  * Delete Chat By Id
  * Delete specific chat by ID for current user
  */
-export const deleteChatByIdChatHistoryIdDeleteMutation = (
-  options?: Partial<Options<DeleteChatByIdChatHistoryIdDeleteData>>,
+export const deleteChatByIdChatHistoryChatIdDeleteMutation = (
+  options?: Partial<Options<DeleteChatByIdChatHistoryChatIdDeleteData>>,
 ): UseMutationOptions<
   unknown,
-  AxiosError<DeleteChatByIdChatHistoryIdDeleteError>,
-  Options<DeleteChatByIdChatHistoryIdDeleteData>
+  AxiosError<DeleteChatByIdChatHistoryChatIdDeleteError>,
+  Options<DeleteChatByIdChatHistoryChatIdDeleteData>
 > => {
   const mutationOptions: UseMutationOptions<
     unknown,
-    AxiosError<DeleteChatByIdChatHistoryIdDeleteError>,
-    Options<DeleteChatByIdChatHistoryIdDeleteData>
+    AxiosError<DeleteChatByIdChatHistoryChatIdDeleteError>,
+    Options<DeleteChatByIdChatHistoryChatIdDeleteData>
   > = {
     mutationFn: async (localOptions) => {
-      const { data } = await deleteChatByIdChatHistoryIdDelete({
+      const { data } = await deleteChatByIdChatHistoryChatIdDelete({
         ...options,
         ...localOptions,
         throwOnError: true,
@@ -380,20 +607,20 @@ export const deleteChatByIdChatHistoryIdDeleteMutation = (
   return mutationOptions;
 };
 
-export const getChatByIdChatHistoryIdGetQueryKey = (
-  options: Options<GetChatByIdChatHistoryIdGetData>,
-) => createQueryKey('getChatByIdChatHistoryIdGet', options);
+export const getChatByIdChatHistoryChatIdGetQueryKey = (
+  options: Options<GetChatByIdChatHistoryChatIdGetData>,
+) => createQueryKey('getChatByIdChatHistoryChatIdGet', options);
 
 /**
  * Get Chat By Id
  * Get specific chat by ID for current user
  */
-export const getChatByIdChatHistoryIdGetOptions = (
-  options: Options<GetChatByIdChatHistoryIdGetData>,
+export const getChatByIdChatHistoryChatIdGetOptions = (
+  options: Options<GetChatByIdChatHistoryChatIdGetData>,
 ) => {
   return queryOptions({
     queryFn: async ({ queryKey, signal }) => {
-      const { data } = await getChatByIdChatHistoryIdGet({
+      const { data } = await getChatByIdChatHistoryChatIdGet({
         ...options,
         ...queryKey[0],
         signal,
@@ -401,7 +628,7 @@ export const getChatByIdChatHistoryIdGetOptions = (
       });
       return data;
     },
-    queryKey: getChatByIdChatHistoryIdGetQueryKey(options),
+    queryKey: getChatByIdChatHistoryChatIdGetQueryKey(options),
   });
 };
 
@@ -458,20 +685,20 @@ export const continueChatChatContinueChatIdPostMutation = (
   return mutationOptions;
 };
 
-export const getChatDataChatDataChatIdGetQueryKey = (
-  options: Options<GetChatDataChatDataChatIdGetData>,
-) => createQueryKey('getChatDataChatDataChatIdGet', options);
+export const getMessageDataChatDataMessageIdGetQueryKey = (
+  options: Options<GetMessageDataChatDataMessageIdGetData>,
+) => createQueryKey('getMessageDataChatDataMessageIdGet', options);
 
 /**
- * Get Chat Data
- * Get the data associated with a chat for download purposes
+ * Get Message Data
+ * Get the data associated with a specific message for preview purposes
  */
-export const getChatDataChatDataChatIdGetOptions = (
-  options: Options<GetChatDataChatDataChatIdGetData>,
+export const getMessageDataChatDataMessageIdGetOptions = (
+  options: Options<GetMessageDataChatDataMessageIdGetData>,
 ) => {
   return queryOptions({
     queryFn: async ({ queryKey, signal }) => {
-      const { data } = await getChatDataChatDataChatIdGet({
+      const { data } = await getMessageDataChatDataMessageIdGet({
         ...options,
         ...queryKey[0],
         signal,
@@ -479,21 +706,24 @@ export const getChatDataChatDataChatIdGetOptions = (
       });
       return data;
     },
-    queryKey: getChatDataChatDataChatIdGetQueryKey(options),
+    queryKey: getMessageDataChatDataMessageIdGetQueryKey(options),
   });
 };
 
-export const uploadKbKbUploadPostQueryKey = (options: Options<UploadKbKbUploadPostData>) =>
-  createQueryKey('uploadKbKbUploadPost', options);
+export const downloadMessageDataChatDownloadMessageIdGetQueryKey = (
+  options: Options<DownloadMessageDataChatDownloadMessageIdGetData>,
+) => createQueryKey('downloadMessageDataChatDownloadMessageIdGet', options);
 
 /**
- * Upload Kb
- * Upload knowledge base file
+ * Download Message Data
+ * Download message data in specified format
  */
-export const uploadKbKbUploadPostOptions = (options: Options<UploadKbKbUploadPostData>) => {
+export const downloadMessageDataChatDownloadMessageIdGetOptions = (
+  options: Options<DownloadMessageDataChatDownloadMessageIdGetData>,
+) => {
   return queryOptions({
     queryFn: async ({ queryKey, signal }) => {
-      const { data } = await uploadKbKbUploadPost({
+      const { data } = await downloadMessageDataChatDownloadMessageIdGet({
         ...options,
         ...queryKey[0],
         signal,
@@ -501,28 +731,103 @@ export const uploadKbKbUploadPostOptions = (options: Options<UploadKbKbUploadPos
       });
       return data;
     },
-    queryKey: uploadKbKbUploadPostQueryKey(options),
+    queryKey: downloadMessageDataChatDownloadMessageIdGetQueryKey(options),
+  });
+};
+
+export const uploadFileKbUploadPostQueryKey = (options: Options<UploadFileKbUploadPostData>) =>
+  createQueryKey('uploadFileKbUploadPost', options);
+
+/**
+ * Upload File
+ * Upload file to knowledge base
+ */
+export const uploadFileKbUploadPostOptions = (options: Options<UploadFileKbUploadPostData>) => {
+  return queryOptions({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await uploadFileKbUploadPost({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: uploadFileKbUploadPostQueryKey(options),
   });
 };
 
 /**
- * Upload Kb
- * Upload knowledge base file
+ * Upload File
+ * Upload file to knowledge base
  */
-export const uploadKbKbUploadPostMutation = (
-  options?: Partial<Options<UploadKbKbUploadPostData>>,
+export const uploadFileKbUploadPostMutation = (
+  options?: Partial<Options<UploadFileKbUploadPostData>>,
+): UseMutationOptions<
+  UploadFileKbUploadPostResponse,
+  AxiosError<UploadFileKbUploadPostError>,
+  Options<UploadFileKbUploadPostData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    UploadFileKbUploadPostResponse,
+    AxiosError<UploadFileKbUploadPostError>,
+    Options<UploadFileKbUploadPostData>
+  > = {
+    mutationFn: async (localOptions) => {
+      const { data } = await uploadFileKbUploadPost({
+        ...options,
+        ...localOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const uploadTextKbKbUploadTextPostQueryKey = (
+  options: Options<UploadTextKbKbUploadTextPostData>,
+) => createQueryKey('uploadTextKbKbUploadTextPost', options);
+
+/**
+ * Upload Text Kb
+ * Upload text as knowledge base
+ */
+export const uploadTextKbKbUploadTextPostOptions = (
+  options: Options<UploadTextKbKbUploadTextPostData>,
+) => {
+  return queryOptions({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await uploadTextKbKbUploadTextPost({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: uploadTextKbKbUploadTextPostQueryKey(options),
+  });
+};
+
+/**
+ * Upload Text Kb
+ * Upload text as knowledge base
+ */
+export const uploadTextKbKbUploadTextPostMutation = (
+  options?: Partial<Options<UploadTextKbKbUploadTextPostData>>,
 ): UseMutationOptions<
   unknown,
-  AxiosError<UploadKbKbUploadPostError>,
-  Options<UploadKbKbUploadPostData>
+  AxiosError<UploadTextKbKbUploadTextPostError>,
+  Options<UploadTextKbKbUploadTextPostData>
 > => {
   const mutationOptions: UseMutationOptions<
     unknown,
-    AxiosError<UploadKbKbUploadPostError>,
-    Options<UploadKbKbUploadPostData>
+    AxiosError<UploadTextKbKbUploadTextPostError>,
+    Options<UploadTextKbKbUploadTextPostData>
   > = {
     mutationFn: async (localOptions) => {
-      const { data } = await uploadKbKbUploadPost({
+      const { data } = await uploadTextKbKbUploadTextPost({
         ...options,
         ...localOptions,
         throwOnError: true,
@@ -555,24 +860,49 @@ export const listKbKbListGetOptions = (options?: Options<ListKbKbListGetData>) =
   });
 };
 
+export const getKbInsightKbKbIdInsightGetQueryKey = (
+  options: Options<GetKbInsightKbKbIdInsightGetData>,
+) => createQueryKey('getKbInsightKbKbIdInsightGet', options);
+
 /**
- * Delete Kb
- * Delete knowledge base file
+ * Get Kb Insight
+ * Get insight for a knowledge base file
  */
-export const deleteKbKbFilenameDeleteMutation = (
-  options?: Partial<Options<DeleteKbKbFilenameDeleteData>>,
+export const getKbInsightKbKbIdInsightGetOptions = (
+  options: Options<GetKbInsightKbKbIdInsightGetData>,
+) => {
+  return queryOptions({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getKbInsightKbKbIdInsightGet({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getKbInsightKbKbIdInsightGetQueryKey(options),
+  });
+};
+
+/**
+ * Delete Knowledge Base
+ * Delete knowledge base entry
+ */
+export const deleteKnowledgeBaseKbKbIdDeleteMutation = (
+  options?: Partial<Options<DeleteKnowledgeBaseKbKbIdDeleteData>>,
 ): UseMutationOptions<
   unknown,
-  AxiosError<DeleteKbKbFilenameDeleteError>,
-  Options<DeleteKbKbFilenameDeleteData>
+  AxiosError<DeleteKnowledgeBaseKbKbIdDeleteError>,
+  Options<DeleteKnowledgeBaseKbKbIdDeleteData>
 > => {
   const mutationOptions: UseMutationOptions<
     unknown,
-    AxiosError<DeleteKbKbFilenameDeleteError>,
-    Options<DeleteKbKbFilenameDeleteData>
+    AxiosError<DeleteKnowledgeBaseKbKbIdDeleteError>,
+    Options<DeleteKnowledgeBaseKbKbIdDeleteData>
   > = {
     mutationFn: async (localOptions) => {
-      const { data } = await deleteKbKbFilenameDelete({
+      const { data } = await deleteKnowledgeBaseKbKbIdDelete({
         ...options,
         ...localOptions,
         throwOnError: true,
@@ -583,20 +913,20 @@ export const deleteKbKbFilenameDeleteMutation = (
   return mutationOptions;
 };
 
-export const downloadKbKbDownloadFilenameGetQueryKey = (
-  options: Options<DownloadKbKbDownloadFilenameGetData>,
-) => createQueryKey('downloadKbKbDownloadFilenameGet', options);
+export const downloadFileKbDownloadKbIdGetQueryKey = (
+  options: Options<DownloadFileKbDownloadKbIdGetData>,
+) => createQueryKey('downloadFileKbDownloadKbIdGet', options);
 
 /**
- * Download Kb
- * Download knowledge base file
+ * Download File
+ * Download file from knowledge base
  */
-export const downloadKbKbDownloadFilenameGetOptions = (
-  options: Options<DownloadKbKbDownloadFilenameGetData>,
+export const downloadFileKbDownloadKbIdGetOptions = (
+  options: Options<DownloadFileKbDownloadKbIdGetData>,
 ) => {
   return queryOptions({
     queryFn: async ({ queryKey, signal }) => {
-      const { data } = await downloadKbKbDownloadFilenameGet({
+      const { data } = await downloadFileKbDownloadKbIdGet({
         ...options,
         ...queryKey[0],
         signal,
@@ -604,82 +934,7 @@ export const downloadKbKbDownloadFilenameGetOptions = (
       });
       return data;
     },
-    queryKey: downloadKbKbDownloadFilenameGetQueryKey(options),
-  });
-};
-
-export const downloadChatDataQueryDownloadChatIdGetQueryKey = (
-  options: Options<DownloadChatDataQueryDownloadChatIdGetData>,
-) => createQueryKey('downloadChatDataQueryDownloadChatIdGet', options);
-
-/**
- * Download Chat Data
- * Download chat data in specified format
- */
-export const downloadChatDataQueryDownloadChatIdGetOptions = (
-  options: Options<DownloadChatDataQueryDownloadChatIdGetData>,
-) => {
-  return queryOptions({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await downloadChatDataQueryDownloadChatIdGet({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: downloadChatDataQueryDownloadChatIdGetQueryKey(options),
-  });
-};
-
-export const downloadSampleQueryDownloadGetQueryKey = (
-  options?: Options<DownloadSampleQueryDownloadGetData>,
-) => createQueryKey('downloadSampleQueryDownloadGet', options);
-
-/**
- * Download Sample
- * Download sample data (for testing)
- */
-export const downloadSampleQueryDownloadGetOptions = (
-  options?: Options<DownloadSampleQueryDownloadGetData>,
-) => {
-  return queryOptions({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await downloadSampleQueryDownloadGet({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: downloadSampleQueryDownloadGetQueryKey(options),
-  });
-};
-
-export const validateQueryQueryValidateGetQueryKey = (
-  options: Options<ValidateQueryQueryValidateGetData>,
-) => createQueryKey('validateQueryQueryValidateGet', options);
-
-/**
- * Validate Query
- * Validate SQL query syntax
- */
-export const validateQueryQueryValidateGetOptions = (
-  options: Options<ValidateQueryQueryValidateGetData>,
-) => {
-  return queryOptions({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await validateQueryQueryValidateGet({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: validateQueryQueryValidateGetQueryKey(options),
+    queryKey: downloadFileKbDownloadKbIdGetQueryKey(options),
   });
 };
 
@@ -888,6 +1143,31 @@ export const getUserProfileUserProfileGetOptions = (
       return data;
     },
     queryKey: getUserProfileUserProfileGetQueryKey(options),
+  });
+};
+
+export const getUserIamRoleInfoUserIamRoleInfoGetQueryKey = (
+  options?: Options<GetUserIamRoleInfoUserIamRoleInfoGetData>,
+) => createQueryKey('getUserIamRoleInfoUserIamRoleInfoGet', options);
+
+/**
+ * Get User Iam Role Info
+ * Get user IAM role information (AWS only)
+ */
+export const getUserIamRoleInfoUserIamRoleInfoGetOptions = (
+  options?: Options<GetUserIamRoleInfoUserIamRoleInfoGetData>,
+) => {
+  return queryOptions({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getUserIamRoleInfoUserIamRoleInfoGet({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getUserIamRoleInfoUserIamRoleInfoGetQueryKey(options),
   });
 };
 

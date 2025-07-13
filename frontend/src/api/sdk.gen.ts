@@ -10,11 +10,23 @@ import type {
   RegisterAuthRegisterPostData,
   RegisterAuthRegisterPostResponses,
   RegisterAuthRegisterPostErrors,
+  ConfirmSignupAuthConfirmSignupPostData,
+  ConfirmSignupAuthConfirmSignupPostResponses,
+  ConfirmSignupAuthConfirmSignupPostErrors,
   LoginAuthLoginPostData,
   LoginAuthLoginPostResponses,
   LoginAuthLoginPostErrors,
   LogoutAuthLogoutPostData,
   LogoutAuthLogoutPostResponses,
+  RefreshTokenAuthRefreshPostData,
+  RefreshTokenAuthRefreshPostResponses,
+  RefreshTokenAuthRefreshPostErrors,
+  ForgotPasswordAuthForgotPasswordPostData,
+  ForgotPasswordAuthForgotPasswordPostResponses,
+  ForgotPasswordAuthForgotPasswordPostErrors,
+  ResetPasswordAuthResetPasswordPostData,
+  ResetPasswordAuthResetPasswordPostResponses,
+  ResetPasswordAuthResetPasswordPostErrors,
   GetCurrentUserInfoAuthMeGetData,
   GetCurrentUserInfoAuthMeGetResponses,
   SendMessageChatMessagePostData,
@@ -22,37 +34,38 @@ import type {
   SendMessageChatMessagePostErrors,
   GetChatHistoryChatHistoryGetData,
   GetChatHistoryChatHistoryGetResponses,
-  DeleteChatByIdChatHistoryIdDeleteData,
-  DeleteChatByIdChatHistoryIdDeleteResponses,
-  DeleteChatByIdChatHistoryIdDeleteErrors,
-  GetChatByIdChatHistoryIdGetData,
-  GetChatByIdChatHistoryIdGetResponses,
-  GetChatByIdChatHistoryIdGetErrors,
+  DeleteChatByIdChatHistoryChatIdDeleteData,
+  DeleteChatByIdChatHistoryChatIdDeleteResponses,
+  DeleteChatByIdChatHistoryChatIdDeleteErrors,
+  GetChatByIdChatHistoryChatIdGetData,
+  GetChatByIdChatHistoryChatIdGetResponses,
+  GetChatByIdChatHistoryChatIdGetErrors,
   ContinueChatChatContinueChatIdPostData,
   ContinueChatChatContinueChatIdPostResponses,
   ContinueChatChatContinueChatIdPostErrors,
-  GetChatDataChatDataChatIdGetData,
-  GetChatDataChatDataChatIdGetResponses,
-  GetChatDataChatDataChatIdGetErrors,
-  UploadKbKbUploadPostData,
-  UploadKbKbUploadPostResponses,
-  UploadKbKbUploadPostErrors,
+  GetMessageDataChatDataMessageIdGetData,
+  GetMessageDataChatDataMessageIdGetResponses,
+  GetMessageDataChatDataMessageIdGetErrors,
+  DownloadMessageDataChatDownloadMessageIdGetData,
+  DownloadMessageDataChatDownloadMessageIdGetResponses,
+  DownloadMessageDataChatDownloadMessageIdGetErrors,
+  UploadFileKbUploadPostData,
+  UploadFileKbUploadPostResponses,
+  UploadFileKbUploadPostErrors,
+  UploadTextKbKbUploadTextPostData,
+  UploadTextKbKbUploadTextPostResponses,
+  UploadTextKbKbUploadTextPostErrors,
   ListKbKbListGetData,
   ListKbKbListGetResponses,
-  DeleteKbKbFilenameDeleteData,
-  DeleteKbKbFilenameDeleteResponses,
-  DeleteKbKbFilenameDeleteErrors,
-  DownloadKbKbDownloadFilenameGetData,
-  DownloadKbKbDownloadFilenameGetResponses,
-  DownloadKbKbDownloadFilenameGetErrors,
-  DownloadChatDataQueryDownloadChatIdGetData,
-  DownloadChatDataQueryDownloadChatIdGetResponses,
-  DownloadChatDataQueryDownloadChatIdGetErrors,
-  DownloadSampleQueryDownloadGetData,
-  DownloadSampleQueryDownloadGetResponses,
-  ValidateQueryQueryValidateGetData,
-  ValidateQueryQueryValidateGetResponses,
-  ValidateQueryQueryValidateGetErrors,
+  GetKbInsightKbKbIdInsightGetData,
+  GetKbInsightKbKbIdInsightGetResponses,
+  GetKbInsightKbKbIdInsightGetErrors,
+  DeleteKnowledgeBaseKbKbIdDeleteData,
+  DeleteKnowledgeBaseKbKbIdDeleteResponses,
+  DeleteKnowledgeBaseKbKbIdDeleteErrors,
+  DownloadFileKbDownloadKbIdGetData,
+  DownloadFileKbDownloadKbIdGetResponses,
+  DownloadFileKbDownloadKbIdGetErrors,
   GetSettingsUserSettingsGetData,
   GetSettingsUserSettingsGetResponses,
   UpdateSettingsUserSettingsPostData,
@@ -67,6 +80,8 @@ import type {
   RequestDatasourceAccessUserDatasourcesDatasourceIdRequestAccessPostErrors,
   GetUserProfileUserProfileGetData,
   GetUserProfileUserProfileGetResponses,
+  GetUserIamRoleInfoUserIamRoleInfoGetData,
+  GetUserIamRoleInfoUserIamRoleInfoGetResponses,
   HealthCheckMetricsHealthGetData,
   HealthCheckMetricsHealthGetResponses,
   RootGetData,
@@ -74,25 +89,29 @@ import type {
 } from './types.gen';
 import {
   zRegisterAuthRegisterPostData,
-  zRegisterAuthRegisterPostResponse,
+  zConfirmSignupAuthConfirmSignupPostData,
   zLoginAuthLoginPostData,
   zLogoutAuthLogoutPostData,
+  zRefreshTokenAuthRefreshPostData,
+  zForgotPasswordAuthForgotPasswordPostData,
+  zResetPasswordAuthResetPasswordPostData,
   zGetCurrentUserInfoAuthMeGetData,
   zGetCurrentUserInfoAuthMeGetResponse,
   zSendMessageChatMessagePostData,
   zGetChatHistoryChatHistoryGetData,
-  zDeleteChatByIdChatHistoryIdDeleteData,
-  zGetChatByIdChatHistoryIdGetData,
+  zDeleteChatByIdChatHistoryChatIdDeleteData,
+  zGetChatByIdChatHistoryChatIdGetData,
   zContinueChatChatContinueChatIdPostData,
-  zGetChatDataChatDataChatIdGetData,
-  zUploadKbKbUploadPostData,
+  zGetMessageDataChatDataMessageIdGetData,
+  zDownloadMessageDataChatDownloadMessageIdGetData,
+  zUploadFileKbUploadPostData,
+  zUploadFileKbUploadPostResponse,
+  zUploadTextKbKbUploadTextPostData,
   zListKbKbListGetData,
   zListKbKbListGetResponse,
-  zDeleteKbKbFilenameDeleteData,
-  zDownloadKbKbDownloadFilenameGetData,
-  zDownloadChatDataQueryDownloadChatIdGetData,
-  zDownloadSampleQueryDownloadGetData,
-  zValidateQueryQueryValidateGetData,
+  zGetKbInsightKbKbIdInsightGetData,
+  zDeleteKnowledgeBaseKbKbIdDeleteData,
+  zDownloadFileKbDownloadKbIdGetData,
   zGetSettingsUserSettingsGetData,
   zGetSettingsUserSettingsGetResponse,
   zUpdateSettingsUserSettingsPostData,
@@ -102,14 +121,12 @@ import {
   zGetAccessibleDatasourcesUserDatasourcesAccessibleGetResponse,
   zRequestDatasourceAccessUserDatasourcesDatasourceIdRequestAccessPostData,
   zGetUserProfileUserProfileGetData,
+  zGetUserIamRoleInfoUserIamRoleInfoGetData,
   zHealthCheckMetricsHealthGetData,
   zRootGetData,
 } from './zod.gen';
-import {
-  registerAuthRegisterPostResponseTransformer,
-  getCurrentUserInfoAuthMeGetResponseTransformer,
-} from './transformers.gen';
 import { client as _heyApiClient } from './client.gen';
+import { getCurrentUserInfoAuthMeGetResponseTransformer } from './transformers.gen';
 
 export type Options<
   TData extends TDataShape = TDataShape,
@@ -130,7 +147,7 @@ export type Options<
 
 /**
  * Register
- * Register new user
+ * Register a new user
  */
 export const registerAuthRegisterPost = <ThrowOnError extends boolean = false>(
   options: Options<RegisterAuthRegisterPostData, ThrowOnError>,
@@ -143,12 +160,33 @@ export const registerAuthRegisterPost = <ThrowOnError extends boolean = false>(
     requestValidator: async (data) => {
       return await zRegisterAuthRegisterPostData.parseAsync(data);
     },
-    responseTransformer: registerAuthRegisterPostResponseTransformer,
     responseType: 'json',
-    responseValidator: async (data) => {
-      return await zRegisterAuthRegisterPostResponse.parseAsync(data);
-    },
     url: '/auth/register',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+};
+
+/**
+ * Confirm Signup
+ * Confirm user signup (AWS Cognito only)
+ */
+export const confirmSignupAuthConfirmSignupPost = <ThrowOnError extends boolean = false>(
+  options: Options<ConfirmSignupAuthConfirmSignupPostData, ThrowOnError>,
+) => {
+  return (options.client ?? _heyApiClient).post<
+    ConfirmSignupAuthConfirmSignupPostResponses,
+    ConfirmSignupAuthConfirmSignupPostErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) => {
+      return await zConfirmSignupAuthConfirmSignupPostData.parseAsync(data);
+    },
+    responseType: 'json',
+    url: '/auth/confirm-signup',
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -184,7 +222,7 @@ export const loginAuthLoginPost = <ThrowOnError extends boolean = false>(
 
 /**
  * Logout
- * Logout user (client-side token removal)
+ * Logout user
  */
 export const logoutAuthLogoutPost = <ThrowOnError extends boolean = false>(
   options?: Options<LogoutAuthLogoutPostData, ThrowOnError>,
@@ -198,8 +236,89 @@ export const logoutAuthLogoutPost = <ThrowOnError extends boolean = false>(
       return await zLogoutAuthLogoutPostData.parseAsync(data);
     },
     responseType: 'json',
+    security: [
+      {
+        scheme: 'bearer',
+        type: 'http',
+      },
+    ],
     url: '/auth/logout',
     ...options,
+  });
+};
+
+/**
+ * Refresh Token
+ * Refresh access token
+ */
+export const refreshTokenAuthRefreshPost = <ThrowOnError extends boolean = false>(
+  options: Options<RefreshTokenAuthRefreshPostData, ThrowOnError>,
+) => {
+  return (options.client ?? _heyApiClient).post<
+    RefreshTokenAuthRefreshPostResponses,
+    RefreshTokenAuthRefreshPostErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) => {
+      return await zRefreshTokenAuthRefreshPostData.parseAsync(data);
+    },
+    responseType: 'json',
+    url: '/auth/refresh',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+};
+
+/**
+ * Forgot Password
+ * Initiate forgot password flow
+ */
+export const forgotPasswordAuthForgotPasswordPost = <ThrowOnError extends boolean = false>(
+  options: Options<ForgotPasswordAuthForgotPasswordPostData, ThrowOnError>,
+) => {
+  return (options.client ?? _heyApiClient).post<
+    ForgotPasswordAuthForgotPasswordPostResponses,
+    ForgotPasswordAuthForgotPasswordPostErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) => {
+      return await zForgotPasswordAuthForgotPasswordPostData.parseAsync(data);
+    },
+    responseType: 'json',
+    url: '/auth/forgot-password',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+};
+
+/**
+ * Reset Password
+ * Reset password with confirmation code
+ */
+export const resetPasswordAuthResetPasswordPost = <ThrowOnError extends boolean = false>(
+  options: Options<ResetPasswordAuthResetPasswordPostData, ThrowOnError>,
+) => {
+  return (options.client ?? _heyApiClient).post<
+    ResetPasswordAuthResetPasswordPostResponses,
+    ResetPasswordAuthResetPasswordPostErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) => {
+      return await zResetPasswordAuthResetPasswordPostData.parseAsync(data);
+    },
+    responseType: 'json',
+    url: '/auth/reset-password',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
   });
 };
 
@@ -296,16 +415,16 @@ export const getChatHistoryChatHistoryGet = <ThrowOnError extends boolean = fals
  * Delete Chat By Id
  * Delete specific chat by ID for current user
  */
-export const deleteChatByIdChatHistoryIdDelete = <ThrowOnError extends boolean = false>(
-  options: Options<DeleteChatByIdChatHistoryIdDeleteData, ThrowOnError>,
+export const deleteChatByIdChatHistoryChatIdDelete = <ThrowOnError extends boolean = false>(
+  options: Options<DeleteChatByIdChatHistoryChatIdDeleteData, ThrowOnError>,
 ) => {
   return (options.client ?? _heyApiClient).delete<
-    DeleteChatByIdChatHistoryIdDeleteResponses,
-    DeleteChatByIdChatHistoryIdDeleteErrors,
+    DeleteChatByIdChatHistoryChatIdDeleteResponses,
+    DeleteChatByIdChatHistoryChatIdDeleteErrors,
     ThrowOnError
   >({
     requestValidator: async (data) => {
-      return await zDeleteChatByIdChatHistoryIdDeleteData.parseAsync(data);
+      return await zDeleteChatByIdChatHistoryChatIdDeleteData.parseAsync(data);
     },
     responseType: 'json',
     security: [
@@ -314,7 +433,7 @@ export const deleteChatByIdChatHistoryIdDelete = <ThrowOnError extends boolean =
         type: 'http',
       },
     ],
-    url: '/chat/history/{id}',
+    url: '/chat/history/{chat_id}',
     ...options,
   });
 };
@@ -323,16 +442,16 @@ export const deleteChatByIdChatHistoryIdDelete = <ThrowOnError extends boolean =
  * Get Chat By Id
  * Get specific chat by ID for current user
  */
-export const getChatByIdChatHistoryIdGet = <ThrowOnError extends boolean = false>(
-  options: Options<GetChatByIdChatHistoryIdGetData, ThrowOnError>,
+export const getChatByIdChatHistoryChatIdGet = <ThrowOnError extends boolean = false>(
+  options: Options<GetChatByIdChatHistoryChatIdGetData, ThrowOnError>,
 ) => {
   return (options.client ?? _heyApiClient).get<
-    GetChatByIdChatHistoryIdGetResponses,
-    GetChatByIdChatHistoryIdGetErrors,
+    GetChatByIdChatHistoryChatIdGetResponses,
+    GetChatByIdChatHistoryChatIdGetErrors,
     ThrowOnError
   >({
     requestValidator: async (data) => {
-      return await zGetChatByIdChatHistoryIdGetData.parseAsync(data);
+      return await zGetChatByIdChatHistoryChatIdGetData.parseAsync(data);
     },
     responseType: 'json',
     security: [
@@ -341,7 +460,7 @@ export const getChatByIdChatHistoryIdGet = <ThrowOnError extends boolean = false
         type: 'http',
       },
     ],
-    url: '/chat/history/{id}',
+    url: '/chat/history/{chat_id}',
     ...options,
   });
 };
@@ -378,19 +497,19 @@ export const continueChatChatContinueChatIdPost = <ThrowOnError extends boolean 
 };
 
 /**
- * Get Chat Data
- * Get the data associated with a chat for download purposes
+ * Get Message Data
+ * Get the data associated with a specific message for preview purposes
  */
-export const getChatDataChatDataChatIdGet = <ThrowOnError extends boolean = false>(
-  options: Options<GetChatDataChatDataChatIdGetData, ThrowOnError>,
+export const getMessageDataChatDataMessageIdGet = <ThrowOnError extends boolean = false>(
+  options: Options<GetMessageDataChatDataMessageIdGetData, ThrowOnError>,
 ) => {
   return (options.client ?? _heyApiClient).get<
-    GetChatDataChatDataChatIdGetResponses,
-    GetChatDataChatDataChatIdGetErrors,
+    GetMessageDataChatDataMessageIdGetResponses,
+    GetMessageDataChatDataMessageIdGetErrors,
     ThrowOnError
   >({
     requestValidator: async (data) => {
-      return await zGetChatDataChatDataChatIdGetData.parseAsync(data);
+      return await zGetMessageDataChatDataMessageIdGetData.parseAsync(data);
     },
     responseType: 'json',
     security: [
@@ -399,28 +518,58 @@ export const getChatDataChatDataChatIdGet = <ThrowOnError extends boolean = fals
         type: 'http',
       },
     ],
-    url: '/chat/data/{chat_id}',
+    url: '/chat/data/{message_id}',
     ...options,
   });
 };
 
 /**
- * Upload Kb
- * Upload knowledge base file
+ * Download Message Data
+ * Download message data in specified format
  */
-export const uploadKbKbUploadPost = <ThrowOnError extends boolean = false>(
-  options: Options<UploadKbKbUploadPostData, ThrowOnError>,
+export const downloadMessageDataChatDownloadMessageIdGet = <ThrowOnError extends boolean = false>(
+  options: Options<DownloadMessageDataChatDownloadMessageIdGetData, ThrowOnError>,
+) => {
+  return (options.client ?? _heyApiClient).get<
+    DownloadMessageDataChatDownloadMessageIdGetResponses,
+    DownloadMessageDataChatDownloadMessageIdGetErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) => {
+      return await zDownloadMessageDataChatDownloadMessageIdGetData.parseAsync(data);
+    },
+    responseType: 'json',
+    security: [
+      {
+        scheme: 'bearer',
+        type: 'http',
+      },
+    ],
+    url: '/chat/download/{message_id}',
+    ...options,
+  });
+};
+
+/**
+ * Upload File
+ * Upload file to knowledge base
+ */
+export const uploadFileKbUploadPost = <ThrowOnError extends boolean = false>(
+  options: Options<UploadFileKbUploadPostData, ThrowOnError>,
 ) => {
   return (options.client ?? _heyApiClient).post<
-    UploadKbKbUploadPostResponses,
-    UploadKbKbUploadPostErrors,
+    UploadFileKbUploadPostResponses,
+    UploadFileKbUploadPostErrors,
     ThrowOnError
   >({
     ...formDataBodySerializer,
     requestValidator: async (data) => {
-      return await zUploadKbKbUploadPostData.parseAsync(data);
+      return await zUploadFileKbUploadPostData.parseAsync(data);
     },
     responseType: 'json',
+    responseValidator: async (data) => {
+      return await zUploadFileKbUploadPostResponse.parseAsync(data);
+    },
     security: [
       {
         scheme: 'bearer',
@@ -431,6 +580,37 @@ export const uploadKbKbUploadPost = <ThrowOnError extends boolean = false>(
     ...options,
     headers: {
       'Content-Type': null,
+      ...options.headers,
+    },
+  });
+};
+
+/**
+ * Upload Text Kb
+ * Upload text as knowledge base
+ */
+export const uploadTextKbKbUploadTextPost = <ThrowOnError extends boolean = false>(
+  options: Options<UploadTextKbKbUploadTextPostData, ThrowOnError>,
+) => {
+  return (options.client ?? _heyApiClient).post<
+    UploadTextKbKbUploadTextPostResponses,
+    UploadTextKbKbUploadTextPostErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) => {
+      return await zUploadTextKbKbUploadTextPostData.parseAsync(data);
+    },
+    responseType: 'json',
+    security: [
+      {
+        scheme: 'bearer',
+        type: 'http',
+      },
+    ],
+    url: '/kb/upload-text',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
       ...options.headers,
     },
   });
@@ -463,19 +643,46 @@ export const listKbKbListGet = <ThrowOnError extends boolean = false>(
 };
 
 /**
- * Delete Kb
- * Delete knowledge base file
+ * Get Kb Insight
+ * Get insight for a knowledge base file
  */
-export const deleteKbKbFilenameDelete = <ThrowOnError extends boolean = false>(
-  options: Options<DeleteKbKbFilenameDeleteData, ThrowOnError>,
+export const getKbInsightKbKbIdInsightGet = <ThrowOnError extends boolean = false>(
+  options: Options<GetKbInsightKbKbIdInsightGetData, ThrowOnError>,
+) => {
+  return (options.client ?? _heyApiClient).get<
+    GetKbInsightKbKbIdInsightGetResponses,
+    GetKbInsightKbKbIdInsightGetErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) => {
+      return await zGetKbInsightKbKbIdInsightGetData.parseAsync(data);
+    },
+    responseType: 'json',
+    security: [
+      {
+        scheme: 'bearer',
+        type: 'http',
+      },
+    ],
+    url: '/kb/{kb_id}/insight',
+    ...options,
+  });
+};
+
+/**
+ * Delete Knowledge Base
+ * Delete knowledge base entry
+ */
+export const deleteKnowledgeBaseKbKbIdDelete = <ThrowOnError extends boolean = false>(
+  options: Options<DeleteKnowledgeBaseKbKbIdDeleteData, ThrowOnError>,
 ) => {
   return (options.client ?? _heyApiClient).delete<
-    DeleteKbKbFilenameDeleteResponses,
-    DeleteKbKbFilenameDeleteErrors,
+    DeleteKnowledgeBaseKbKbIdDeleteResponses,
+    DeleteKnowledgeBaseKbKbIdDeleteErrors,
     ThrowOnError
   >({
     requestValidator: async (data) => {
-      return await zDeleteKbKbFilenameDeleteData.parseAsync(data);
+      return await zDeleteKnowledgeBaseKbKbIdDeleteData.parseAsync(data);
     },
     responseType: 'json',
     security: [
@@ -484,25 +691,25 @@ export const deleteKbKbFilenameDelete = <ThrowOnError extends boolean = false>(
         type: 'http',
       },
     ],
-    url: '/kb/{filename}',
+    url: '/kb/{kb_id}',
     ...options,
   });
 };
 
 /**
- * Download Kb
- * Download knowledge base file
+ * Download File
+ * Download file from knowledge base
  */
-export const downloadKbKbDownloadFilenameGet = <ThrowOnError extends boolean = false>(
-  options: Options<DownloadKbKbDownloadFilenameGetData, ThrowOnError>,
+export const downloadFileKbDownloadKbIdGet = <ThrowOnError extends boolean = false>(
+  options: Options<DownloadFileKbDownloadKbIdGetData, ThrowOnError>,
 ) => {
   return (options.client ?? _heyApiClient).get<
-    DownloadKbKbDownloadFilenameGetResponses,
-    DownloadKbKbDownloadFilenameGetErrors,
+    DownloadFileKbDownloadKbIdGetResponses,
+    DownloadFileKbDownloadKbIdGetErrors,
     ThrowOnError
   >({
     requestValidator: async (data) => {
-      return await zDownloadKbKbDownloadFilenameGetData.parseAsync(data);
+      return await zDownloadFileKbDownloadKbIdGetData.parseAsync(data);
     },
     responseType: 'json',
     security: [
@@ -511,76 +718,7 @@ export const downloadKbKbDownloadFilenameGet = <ThrowOnError extends boolean = f
         type: 'http',
       },
     ],
-    url: '/kb/download/{filename}',
-    ...options,
-  });
-};
-
-/**
- * Download Chat Data
- * Download chat data in specified format
- */
-export const downloadChatDataQueryDownloadChatIdGet = <ThrowOnError extends boolean = false>(
-  options: Options<DownloadChatDataQueryDownloadChatIdGetData, ThrowOnError>,
-) => {
-  return (options.client ?? _heyApiClient).get<
-    DownloadChatDataQueryDownloadChatIdGetResponses,
-    DownloadChatDataQueryDownloadChatIdGetErrors,
-    ThrowOnError
-  >({
-    requestValidator: async (data) => {
-      return await zDownloadChatDataQueryDownloadChatIdGetData.parseAsync(data);
-    },
-    responseType: 'json',
-    security: [
-      {
-        scheme: 'bearer',
-        type: 'http',
-      },
-    ],
-    url: '/query/download/{chat_id}',
-    ...options,
-  });
-};
-
-/**
- * Download Sample
- * Download sample data (for testing)
- */
-export const downloadSampleQueryDownloadGet = <ThrowOnError extends boolean = false>(
-  options?: Options<DownloadSampleQueryDownloadGetData, ThrowOnError>,
-) => {
-  return (options?.client ?? _heyApiClient).get<
-    DownloadSampleQueryDownloadGetResponses,
-    unknown,
-    ThrowOnError
-  >({
-    requestValidator: async (data) => {
-      return await zDownloadSampleQueryDownloadGetData.parseAsync(data);
-    },
-    responseType: 'json',
-    url: '/query/download',
-    ...options,
-  });
-};
-
-/**
- * Validate Query
- * Validate SQL query syntax
- */
-export const validateQueryQueryValidateGet = <ThrowOnError extends boolean = false>(
-  options: Options<ValidateQueryQueryValidateGetData, ThrowOnError>,
-) => {
-  return (options.client ?? _heyApiClient).get<
-    ValidateQueryQueryValidateGetResponses,
-    ValidateQueryQueryValidateGetErrors,
-    ThrowOnError
-  >({
-    requestValidator: async (data) => {
-      return await zValidateQueryQueryValidateGetData.parseAsync(data);
-    },
-    responseType: 'json',
-    url: '/query/validate',
+    url: '/kb/download/{kb_id}',
     ...options,
   });
 };
@@ -765,6 +903,33 @@ export const getUserProfileUserProfileGet = <ThrowOnError extends boolean = fals
       },
     ],
     url: '/user/profile',
+    ...options,
+  });
+};
+
+/**
+ * Get User Iam Role Info
+ * Get user IAM role information (AWS only)
+ */
+export const getUserIamRoleInfoUserIamRoleInfoGet = <ThrowOnError extends boolean = false>(
+  options?: Options<GetUserIamRoleInfoUserIamRoleInfoGetData, ThrowOnError>,
+) => {
+  return (options?.client ?? _heyApiClient).get<
+    GetUserIamRoleInfoUserIamRoleInfoGetResponses,
+    unknown,
+    ThrowOnError
+  >({
+    requestValidator: async (data) => {
+      return await zGetUserIamRoleInfoUserIamRoleInfoGetData.parseAsync(data);
+    },
+    responseType: 'json',
+    security: [
+      {
+        scheme: 'bearer',
+        type: 'http',
+      },
+    ],
+    url: '/user/iam-role-info',
     ...options,
   });
 };

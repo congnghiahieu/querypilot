@@ -3,9 +3,9 @@
 import { z } from 'zod';
 
 /**
- * Body_upload_kb_kb_upload_post
+ * Body_upload_file_kb_upload_post
  */
-export const zBodyUploadKbKbUploadPost = z.object({
+export const zBodyUploadFileKbUploadPost = z.object({
   file: z.string(),
 });
 
@@ -32,10 +32,14 @@ export const zDataSourceInfo = z.object({
  * FileInfo
  */
 export const zFileInfo = z.object({
+  id: z.string(),
   filename: z.string(),
+  original_filename: z.string(),
   size: z.number().int(),
   upload_date: z.string(),
   file_type: z.string(),
+  processing_status: z.string(),
+  has_insight: z.boolean(),
 });
 
 /**
@@ -52,6 +56,40 @@ export const zValidationError = z.object({
  */
 export const zHttpValidationError = z.object({
   detail: z.array(zValidationError).optional(),
+});
+
+/**
+ * KnowledgeBaseInsightResponse
+ */
+export const zKnowledgeBaseInsightResponse = z.object({
+  summary: z.string(),
+  key_insights: z.array(z.string()),
+  entities: z.array(z.string()),
+  topics: z.array(z.string()),
+  processing_time: z.union([z.number(), z.null()]).optional(),
+});
+
+/**
+ * KnowledgeBaseResponse
+ */
+export const zKnowledgeBaseResponse = z.object({
+  id: z.string(),
+  filename: z.string(),
+  original_filename: z.string(),
+  file_type: z.string(),
+  file_size: z.number().int(),
+  upload_date: z.string(),
+  processing_status: z.string(),
+  download_url: z.string(),
+  insight: z.union([zKnowledgeBaseInsightResponse, z.null()]).optional(),
+});
+
+/**
+ * TextUploadRequest
+ */
+export const zTextUploadRequest = z.object({
+  text: z.string(),
+  title: z.string().optional().default('Text Input'),
 });
 
 /**
@@ -112,10 +150,11 @@ export const zRegisterAuthRegisterPostData = z.object({
   query: z.never().optional(),
 });
 
-/**
- * Successful Response
- */
-export const zRegisterAuthRegisterPostResponse = zUserResponse;
+export const zConfirmSignupAuthConfirmSignupPostData = z.object({
+  body: z.object({}),
+  path: z.never().optional(),
+  query: z.never().optional(),
+});
 
 export const zLoginAuthLoginPostData = z.object({
   body: zUserLogin,
@@ -125,6 +164,24 @@ export const zLoginAuthLoginPostData = z.object({
 
 export const zLogoutAuthLogoutPostData = z.object({
   body: z.never().optional(),
+  path: z.never().optional(),
+  query: z.never().optional(),
+});
+
+export const zRefreshTokenAuthRefreshPostData = z.object({
+  body: z.object({}),
+  path: z.never().optional(),
+  query: z.never().optional(),
+});
+
+export const zForgotPasswordAuthForgotPasswordPostData = z.object({
+  body: z.object({}),
+  path: z.never().optional(),
+  query: z.never().optional(),
+});
+
+export const zResetPasswordAuthResetPasswordPostData = z.object({
+  body: z.object({}),
   path: z.never().optional(),
   query: z.never().optional(),
 });
@@ -152,18 +209,18 @@ export const zGetChatHistoryChatHistoryGetData = z.object({
   query: z.never().optional(),
 });
 
-export const zDeleteChatByIdChatHistoryIdDeleteData = z.object({
+export const zDeleteChatByIdChatHistoryChatIdDeleteData = z.object({
   body: z.never().optional(),
   path: z.object({
-    id: z.string(),
+    chat_id: z.string(),
   }),
   query: z.never().optional(),
 });
 
-export const zGetChatByIdChatHistoryIdGetData = z.object({
+export const zGetChatByIdChatHistoryChatIdGetData = z.object({
   body: z.never().optional(),
   path: z.object({
-    id: z.string(),
+    chat_id: z.string(),
   }),
   query: z.never().optional(),
 });
@@ -176,16 +233,37 @@ export const zContinueChatChatContinueChatIdPostData = z.object({
   query: z.never().optional(),
 });
 
-export const zGetChatDataChatDataChatIdGetData = z.object({
+export const zGetMessageDataChatDataMessageIdGetData = z.object({
   body: z.never().optional(),
   path: z.object({
-    chat_id: z.string(),
+    message_id: z.string(),
   }),
   query: z.never().optional(),
 });
 
-export const zUploadKbKbUploadPostData = z.object({
-  body: zBodyUploadKbKbUploadPost,
+export const zDownloadMessageDataChatDownloadMessageIdGetData = z.object({
+  body: z.never().optional(),
+  path: z.object({
+    message_id: z.string(),
+  }),
+  query: z.object({
+    format: z.enum(['json', 'csv', 'excel', 'pdf']),
+  }),
+});
+
+export const zUploadFileKbUploadPostData = z.object({
+  body: zBodyUploadFileKbUploadPost,
+  path: z.never().optional(),
+  query: z.never().optional(),
+});
+
+/**
+ * Successful Response
+ */
+export const zUploadFileKbUploadPostResponse = zKnowledgeBaseResponse;
+
+export const zUploadTextKbKbUploadTextPostData = z.object({
+  body: zTextUploadRequest,
   path: z.never().optional(),
   query: z.never().optional(),
 });
@@ -202,44 +280,28 @@ export const zListKbKbListGetData = z.object({
  */
 export const zListKbKbListGetResponse = z.array(zFileInfo);
 
-export const zDeleteKbKbFilenameDeleteData = z.object({
+export const zGetKbInsightKbKbIdInsightGetData = z.object({
   body: z.never().optional(),
   path: z.object({
-    filename: z.string(),
+    kb_id: z.string(),
   }),
   query: z.never().optional(),
 });
 
-export const zDownloadKbKbDownloadFilenameGetData = z.object({
+export const zDeleteKnowledgeBaseKbKbIdDeleteData = z.object({
   body: z.never().optional(),
   path: z.object({
-    filename: z.string(),
+    kb_id: z.string(),
   }),
   query: z.never().optional(),
 });
 
-export const zDownloadChatDataQueryDownloadChatIdGetData = z.object({
+export const zDownloadFileKbDownloadKbIdGetData = z.object({
   body: z.never().optional(),
   path: z.object({
-    chat_id: z.string(),
+    kb_id: z.string(),
   }),
-  query: z.object({
-    format: z.enum(['csv', 'excel', 'pdf']),
-  }),
-});
-
-export const zDownloadSampleQueryDownloadGetData = z.object({
-  body: z.never().optional(),
-  path: z.never().optional(),
   query: z.never().optional(),
-});
-
-export const zValidateQueryQueryValidateGetData = z.object({
-  body: z.never().optional(),
-  path: z.never().optional(),
-  query: z.object({
-    sql_query: z.string(),
-  }),
 });
 
 export const zGetSettingsUserSettingsGetData = z.object({
@@ -293,6 +355,12 @@ export const zRequestDatasourceAccessUserDatasourcesDatasourceIdRequestAccessPos
 });
 
 export const zGetUserProfileUserProfileGetData = z.object({
+  body: z.never().optional(),
+  path: z.never().optional(),
+  query: z.never().optional(),
+});
+
+export const zGetUserIamRoleInfoUserIamRoleInfoGetData = z.object({
   body: z.never().optional(),
   path: z.never().optional(),
   query: z.never().optional(),
