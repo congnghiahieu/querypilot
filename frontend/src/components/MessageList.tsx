@@ -1,21 +1,28 @@
-import Message from './Message';
+import Message, { type MessageProps } from './Message';
 
-type Message = {
-  role: 'user' | 'assistant';
-  content: string;
-};
+interface MessageListProps {
+  messages: Array<MessageProps>;
+}
 
-const MessageList = ({ messages }: { messages: Message[] }) => {
+const MessageList = ({ messages }: MessageListProps) => {
   return (
-    <div className='flex-1 overflow-y-auto'>
-      <div className='mx-auto w-full max-w-3xl px-4'>
-        {messages.map((message, index) => (
-          <Message
-            key={index}
-            {...message}
-          />
-        ))}
-      </div>
+    <div className='mx-auto max-w-4xl px-4'>
+      {messages.map((message, index) => (
+        <Message
+          key={message.id || index}
+          id={message.id}
+          role={message.role}
+          content={message.content}
+          sql_query={message.sql_query}
+          response_type={message.response_type}
+          execution_time={message.execution_time}
+          rows_count={message.rows_count}
+          has_data={message.has_data}
+          data={message.data}
+          isStreaming={message.isStreaming}
+          isLoading={message.isLoading}
+        />
+      ))}
     </div>
   );
 };

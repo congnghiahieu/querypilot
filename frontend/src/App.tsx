@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
+import { getAuthToken } from './lib/auth';
 import { LOCAL_STORAGE_AUTH_DATA_KEY, LOCAL_STORAGE_THEME_KEY } from './lib/constants';
 import ForgotPassword from './pages/ForgotPassword';
 import Index from './pages/Index';
@@ -18,24 +19,42 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: (failureCount, error: any) => {
+        // Don't retry on 401 errors
+        if (error?.response?.status === 401) return false;
+        return failureCount < 3;
+      },
     },
   },
 });
 
-// configure internal service client
+// Configure internal service client
 client.setConfig({
-  baseURL: import.meta.env.VITE_API_BASE_URl,
+  baseURL: import.meta.env.VITE_API_BASE_URL,
   withCredentials: true,
 });
 
+// Add request interceptor for authentication
 client.instance.interceptors.request.use((config) => {
-  const authData = localStorage.getItem(LOCAL_STORAGE_AUTH_DATA_KEY);
-  if (authData) {
-    const { access_token } = JSON.parse(authData);
-    config.headers.Authorization = `Bearer ${access_token}`;
+  const token = getAuthToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
+
+// Add response interceptor for handling 401 errors
+client.instance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Clear auth data and redirect to login
+      localStorage.removeItem(LOCAL_STORAGE_AUTH_DATA_KEY);
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  },
+);
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const authData = localStorage.getItem(LOCAL_STORAGE_AUTH_DATA_KEY);
@@ -58,7 +77,12 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
+        <BrowserRouter
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true,
+          }}
+        >
           <Routes>
             <Route
               path='/login'

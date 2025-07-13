@@ -1,3 +1,5 @@
+import { getMessageDataChatDataMessageIdGetOptions } from '@/api/@tanstack/react-query.gen';
+import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import DataChart from './DataChart';
@@ -7,9 +9,16 @@ import MessageActions from './MessageActions';
 import MessageAvatar from './MessageAvatar';
 import TypewriterText from './TypewriterText';
 
-type MessageProps = {
+export type MessageProps = {
+  id?: string;
   role: 'user' | 'assistant';
   content: string;
+  sql_query?: string;
+  response_type?: string;
+  execution_time?: number;
+  rows_count?: number;
+  created_at?: string;
+  has_data?: boolean;
   data?: {
     type: 'table' | 'chart';
     tableData?: {
@@ -33,14 +42,41 @@ type MessageProps = {
 };
 
 const Message = ({
+  id,
   role,
   content,
+  has_data = false,
+  sql_query,
+  response_type,
   data,
   isStreaming = false,
   isLoading = false,
   onRegenerate,
 }: MessageProps) => {
   const [streamingComplete, setStreamingComplete] = useState(false);
+
+  // Fetch message data if this is an assistant message with data
+  const { data: messageData } = useQuery({
+    ...getMessageDataChatDataMessageIdGetOptions({
+      path: { message_id: id! },
+    }),
+    enabled: !!(id && role === 'assistant' && has_data && response_type === 'table'),
+  });
+
+  // Determine what data to display
+  const displayData =
+    data ||
+    (messageData ?
+      {
+        type: 'table' as const,
+        tableData: {
+          data: messageData.data,
+          columns: messageData.columns,
+          title: 'Query Results',
+          sqlQuery: messageData.sql_query,
+        },
+      }
+    : undefined);
 
   return (
     <div className='py-6'>
@@ -62,10 +98,14 @@ const Message = ({
           </div>
 
           {/* Data visualization section */}
-          {role === 'assistant' && data && (!isStreaming || streamingComplete) && (
+          {role === 'assistant' && displayData && (!isStreaming || streamingComplete) && (
             <div className='mt-4'>
-              {data.type === 'table' && data.tableData && <DataTable {...data.tableData} />}
-              {data.type === 'chart' && data.chartData && <DataChart {...data.chartData} />}
+              {displayData.type === 'table' && displayData.tableData && (
+                <DataTable {...displayData.tableData} />
+              )}
+              {displayData.type === 'chart' && displayData.chartData && (
+                <DataChart {...displayData.chartData} />
+              )}
             </div>
           )}
 
