@@ -52,6 +52,10 @@ dev:
 run:
 	@uv run uvicorn main:app --host 0.0.0.0 --port 8080
 
+# alembic revision --autogenerate -m "<message>"
+migrate:
+	@uv run alembic upgrade head
+
 up:
 	@docker-compose build
 	@docker-compose up -d
