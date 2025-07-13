@@ -1,13 +1,14 @@
-import { useState } from 'react';
-import { User, Settings, Database } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import UserPermissions from './UserPermissions';
-import KnowledgeManager from './KnowledgeManager';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { UserResponse } from '@/api';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { LOCAL_STORAGE_AUTH_DATA_KEY } from '@/lib/constants';
+import { Database, Settings, User } from 'lucide-react';
+import { useState } from 'react';
+
+import KnowledgeManager from './KnowledgeManager';
+import UserPermissions from './UserPermissions';
 
 const UserMenu = () => {
   const [isOpen, setIsOpen] = useState(false);

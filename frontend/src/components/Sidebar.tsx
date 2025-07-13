@@ -1,7 +1,3 @@
-import { LogOut, SquarePen, FileText, PanelLeft } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -11,10 +7,15 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { LOCAL_STORAGE_AUTH_DATA_KEY } from '@/lib/constants';
+import { cn } from '@/lib/utils';
+import { FileText, LogOut, PanelLeft, SquarePen } from 'lucide-react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import KnowledgeUpload from './KnowledgeUpload';
 import ThemeToggle from './ThemeToggle';
 import UserMenu from './UserMenu';
-import { LOCAL_STORAGE_AUTH_DATA_KEY } from '@/lib/constants';
 
 interface SidebarProps {
   isOpen: boolean;

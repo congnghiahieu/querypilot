@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import MessageAvatar from './MessageAvatar';
-import MessageActions from './MessageActions';
-import DataTable from './DataTable';
+
 import DataChart from './DataChart';
-import TypewriterText from './TypewriterText';
+import DataTable from './DataTable';
 import LoadingIndicator from './LoadingIndicator';
+import MessageActions from './MessageActions';
+import MessageAvatar from './MessageAvatar';
+import TypewriterText from './TypewriterText';
 
 type MessageProps = {
   role: 'user' | 'assistant';

@@ -1,6 +1,6 @@
+import KnowledgeUpload from '@/components/KnowledgeUpload';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import KnowledgeUpload from '@/components/KnowledgeUpload';
 
 interface KnowledgeProps {
   onBack: () => void;

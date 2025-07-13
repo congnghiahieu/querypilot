@@ -1,7 +1,7 @@
-import { useState, useRef } from 'react';
-import { FileText, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { FileText, X } from 'lucide-react';
+import { useRef, useState } from 'react';
 
 interface SessionUploadProps {
   onFileUpload: (files: File[]) => void;

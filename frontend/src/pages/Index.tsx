@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import Sidebar from '@/components/Sidebar';
 import ChatHeader from '@/components/ChatHeader';
 import ChatInput from '@/components/ChatInput';
-import MessageList from '@/components/MessageList';
 import EmptyChatState from '@/components/EmptyChatState';
+import MessageList from '@/components/MessageList';
+import Sidebar from '@/components/Sidebar';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 type Message = {
   role: 'user' | 'assistant';

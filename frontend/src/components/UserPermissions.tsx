@@ -1,5 +1,5 @@
-import { Shield, User, Building, Database, CheckCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Building, CheckCircle, Database, Shield, User } from 'lucide-react';
 
 interface UserPermissionsProps {
   username: string;

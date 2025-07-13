@@ -1,15 +1,15 @@
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from 'react-router-dom';
-import { useMutation } from '@tanstack/react-query';
+import { registerAuthRegisterPostMutation } from '@/api/@tanstack/react-query.gen';
+import { zUserCreate } from '@/api/zod.gen';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { zUserCreate } from '@/api/zod.gen';
-import { registerAuthRegisterPostMutation } from '@/api/@tanstack/react-query.gen';
-import { z } from 'zod';
 import { toast } from '@/hooks/use-toast';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation } from '@tanstack/react-query';
+import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
+import { z } from 'zod';
 
 // Extended schema for form validation including confirmPassword
 const registerFormSchema = zUserCreate

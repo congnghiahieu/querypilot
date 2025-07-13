@@ -1,4 +1,4 @@
-import { ImagePlus, FileText, BarChart2, Code, HelpCircle } from 'lucide-react';
+import { BarChart2, Code, FileText, HelpCircle, ImagePlus } from 'lucide-react';
 
 const ActionButtons = () => {
   const actions = [

@@ -1,6 +1,6 @@
-import { Copy, ThumbsUp, ThumbsDown, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Copy, RefreshCw, ThumbsDown, ThumbsUp } from 'lucide-react';
 import { useState } from 'react';
 
 interface MessageActionsProps {

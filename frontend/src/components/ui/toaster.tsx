@@ -1,14 +1,14 @@
-import { useToast } from '@/hooks/use-toast';
 import {
   Toast,
   ToastClose,
   ToastDescription,
+  ToastViewport as ToastPrimitivesViewport,
   ToastProvider,
   ToastTitle,
-  ToastViewport as ToastPrimitivesViewport,
 } from '@/components/ui/toast';
-import React from 'react';
+import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import React from 'react';
 
 const ToastViewport = React.forwardRef<
   React.ElementRef<typeof ToastPrimitivesViewport>,
