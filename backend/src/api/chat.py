@@ -56,6 +56,15 @@ async def process_nl2sql_message(message: str, user_id: UUID) -> ChatResponse:
     Process nl2sql message with RAG context from knowledge base.
     Returns either text response or data response with JSON.
     """
+
+    return ChatResponse(
+        type="text",
+        content=f"Mocking response for message: {message}",
+        sql_query="",
+        execution_time=0.0,
+        rows_count=0,
+    )
+
     try:
         # Get relevant context from knowledge base using RAG
         context = rag_service.get_context_for_query(message, user_id)
@@ -188,8 +197,8 @@ def generate_placeholder_sql(message: str, schema_info: dict) -> str:
     return f"SELECT {column_list} FROM {table_name} LIMIT 5"
 
 
-@chat_router.post("/message")
-async def send_message(
+@chat_router.post("/new")
+async def new_chat(
     payload: ChatRequest,
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
@@ -244,6 +253,82 @@ async def send_message(
             session.commit()
         except Exception as e:
             # Log error but don't fail the request
+            print(f"Error storing data result: {e}")
+
+    return {
+        "chat_id": str(chat_session.id),
+        "message_id": str(assistant_message.id),
+        "response": result.dict(),
+    }
+
+
+@chat_router.post("/continue/{chat_id}")
+async def continue_chat(
+    chat_id: str,
+    payload: ChatRequest,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """Continue an existing chat conversation"""
+    try:
+        chat_uuid = UUID(chat_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid chat ID format")
+
+    statement = (
+        select(ChatSession)
+        .where(ChatSession.id == chat_uuid)
+        .where(ChatSession.user_id == current_user.id)
+        .where(ChatSession.is_active == True)
+    )
+    chat_session = session.exec(statement).first()
+
+    if not chat_session:
+        raise HTTPException(status_code=404, detail="Chat not found")
+
+    # Add user message (users only send text)
+    user_message = ChatMessage(
+        chat_session_id=chat_session.id, role="user", content=payload.message, response_type="text"
+    )
+    session.add(user_message)
+
+    # Process message through nl2sql pipeline with RAG and SQL execution service
+    result = await process_nl2sql_message(payload.message, current_user.id)
+
+    # Add assistant message
+    assistant_message = ChatMessage(
+        chat_session_id=chat_session.id,
+        role="assistant",
+        content=result.content,
+        sql_query=result.sql_query if result.sql_query else None,
+        response_type=result.type,
+        execution_time=result.execution_time,
+        rows_count=result.rows_count,
+    )
+    session.add(assistant_message)
+
+    # Update chat session timestamp
+    from datetime import datetime
+
+    chat_session.updated_at = datetime.utcnow()
+
+    session.commit()
+    session.refresh(assistant_message)
+
+    # Store data if needed (only for assistant messages with JSON data)
+    if result.type in ["table", "chart"] and result.content:
+        try:
+            data_df = pd.read_json(result.content)
+            data_result = ChatDataResult(
+                message_id=assistant_message.id,
+                data_json=result.content,
+                columns=json.dumps(data_df.columns.tolist()),
+                shape_rows=len(data_df),
+                shape_cols=len(data_df.columns),
+            )
+            session.add(data_result)
+            session.commit()
+        except Exception as e:
             print(f"Error storing data result: {e}")
 
     return {
@@ -360,82 +445,6 @@ def delete_chat_by_id(
     session.commit()
 
     return {"message": "Chat deleted successfully"}
-
-
-@chat_router.post("/continue/{chat_id}")
-async def continue_chat(
-    chat_id: str,
-    payload: ChatRequest,
-    current_user: User = Depends(get_current_user),
-    session: Session = Depends(get_session),
-):
-    """Continue an existing chat conversation"""
-    try:
-        chat_uuid = UUID(chat_id)
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid chat ID format")
-
-    statement = (
-        select(ChatSession)
-        .where(ChatSession.id == chat_uuid)
-        .where(ChatSession.user_id == current_user.id)
-        .where(ChatSession.is_active == True)
-    )
-    chat_session = session.exec(statement).first()
-
-    if not chat_session:
-        raise HTTPException(status_code=404, detail="Chat not found")
-
-    # Add user message (users only send text)
-    user_message = ChatMessage(
-        chat_session_id=chat_session.id, role="user", content=payload.message, response_type="text"
-    )
-    session.add(user_message)
-
-    # Process message through nl2sql pipeline with RAG and SQL execution service
-    result = await process_nl2sql_message(payload.message, current_user.id)
-
-    # Add assistant message
-    assistant_message = ChatMessage(
-        chat_session_id=chat_session.id,
-        role="assistant",
-        content=result.content,
-        sql_query=result.sql_query if result.sql_query else None,
-        response_type=result.type,
-        execution_time=result.execution_time,
-        rows_count=result.rows_count,
-    )
-    session.add(assistant_message)
-
-    # Update chat session timestamp
-    from datetime import datetime
-
-    chat_session.updated_at = datetime.utcnow()
-
-    session.commit()
-    session.refresh(assistant_message)
-
-    # Store data if needed (only for assistant messages with JSON data)
-    if result.type in ["table", "chart"] and result.content:
-        try:
-            data_df = pd.read_json(result.content)
-            data_result = ChatDataResult(
-                message_id=assistant_message.id,
-                data_json=result.content,
-                columns=json.dumps(data_df.columns.tolist()),
-                shape_rows=len(data_df),
-                shape_cols=len(data_df.columns),
-            )
-            session.add(data_result)
-            session.commit()
-        except Exception as e:
-            print(f"Error storing data result: {e}")
-
-    return {
-        "chat_id": str(chat_session.id),
-        "message_id": str(assistant_message.id),
-        "response": result.dict(),
-    }
 
 
 @chat_router.get("/data/{message_id}")
