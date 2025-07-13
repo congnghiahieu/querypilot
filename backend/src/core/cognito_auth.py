@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import boto3
 from jose import jwt
@@ -28,7 +28,7 @@ class CognitoAuthService:
             aws_secret_access_key=APP_SETTINGS.AWS_SECRET_ACCESS_KEY,
         )
 
-    def sign_up(self, username: str, password: str, email: str, full_name: str) -> Dict[str, Any]:
+    def sign_up(self, username: str, password: str, email: str, full_name: str) -> dict[str, Any]:
         """Register a new user in Cognito"""
         try:
             secret_hash = self._calculate_secret_hash(username)
@@ -58,7 +58,7 @@ class CognitoAuthService:
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-    def confirm_sign_up(self, username: str, confirmation_code: str) -> Dict[str, Any]:
+    def confirm_sign_up(self, username: str, confirmation_code: str) -> dict[str, Any]:
         """Confirm user registration"""
         try:
             secret_hash = self._calculate_secret_hash(username)
@@ -79,7 +79,7 @@ class CognitoAuthService:
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-    def sign_in(self, username: str, password: str) -> Dict[str, Any]:
+    def sign_in(self, username: str, password: str) -> dict[str, Any]:
         """Authenticate user and return tokens"""
         try:
             secret_hash = self._calculate_secret_hash(username)
@@ -126,7 +126,7 @@ class CognitoAuthService:
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-    def verify_token(self, access_token: str) -> Dict[str, Any]:
+    def verify_token(self, access_token: str) -> dict[str, Any]:
         """Verify and decode access token"""
         try:
             response = self.cognito_client.get_user(AccessToken=access_token)
@@ -149,7 +149,7 @@ class CognitoAuthService:
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-    def refresh_token(self, refresh_token: str, username: str) -> Dict[str, Any]:
+    def refresh_token(self, refresh_token: str, username: str) -> dict[str, Any]:
         """Refresh access token"""
         try:
             secret_hash = self._calculate_secret_hash(username)
@@ -176,7 +176,7 @@ class CognitoAuthService:
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-    def sign_out(self, access_token: str) -> Dict[str, Any]:
+    def sign_out(self, access_token: str) -> dict[str, Any]:
         """Sign out user (revoke tokens)"""
         try:
             self.cognito_client.global_sign_out(AccessToken=access_token)
@@ -184,7 +184,7 @@ class CognitoAuthService:
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-    def forgot_password(self, username: str) -> Dict[str, Any]:
+    def forgot_password(self, username: str) -> dict[str, Any]:
         """Initiate forgot password flow"""
         try:
             secret_hash = self._calculate_secret_hash(username)
@@ -202,7 +202,7 @@ class CognitoAuthService:
 
     def confirm_forgot_password(
         self, username: str, confirmation_code: str, new_password: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Confirm forgot password with new password"""
         try:
             secret_hash = self._calculate_secret_hash(username)
@@ -237,7 +237,7 @@ class CognitoAuthService:
 
         return secret_hash
 
-    def get_user_groups(self, username: str) -> Dict[str, Any]:
+    def get_user_groups(self, username: str) -> dict[str, Any]:
         """Get user groups from Cognito"""
         try:
             response = self.cognito_client.admin_list_groups_for_user(
@@ -252,7 +252,7 @@ class CognitoAuthService:
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-    def add_user_to_group(self, username: str, group_name: str) -> Dict[str, Any]:
+    def add_user_to_group(self, username: str, group_name: str) -> dict[str, Any]:
         """Add user to a Cognito group"""
         try:
             self.cognito_client.admin_add_user_to_group(

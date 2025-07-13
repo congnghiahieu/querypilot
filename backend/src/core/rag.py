@@ -1,7 +1,7 @@
 import json
 import os
 import time
-from typing import Any, Dict, List
+from typing import Any
 from uuid import UUID
 
 import faiss
@@ -94,7 +94,7 @@ class DocumentProcessor:
         """Process plain text"""
         return content.strip()
 
-    def chunk_text(self, text: str) -> List[str]:
+    def chunk_text(self, text: str) -> list[str]:
         """Split text into chunks"""
         return self.text_splitter.split_text(text)
 
@@ -135,7 +135,7 @@ class VectorStore:
             with open(self.metadata_path, "w", encoding="utf-8") as f:
                 json.dump(self.metadata, f, ensure_ascii=False, indent=2)
 
-    def add_documents(self, kb_id: str, chunks: List[str], filename: str):
+    def add_documents(self, kb_id: str, chunks: list[str], filename: str):
         """Add document chunks to vector store"""
         if not chunks:
             return
@@ -168,7 +168,7 @@ class VectorStore:
         # Save index
         self._save_index()
 
-    def search(self, query: str, k: int = 5) -> List[Dict[str, Any]]:
+    def search(self, query: str, k: int = 5) -> list[dict[str, Any]]:
         """Search for similar documents"""
         if self.index is None or self.index.ntotal == 0:
             return []
@@ -232,7 +232,7 @@ class RAGService:
 
     def process_document(
         self, file_path: str, file_type: str, kb_id: str, filename: str, user_id: UUID
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Process document and add to vector store"""
         start_time = time.time()
 
@@ -272,7 +272,7 @@ class RAGService:
         except Exception as e:
             raise Exception(f"Error processing document: {str(e)}")
 
-    def process_text(self, text: str, kb_id: str, user_id: UUID) -> Dict[str, Any]:
+    def process_text(self, text: str, kb_id: str, user_id: UUID) -> dict[str, Any]:
         """Process text input and add to vector store"""
         start_time = time.time()
 
@@ -302,7 +302,7 @@ class RAGService:
         except Exception as e:
             raise Exception(f"Error processing text: {str(e)}")
 
-    def _generate_insights(self, text: str) -> Dict[str, Any]:
+    def _generate_insights(self, text: str) -> dict[str, Any]:
         """Generate insights from text using LLM"""
         try:
             # Truncate text if too long
@@ -361,7 +361,7 @@ class RAGService:
                 "topics": ["General content"],
             }
 
-    def search_knowledge_base(self, query: str, user_id: UUID, k: int = 5) -> List[Dict[str, Any]]:
+    def search_knowledge_base(self, query: str, user_id: UUID, k: int = 5) -> list[dict[str, Any]]:
         """Search knowledge base for relevant context"""
         vector_store = VectorStore(user_id)
         return vector_store.search(query, k)

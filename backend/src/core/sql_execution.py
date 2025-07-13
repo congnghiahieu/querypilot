@@ -1,6 +1,6 @@
 import asyncio
 import time
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Optional, Tuple
 
 import boto3
 from botocore.exceptions import NoCredentialsError
@@ -12,7 +12,7 @@ from src.core.settings import APP_SETTINGS
 class SQLExecutionService:
     """Service for executing SQL queries on various platforms"""
 
-    def __init__(self, user_context: Optional[Dict[str, Any]] = None):
+    def __init__(self, user_context: Optional[dict[str, Any]] = None):
         self.database = APP_SETTINGS.AWS_ATHENA_DATABASE
         self.workgroup = APP_SETTINGS.AWS_ATHENA_WORKGROUP
         self.output_location = APP_SETTINGS.AWS_ATHENA_OUTPUT_LOCATION
@@ -114,7 +114,7 @@ class SQLExecutionService:
         except Exception as e:
             print(f"Warning: Could not assume user role, using default credentials: {e}")
 
-    async def execute_query(self, sql_query: str) -> Dict[str, Any]:
+    async def execute_query(self, sql_query: str) -> dict[str, Any]:
         """
         Execute SQL query and return results
 
@@ -129,7 +129,7 @@ class SQLExecutionService:
 
         return await self._execute_athena_query(sql_query)
 
-    async def _execute_athena_query(self, sql_query: str) -> Dict[str, Any]:
+    async def _execute_athena_query(self, sql_query: str) -> dict[str, Any]:
         """Execute SQL query on AWS Athena"""
         start_time = time.time()
 
@@ -192,7 +192,7 @@ class SQLExecutionService:
                 "sql_query": sql_query,
             }
 
-    async def _wait_for_query_completion(self, query_execution_id: str) -> Dict[str, Any]:
+    async def _wait_for_query_completion(self, query_execution_id: str) -> dict[str, Any]:
         """Wait for Athena query to complete"""
         max_wait_time = self.timeout
         wait_time = 0
@@ -210,7 +210,7 @@ class SQLExecutionService:
 
         raise TimeoutError(f"Query execution timed out after {max_wait_time} seconds")
 
-    async def _get_query_results(self, query_execution_id: str) -> Dict[str, Any]:
+    async def _get_query_results(self, query_execution_id: str) -> dict[str, Any]:
         """Get query results from Athena"""
         try:
             response = self.athena_client.get_query_results(QueryExecutionId=query_execution_id)
@@ -281,7 +281,7 @@ class SQLExecutionService:
 
         return sql_query
 
-    def get_database_schema(self) -> Dict[str, Any]:
+    def get_database_schema(self) -> dict[str, Any]:
         """Get database schema from Glue Catalog"""
         if not APP_SETTINGS.is_aws:
             raise ValueError("Schema retrieval requires AWS environment")
@@ -345,7 +345,7 @@ class SQLExecutionService:
         except Exception as e:
             return False, f"Error validating query: {str(e)}"
 
-    def check_service_health(self) -> Dict[str, Any]:
+    def check_service_health(self) -> dict[str, Any]:
         """Check the health of SQL execution service"""
         if not APP_SETTINGS.is_aws:
             return {
@@ -376,7 +376,7 @@ sql_execution_service = None
 
 
 def get_sql_execution_service(
-    user_context: Optional[Dict[str, Any]] = None,
+    user_context: Optional[dict[str, Any]] = None,
 ) -> Optional[SQLExecutionService]:
     """Get SQL execution service instance with user context"""
     # Always create a new instance with user context for security

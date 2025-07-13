@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 import boto3
 
@@ -25,7 +25,7 @@ class IAMRoleService:
 
     def create_user_role(
         self, user_id: str, username: str, user_level: str = "basic"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Create a new IAM role for a user"""
         try:
             role_name = f"{self.role_prefix}{username}-{user_id[:8]}"
@@ -84,7 +84,7 @@ class IAMRoleService:
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-    def _get_policies_for_user_level(self, user_level: str) -> List[str]:
+    def _get_policies_for_user_level(self, user_level: str) -> list[str]:
         """Get list of managed policies based on user level"""
         base_policies = [
             "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess",  # Basic S3 read access
@@ -161,8 +161,8 @@ class IAMRoleService:
             print(f"Warning: Could not create inline policy: {e}")
 
     def update_user_role_permissions(
-        self, user_id: str, username: str, new_permissions: List[str]
-    ) -> Dict[str, Any]:
+        self, user_id: str, username: str, new_permissions: list[str]
+    ) -> dict[str, Any]:
         """Update user role permissions"""
         try:
             role_name = f"{self.role_prefix}{username}-{user_id[:8]}"
@@ -218,7 +218,7 @@ class IAMRoleService:
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-    def delete_user_role(self, user_id: str, username: str) -> Dict[str, Any]:
+    def delete_user_role(self, user_id: str, username: str) -> dict[str, Any]:
         """Delete user IAM role"""
         try:
             role_name = f"{self.role_prefix}{username}-{user_id[:8]}"
@@ -249,7 +249,7 @@ class IAMRoleService:
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-    def get_user_role_info(self, user_id: str, username: str) -> Dict[str, Any]:
+    def get_user_role_info(self, user_id: str, username: str) -> dict[str, Any]:
         """Get user role information"""
         try:
             role_name = f"{self.role_prefix}{username}-{user_id[:8]}"

@@ -1,6 +1,6 @@
 import json
 import os
-from typing import List, Optional
+from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
@@ -44,9 +44,9 @@ class KnowledgeBaseResponse(BaseModel):
 
 class KnowledgeBaseInsightResponse(BaseModel):
     summary: str
-    key_insights: List[str]
-    entities: List[str]
-    topics: List[str]
+    key_insights: list[str]
+    entities: list[str]
+    topics: list[str]
     processing_time: Optional[float] = None
 
 
@@ -271,7 +271,7 @@ def upload_text_kb(
         raise HTTPException(status_code=500, detail=f"Failed to process text: {str(e)}")
 
 
-@kb_router.get("/list", response_model=List[FileInfo])
+@kb_router.get("/list", response_model=list[FileInfo])
 def list_kb(
     current_user: User = Depends(get_current_user), session: Session = Depends(get_session)
 ):

@@ -1,5 +1,4 @@
 import json
-from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -47,7 +46,7 @@ class UserSettingsResponse(BaseModel):
     chi_nhanh: str
     pham_vi: str
     du_lieu: str
-    datasource_permissions: List[str]
+    datasource_permissions: list[str]
 
 
 class UserSettingsUpdate(BaseModel):
@@ -55,14 +54,14 @@ class UserSettingsUpdate(BaseModel):
     chi_nhanh: str
     pham_vi: str
     du_lieu: str
-    datasource_permissions: List[str]
+    datasource_permissions: list[str]
 
 
 class DataSourceInfo(BaseModel):
     id: str
     name: str
     description: str
-    tables: List[str]
+    tables: list[str]
     access_level: str
     has_access: bool
 
@@ -138,7 +137,7 @@ def update_settings(
     return {"message": "Settings updated successfully"}
 
 
-@user_router.get("/datasources", response_model=List[DataSourceInfo])
+@user_router.get("/datasources", response_model=list[DataSourceInfo])
 def get_datasources(
     current_user: User = Depends(get_current_user), session: Session = Depends(get_session)
 ):
@@ -167,7 +166,7 @@ def get_datasources(
     return datasources
 
 
-@user_router.get("/datasources/accessible", response_model=List[DataSourceInfo])
+@user_router.get("/datasources/accessible", response_model=list[DataSourceInfo])
 def get_accessible_datasources(
     current_user: User = Depends(get_current_user), session: Session = Depends(get_session)
 ):
