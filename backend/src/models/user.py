@@ -1,13 +1,8 @@
-from __future__ import annotations
-
 from datetime import datetime
 from typing import Optional
 from uuid import UUID, uuid4
 
 from sqlmodel import Field, Relationship, SQLModel
-
-from src.models.chat import ChatSession
-from src.models.knowledge_base import KnowledgeBase
 
 
 class User(SQLModel, table=True):
@@ -26,9 +21,12 @@ class User(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: Optional[datetime] = Field(default=None)
 
-    # Add relationships
-    chat_sessions: list[ChatSession] = Relationship(back_populates="user")
-    knowledge_bases: list[KnowledgeBase] = Relationship(back_populates="user")
+    # Add cognito_user_id for AWS Cognito integration
+    cognito_user_id: Optional[str] = Field(default=None, index=True)
+
+    # Add relationships - use string names to avoid forward reference issues
+    chat_sessions: list["ChatSession"] = Relationship(back_populates="user")
+    knowledge_bases: list["KnowledgeBase"] = Relationship(back_populates="user")
     user_settings: Optional["UserSettings"] = Relationship(back_populates="user")
 
 
@@ -46,4 +44,4 @@ class UserSettings(SQLModel, table=True):
     updated_at: Optional[datetime] = Field(default=None)
 
     # Add relationship
-    user: User = Relationship(back_populates="user_settings")
+    user: "User" = Relationship(back_populates="user_settings")

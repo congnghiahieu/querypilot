@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from datetime import datetime
 from typing import Optional
 from uuid import UUID, uuid4
@@ -22,7 +20,7 @@ class ChatSession(SQLModel, table=True):
     )
     is_active: bool = Field(default=True)
 
-    # Relationships
+    # Relationships - use string names to avoid circular imports
     user: "User" = Relationship(back_populates="chat_sessions")
     messages: list["ChatMessage"] = Relationship(back_populates="chat_session", cascade_delete=True)
 
@@ -43,7 +41,7 @@ class ChatMessage(SQLModel, table=True):
     )
 
     # Relationships
-    chat_session: ChatSession = Relationship(back_populates="messages")
+    chat_session: "ChatSession" = Relationship(back_populates="messages")
     data_result: Optional["ChatDataResult"] = Relationship(back_populates="message")
 
 
@@ -61,4 +59,4 @@ class ChatDataResult(SQLModel, table=True):
     )
 
     # Relationships
-    message: ChatMessage = Relationship(back_populates="data_result")
+    message: "ChatMessage" = Relationship(back_populates="data_result")

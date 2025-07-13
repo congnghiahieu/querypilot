@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import json
 from datetime import datetime
 from typing import Optional
@@ -28,7 +26,7 @@ class KnowledgeBase(SQLModel, table=True):
         default="pending", max_length=20
     )  # pending, processing, completed, failed
 
-    # Relationships
+    # Relationships - use string reference
     user: "User" = Relationship(back_populates="knowledge_bases")
     insight: Optional["KnowledgeBaseInsight"] = Relationship(back_populates="knowledge_base")
 
@@ -63,7 +61,7 @@ class KnowledgeBaseInsight(SQLModel, table=True):
     )
 
     # Relationships
-    knowledge_base: KnowledgeBase = Relationship(back_populates="insight")
+    knowledge_base: "KnowledgeBase" = Relationship(back_populates="insight")
 
     def get_key_insights(self) -> list:
         """Safely parse key_insights JSON string to list"""
