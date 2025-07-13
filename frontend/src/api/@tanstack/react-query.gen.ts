@@ -26,12 +26,12 @@ import {
   listKbKbListGet,
   loginAuthLoginPost,
   logoutAuthLogoutPost,
+  newChatChatNewPost,
   refreshTokenAuthRefreshPost,
   registerAuthRegisterPost,
   requestDatasourceAccessUserDatasourcesDatasourceIdRequestAccessPost,
   resetPasswordAuthResetPasswordPost,
   rootGet,
-  sendMessageChatMessagePost,
   updateSettingsUserSettingsPost,
   uploadFileKbUploadPost,
   uploadTextKbKbUploadTextPost,
@@ -64,6 +64,8 @@ import type {
   LoginAuthLoginPostData,
   LoginAuthLoginPostError,
   LogoutAuthLogoutPostData,
+  NewChatChatNewPostData,
+  NewChatChatNewPostError,
   RefreshTokenAuthRefreshPostData,
   RefreshTokenAuthRefreshPostError,
   RegisterAuthRegisterPostData,
@@ -73,8 +75,6 @@ import type {
   ResetPasswordAuthResetPasswordPostData,
   ResetPasswordAuthResetPasswordPostError,
   RootGetData,
-  SendMessageChatMessagePostData,
-  SendMessageChatMessagePostError,
   UpdateSettingsUserSettingsPostData,
   UpdateSettingsUserSettingsPostError,
   UploadFileKbUploadPostData,
@@ -501,20 +501,17 @@ export const getCurrentUserInfoAuthMeGetOptions = (
   });
 };
 
-export const sendMessageChatMessagePostQueryKey = (
-  options: Options<SendMessageChatMessagePostData>,
-) => createQueryKey('sendMessageChatMessagePost', options);
+export const newChatChatNewPostQueryKey = (options: Options<NewChatChatNewPostData>) =>
+  createQueryKey('newChatChatNewPost', options);
 
 /**
- * Send Message
+ * New Chat
  * Send a message and get response from text2sql pipeline
  */
-export const sendMessageChatMessagePostOptions = (
-  options: Options<SendMessageChatMessagePostData>,
-) => {
+export const newChatChatNewPostOptions = (options: Options<NewChatChatNewPostData>) => {
   return queryOptions({
     queryFn: async ({ queryKey, signal }) => {
-      const { data } = await sendMessageChatMessagePost({
+      const { data } = await newChatChatNewPost({
         ...options,
         ...queryKey[0],
         signal,
@@ -522,28 +519,81 @@ export const sendMessageChatMessagePostOptions = (
       });
       return data;
     },
-    queryKey: sendMessageChatMessagePostQueryKey(options),
+    queryKey: newChatChatNewPostQueryKey(options),
   });
 };
 
 /**
- * Send Message
+ * New Chat
  * Send a message and get response from text2sql pipeline
  */
-export const sendMessageChatMessagePostMutation = (
-  options?: Partial<Options<SendMessageChatMessagePostData>>,
+export const newChatChatNewPostMutation = (
+  options?: Partial<Options<NewChatChatNewPostData>>,
 ): UseMutationOptions<
   unknown,
-  AxiosError<SendMessageChatMessagePostError>,
-  Options<SendMessageChatMessagePostData>
+  AxiosError<NewChatChatNewPostError>,
+  Options<NewChatChatNewPostData>
 > => {
   const mutationOptions: UseMutationOptions<
     unknown,
-    AxiosError<SendMessageChatMessagePostError>,
-    Options<SendMessageChatMessagePostData>
+    AxiosError<NewChatChatNewPostError>,
+    Options<NewChatChatNewPostData>
   > = {
     mutationFn: async (localOptions) => {
-      const { data } = await sendMessageChatMessagePost({
+      const { data } = await newChatChatNewPost({
+        ...options,
+        ...localOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const continueChatChatContinueChatIdPostQueryKey = (
+  options: Options<ContinueChatChatContinueChatIdPostData>,
+) => createQueryKey('continueChatChatContinueChatIdPost', options);
+
+/**
+ * Continue Chat
+ * Continue an existing chat conversation
+ */
+export const continueChatChatContinueChatIdPostOptions = (
+  options: Options<ContinueChatChatContinueChatIdPostData>,
+) => {
+  return queryOptions({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await continueChatChatContinueChatIdPost({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: continueChatChatContinueChatIdPostQueryKey(options),
+  });
+};
+
+/**
+ * Continue Chat
+ * Continue an existing chat conversation
+ */
+export const continueChatChatContinueChatIdPostMutation = (
+  options?: Partial<Options<ContinueChatChatContinueChatIdPostData>>,
+): UseMutationOptions<
+  unknown,
+  AxiosError<ContinueChatChatContinueChatIdPostError>,
+  Options<ContinueChatChatContinueChatIdPostData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    unknown,
+    AxiosError<ContinueChatChatContinueChatIdPostError>,
+    Options<ContinueChatChatContinueChatIdPostData>
+  > = {
+    mutationFn: async (localOptions) => {
+      const { data } = await continueChatChatContinueChatIdPost({
         ...options,
         ...localOptions,
         throwOnError: true,
@@ -630,59 +680,6 @@ export const getChatByIdChatHistoryChatIdGetOptions = (
     },
     queryKey: getChatByIdChatHistoryChatIdGetQueryKey(options),
   });
-};
-
-export const continueChatChatContinueChatIdPostQueryKey = (
-  options: Options<ContinueChatChatContinueChatIdPostData>,
-) => createQueryKey('continueChatChatContinueChatIdPost', options);
-
-/**
- * Continue Chat
- * Continue an existing chat conversation
- */
-export const continueChatChatContinueChatIdPostOptions = (
-  options: Options<ContinueChatChatContinueChatIdPostData>,
-) => {
-  return queryOptions({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await continueChatChatContinueChatIdPost({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: continueChatChatContinueChatIdPostQueryKey(options),
-  });
-};
-
-/**
- * Continue Chat
- * Continue an existing chat conversation
- */
-export const continueChatChatContinueChatIdPostMutation = (
-  options?: Partial<Options<ContinueChatChatContinueChatIdPostData>>,
-): UseMutationOptions<
-  unknown,
-  AxiosError<ContinueChatChatContinueChatIdPostError>,
-  Options<ContinueChatChatContinueChatIdPostData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    unknown,
-    AxiosError<ContinueChatChatContinueChatIdPostError>,
-    Options<ContinueChatChatContinueChatIdPostData>
-  > = {
-    mutationFn: async (localOptions) => {
-      const { data } = await continueChatChatContinueChatIdPost({
-        ...options,
-        ...localOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
 };
 
 export const getMessageDataChatDataMessageIdGetQueryKey = (

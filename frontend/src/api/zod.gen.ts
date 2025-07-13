@@ -196,9 +196,17 @@ export const zGetCurrentUserInfoAuthMeGetData = z.object({
  */
 export const zGetCurrentUserInfoAuthMeGetResponse = zUserResponse;
 
-export const zSendMessageChatMessagePostData = z.object({
+export const zNewChatChatNewPostData = z.object({
   body: zChatRequest,
   path: z.never().optional(),
+  query: z.never().optional(),
+});
+
+export const zContinueChatChatContinueChatIdPostData = z.object({
+  body: zChatRequest,
+  path: z.object({
+    chat_id: z.string(),
+  }),
   query: z.never().optional(),
 });
 
@@ -218,14 +226,6 @@ export const zDeleteChatByIdChatHistoryChatIdDeleteData = z.object({
 
 export const zGetChatByIdChatHistoryChatIdGetData = z.object({
   body: z.never().optional(),
-  path: z.object({
-    chat_id: z.string(),
-  }),
-  query: z.never().optional(),
-});
-
-export const zContinueChatChatContinueChatIdPostData = z.object({
-  body: zChatRequest,
   path: z.object({
     chat_id: z.string(),
   }),

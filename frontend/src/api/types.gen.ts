@@ -507,24 +507,52 @@ export type GetCurrentUserInfoAuthMeGetResponses = {
 export type GetCurrentUserInfoAuthMeGetResponse =
   GetCurrentUserInfoAuthMeGetResponses[keyof GetCurrentUserInfoAuthMeGetResponses];
 
-export type SendMessageChatMessagePostData = {
+export type NewChatChatNewPostData = {
   body: ChatRequest;
   path?: never;
   query?: never;
-  url: '/chat/message';
+  url: '/chat/new';
 };
 
-export type SendMessageChatMessagePostErrors = {
+export type NewChatChatNewPostErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type SendMessageChatMessagePostError =
-  SendMessageChatMessagePostErrors[keyof SendMessageChatMessagePostErrors];
+export type NewChatChatNewPostError = NewChatChatNewPostErrors[keyof NewChatChatNewPostErrors];
 
-export type SendMessageChatMessagePostResponses = {
+export type NewChatChatNewPostResponses = {
+  /**
+   * Successful Response
+   */
+  200: unknown;
+};
+
+export type ContinueChatChatContinueChatIdPostData = {
+  body: ChatRequest;
+  path: {
+    /**
+     * Chat Id
+     */
+    chat_id: string;
+  };
+  query?: never;
+  url: '/chat/continue/{chat_id}';
+};
+
+export type ContinueChatChatContinueChatIdPostErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type ContinueChatChatContinueChatIdPostError =
+  ContinueChatChatContinueChatIdPostErrors[keyof ContinueChatChatContinueChatIdPostErrors];
+
+export type ContinueChatChatContinueChatIdPostResponses = {
   /**
    * Successful Response
    */
@@ -597,35 +625,6 @@ export type GetChatByIdChatHistoryChatIdGetError =
   GetChatByIdChatHistoryChatIdGetErrors[keyof GetChatByIdChatHistoryChatIdGetErrors];
 
 export type GetChatByIdChatHistoryChatIdGetResponses = {
-  /**
-   * Successful Response
-   */
-  200: unknown;
-};
-
-export type ContinueChatChatContinueChatIdPostData = {
-  body: ChatRequest;
-  path: {
-    /**
-     * Chat Id
-     */
-    chat_id: string;
-  };
-  query?: never;
-  url: '/chat/continue/{chat_id}';
-};
-
-export type ContinueChatChatContinueChatIdPostErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type ContinueChatChatContinueChatIdPostError =
-  ContinueChatChatContinueChatIdPostErrors[keyof ContinueChatChatContinueChatIdPostErrors];
-
-export type ContinueChatChatContinueChatIdPostResponses = {
   /**
    * Successful Response
    */

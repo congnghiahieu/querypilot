@@ -61,6 +61,9 @@ import type {
   LoginAuthLoginPostResponses,
   LogoutAuthLogoutPostData,
   LogoutAuthLogoutPostResponses,
+  NewChatChatNewPostData,
+  NewChatChatNewPostErrors,
+  NewChatChatNewPostResponses,
   RefreshTokenAuthRefreshPostData,
   RefreshTokenAuthRefreshPostErrors,
   RefreshTokenAuthRefreshPostResponses,
@@ -75,9 +78,6 @@ import type {
   ResetPasswordAuthResetPasswordPostResponses,
   RootGetData,
   RootGetResponses,
-  SendMessageChatMessagePostData,
-  SendMessageChatMessagePostErrors,
-  SendMessageChatMessagePostResponses,
   UpdateSettingsUserSettingsPostData,
   UpdateSettingsUserSettingsPostErrors,
   UpdateSettingsUserSettingsPostResponses,
@@ -115,12 +115,12 @@ import {
   zListKbKbListGetResponse,
   zLoginAuthLoginPostData,
   zLogoutAuthLogoutPostData,
+  zNewChatChatNewPostData,
   zRefreshTokenAuthRefreshPostData,
   zRegisterAuthRegisterPostData,
   zRequestDatasourceAccessUserDatasourcesDatasourceIdRequestAccessPostData,
   zResetPasswordAuthResetPasswordPostData,
   zRootGetData,
-  zSendMessageChatMessagePostData,
   zUpdateSettingsUserSettingsPostData,
   zUploadFileKbUploadPostData,
   zUploadFileKbUploadPostResponse,
@@ -353,19 +353,19 @@ export const getCurrentUserInfoAuthMeGet = <ThrowOnError extends boolean = false
 };
 
 /**
- * Send Message
+ * New Chat
  * Send a message and get response from text2sql pipeline
  */
-export const sendMessageChatMessagePost = <ThrowOnError extends boolean = false>(
-  options: Options<SendMessageChatMessagePostData, ThrowOnError>,
+export const newChatChatNewPost = <ThrowOnError extends boolean = false>(
+  options: Options<NewChatChatNewPostData, ThrowOnError>,
 ) => {
   return (options.client ?? _heyApiClient).post<
-    SendMessageChatMessagePostResponses,
-    SendMessageChatMessagePostErrors,
+    NewChatChatNewPostResponses,
+    NewChatChatNewPostErrors,
     ThrowOnError
   >({
     requestValidator: async (data) => {
-      return await zSendMessageChatMessagePostData.parseAsync(data);
+      return await zNewChatChatNewPostData.parseAsync(data);
     },
     responseType: 'json',
     security: [
@@ -374,7 +374,38 @@ export const sendMessageChatMessagePost = <ThrowOnError extends boolean = false>
         type: 'http',
       },
     ],
-    url: '/chat/message',
+    url: '/chat/new',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+};
+
+/**
+ * Continue Chat
+ * Continue an existing chat conversation
+ */
+export const continueChatChatContinueChatIdPost = <ThrowOnError extends boolean = false>(
+  options: Options<ContinueChatChatContinueChatIdPostData, ThrowOnError>,
+) => {
+  return (options.client ?? _heyApiClient).post<
+    ContinueChatChatContinueChatIdPostResponses,
+    ContinueChatChatContinueChatIdPostErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) => {
+      return await zContinueChatChatContinueChatIdPostData.parseAsync(data);
+    },
+    responseType: 'json',
+    security: [
+      {
+        scheme: 'bearer',
+        type: 'http',
+      },
+    ],
+    url: '/chat/continue/{chat_id}',
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -461,37 +492,6 @@ export const getChatByIdChatHistoryChatIdGet = <ThrowOnError extends boolean = f
     ],
     url: '/chat/history/{chat_id}',
     ...options,
-  });
-};
-
-/**
- * Continue Chat
- * Continue an existing chat conversation
- */
-export const continueChatChatContinueChatIdPost = <ThrowOnError extends boolean = false>(
-  options: Options<ContinueChatChatContinueChatIdPostData, ThrowOnError>,
-) => {
-  return (options.client ?? _heyApiClient).post<
-    ContinueChatChatContinueChatIdPostResponses,
-    ContinueChatChatContinueChatIdPostErrors,
-    ThrowOnError
-  >({
-    requestValidator: async (data) => {
-      return await zContinueChatChatContinueChatIdPostData.parseAsync(data);
-    },
-    responseType: 'json',
-    security: [
-      {
-        scheme: 'bearer',
-        type: 'http',
-      },
-    ],
-    url: '/chat/continue/{chat_id}',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
   });
 };
 
