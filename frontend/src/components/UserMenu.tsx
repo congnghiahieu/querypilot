@@ -6,11 +6,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import UserPermissions from './UserPermissions';
 import KnowledgeManager from './KnowledgeManager';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { UserResponse } from '@/api';
+import { LOCAL_STORAGE_AUTH_DATA_KEY } from '@/lib/constants';
+
 const UserMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isPermissionsOpen, setIsPermissionsOpen] = useState(false);
   const [isKnowledgeOpen, setIsKnowledgeOpen] = useState(false);
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+  const authData = localStorage.getItem(LOCAL_STORAGE_AUTH_DATA_KEY);
+  const user: UserResponse = authData ? JSON.parse(authData).user : {};
 
   const handlePermissionsClick = () => {
     setIsOpen(false);

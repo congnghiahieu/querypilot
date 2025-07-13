@@ -1,47 +1,69 @@
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
+import { useMutation } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { zUserCreate } from '@/api/zod.gen';
+import { registerAuthRegisterPostMutation } from '@/api/@tanstack/react-query.gen';
+import { z } from 'zod';
+import { toast } from '@/hooks/use-toast';
+
+// Extended schema for form validation including confirmPassword
+const registerFormSchema = zUserCreate
+  .extend({
+    confirmPassword: z.string().min(1, 'Vui lòng xác nhận mật khẩu'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Mật khẩu xác nhận không khớp',
+    path: ['confirmPassword'],
+  });
+
+type RegisterFormData = z.infer<typeof registerFormSchema>;
 
 const Register = () => {
-  const [formData, setFormData] = useState({
-    fullname: '',
-    email: '',
-    username: '',
-    password: '',
-    confirmPassword: '',
-  });
-  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerFormSchema),
+    defaultValues: {
+      username: '',
+      password: '',
+      confirmPassword: '',
+    },
+  });
 
-    if (!formData.fullname || !formData.email || !formData.username || !formData.password) {
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      console.log('Registration successful');
+  const registerMutation = useMutation({
+    ...registerAuthRegisterPostMutation(),
+    onError: (error) => {
+      console.error('Registration failed:', error);
+      toast({
+        title: 'Đăng ký thất bại',
+        description: 'Có lỗi xảy ra trong quá trình đăng ký. Vui lòng thử lại.',
+        variant: 'destructive',
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Đăng ký thành công',
+        description: 'Tài khoản đã được tạo thành công. Vui lòng đăng nhập.',
+        variant: 'success',
+      });
       navigate('/login');
-    } catch (error) {
-      console.error('Registration failed');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+  });
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  const onSubmit = (data: RegisterFormData) => {
+    const { confirmPassword, ...registerData } = data;
+    registerMutation.mutate({
+      body: registerData,
+    });
   };
 
   return (
@@ -57,43 +79,9 @@ const Register = () => {
         </CardHeader>
         <CardContent>
           <form
-            onSubmit={handleRegister}
+            onSubmit={handleSubmit(onSubmit)}
             className='space-y-4'
           >
-            <div className='space-y-2'>
-              <Label
-                htmlFor='fullname'
-                className='text-slate-700 dark:text-slate-300'
-              >
-                Họ và tên
-              </Label>
-              <Input
-                id='fullname'
-                type='text'
-                placeholder='Nhập họ tên đầy đủ'
-                value={formData.fullname}
-                onChange={(e) => handleInputChange('fullname', e.target.value)}
-                disabled={isLoading}
-                className='border-slate-300 bg-white/70 dark:border-slate-600 dark:bg-slate-700/70'
-              />
-            </div>
-            <div className='space-y-2'>
-              <Label
-                htmlFor='email'
-                className='text-slate-700 dark:text-slate-300'
-              >
-                Email
-              </Label>
-              <Input
-                id='email'
-                type='email'
-                placeholder='Nhập email'
-                value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
-                disabled={isLoading}
-                className='border-slate-300 bg-white/70 dark:border-slate-600 dark:bg-slate-700/70'
-              />
-            </div>
             <div className='space-y-2'>
               <Label
                 htmlFor='username'
@@ -105,12 +93,13 @@ const Register = () => {
                 id='username'
                 type='text'
                 placeholder='Nhập tên đăng nhập'
-                value={formData.username}
-                onChange={(e) => handleInputChange('username', e.target.value)}
-                disabled={isLoading}
+                {...register('username')}
+                disabled={isSubmitting || registerMutation.isPending}
                 className='border-slate-300 bg-white/70 dark:border-slate-600 dark:bg-slate-700/70'
               />
+              {errors.username && <p className='text-sm text-red-600'>{errors.username.message}</p>}
             </div>
+
             <div className='space-y-2'>
               <Label
                 htmlFor='password'
@@ -122,12 +111,13 @@ const Register = () => {
                 id='password'
                 type='password'
                 placeholder='Nhập mật khẩu'
-                value={formData.password}
-                onChange={(e) => handleInputChange('password', e.target.value)}
-                disabled={isLoading}
+                {...register('password')}
+                disabled={isSubmitting || registerMutation.isPending}
                 className='border-slate-300 bg-white/70 dark:border-slate-600 dark:bg-slate-700/70'
               />
+              {errors.password && <p className='text-sm text-red-600'>{errors.password.message}</p>}
             </div>
+
             <div className='space-y-2'>
               <Label
                 htmlFor='confirmPassword'
@@ -139,18 +129,21 @@ const Register = () => {
                 id='confirmPassword'
                 type='password'
                 placeholder='Nhập lại mật khẩu'
-                value={formData.confirmPassword}
-                onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                disabled={isLoading}
+                {...register('confirmPassword')}
+                disabled={isSubmitting || registerMutation.isPending}
                 className='border-slate-300 bg-white/70 dark:border-slate-600 dark:bg-slate-700/70'
               />
+              {errors.confirmPassword && (
+                <p className='text-sm text-red-600'>{errors.confirmPassword.message}</p>
+              )}
             </div>
+
             <Button
               type='submit'
               className='w-full bg-blue-600 font-medium text-white hover:bg-blue-700'
-              disabled={isLoading}
+              disabled={isSubmitting || registerMutation.isPending}
             >
-              {isLoading ? 'Đang đăng ký...' : 'Đăng ký'}
+              {isSubmitting || registerMutation.isPending ? 'Đang đăng ký...' : 'Đăng ký'}
             </Button>
           </form>
 

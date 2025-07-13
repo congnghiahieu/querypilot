@@ -14,6 +14,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import KnowledgeUpload from './KnowledgeUpload';
 import ThemeToggle from './ThemeToggle';
 import UserMenu from './UserMenu';
+import { LOCAL_STORAGE_AUTH_DATA_KEY } from '@/lib/constants';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -57,7 +58,7 @@ const Sidebar = ({ isOpen, onToggle, onChatSelect, onNewChat, currentChatId }: S
   ];
 
   const handleLogout = () => {
-    localStorage.removeItem('user');
+    localStorage.removeItem(LOCAL_STORAGE_AUTH_DATA_KEY);
     navigate('/login');
   };
 

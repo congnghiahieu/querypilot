@@ -5,8 +5,24 @@ import {
   ToastDescription,
   ToastProvider,
   ToastTitle,
-  ToastViewport,
+  ToastViewport as ToastPrimitivesViewport,
 } from '@/components/ui/toast';
+import React from 'react';
+import { cn } from '@/lib/utils';
+
+const ToastViewport = React.forwardRef<
+  React.ElementRef<typeof ToastPrimitivesViewport>,
+  React.ComponentPropsWithoutRef<typeof ToastPrimitivesViewport>
+>(({ className, ...props }, ref) => (
+  <ToastPrimitivesViewport
+    ref={ref}
+    className={cn(
+      'fixed right-4 top-4 z-[100] flex max-h-screen w-full max-w-md flex-col gap-2 p-4',
+      className,
+    )}
+    {...props}
+  />
+));
 
 export function Toaster() {
   const { toasts } = useToast();
