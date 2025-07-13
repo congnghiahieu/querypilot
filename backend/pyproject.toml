@@ -75,6 +75,7 @@ exclude = [
     "dist",
     "node_modules",
     "site-packages",
+    "migrations/versions"
 ]
 
 [tool.ruff.format]
@@ -117,3 +118,6 @@ keep-runtime-typing = true
 [tool.ruff.lint.flake8-tidy-imports]
 # Disallow all relative imports.
 ban-relative-imports = "all"
+
+[tool.ruff.lint.per-file-ignores]
+"migrations/env.py" = ["F401"]
