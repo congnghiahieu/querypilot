@@ -1,6 +1,6 @@
 # QueryPilot
 
-## Dowload dataset
+## Download dataset
 
 - Please download dataset at [here](https://drive.google.com/drive/folders/1ULVZNXlYoXFdZBoDg87rwTbGXiO11yFb?usp=sharing) and put it (BIRD_dataset) in the top-level of directory
 - Download 3 files [1](https://drive.google.com/file/d/1UmYvqLLxEoRsYnkde3rsnzEwEQn6I4xz/view?usp=sharing), [2](https://drive.google.com/file/d/1hAE7vK485lRaGZ521gZUabe4sa8JmRJf/view?usp=sharing), [3](https://drive.google.com/file/d/1wYj-zm7izgjuyBwJr8o-N_dmmSepB99P/view?usp=sharing) and put it in this `backend` folder
@@ -24,7 +24,6 @@ uv sync # dowload all dependencies listed in pyproject.toml, equals to `pip inst
 
 - Run `make generate_dot_env` if file `.env` doesn't exists, see below example
 
-
 ```bash
 # .env
 
@@ -47,6 +46,24 @@ AWS_ATHENA_DATABASE=<your_athena_database>
 AWS_ATHENA_WORKGROUP=primary
 AWS_ATHENA_OUTPUT_LOCATION=s3://<your-athena-results-bucket>/query-results/
 AWS_ATHENA_TIMEOUT=300
+
+# AWS Cognito Configuration (only required when ENV=aws)
+AWS_COGNITO_USER_POOL_ID=<your_cognito_user_pool_id>
+AWS_COGNITO_CLIENT_ID=<your_cognito_client_id>
+AWS_COGNITO_CLIENT_SECRET=<your_cognito_client_secret>
+AWS_COGNITO_REGION=<your_cognito_region>
+AWS_COGNITO_DOMAIN=<your_cognito_domain>
+
+# AWS IAM Configuration (only required when ENV=aws)
+AWS_IAM_ROLE_PREFIX=QueryPilot-User-
+AWS_IAM_POLICY_ARN_BASE=arn:aws:iam::<account-id>:policy/QueryPilot-Base-Policy
+
+# AWS RDS Configuration (only required when ENV=aws)
+AWS_RDS_HOST=<your_rds_host>
+AWS_RDS_PORT=5432
+AWS_RDS_DB_NAME=<your_rds_database>
+AWS_RDS_USERNAME=<your_rds_username>
+AWS_RDS_PASSWORD=<your_rds_password>
 ```
 
 ## Install dependencies
@@ -64,3 +81,67 @@ source ./.venv/bin/activate
 make dev # for dev environment
 make run # for prod environment
 ```
+
+## AWS Cognito Setup
+
+When using AWS environment (ENV=aws), you need to set up AWS Cognito:
+
+1. **Create a Cognito User Pool**:
+
+   - Go to AWS Cognito Console
+   - Create a new User Pool
+   - Configure sign-in options (username, email)
+   - Set password policy
+   - Enable email verification
+   - Note down the User Pool ID
+
+2. **Create App Client**:
+
+   - In your User Pool, create an App Client
+   - Enable "Generate client secret"
+   - Configure app client settings
+   - Note down Client ID and Client Secret
+
+3. **Configure Domain** (Optional):
+
+   - Set up a custom domain for hosted UI
+   - Note down the domain name
+
+4. **IAM Permissions**:
+   - Ensure your AWS credentials have permissions for:
+     - Cognito User Pool operations
+     - IAM role creation and management
+     - S3 and Athena access
+     - Lake Formation permissions
+
+## Authentication Flow
+
+### Local Environment (ENV=local)
+
+- Uses JWT tokens with local password hashing
+- User data stored in local PostgreSQL database
+
+### AWS Environment (ENV=aws)
+
+- Uses AWS Cognito for authentication
+- Automatically creates IAM roles for new users
+- Integrates with Lake Formation for row-level security
+- User permissions managed through IAM policies
+
+## API Endpoints
+
+### Authentication (AWS Cognito)
+
+- `POST /auth/register` - Register new user
+- `POST /auth/confirm-signup` - Confirm user registration
+- `POST /auth/login` - Login user
+- `POST /auth/logout` - Logout user
+- `POST /auth/refresh` - Refresh access token
+- `POST /auth/forgot-password` - Initiate password reset
+- `POST /auth/reset-password` - Reset password with code
+
+### User Management
+
+- `GET /user/settings` - Get user settings
+- `POST /user/settings` - Update user settings (auto-updates IAM permissions)
+- `GET /user/iam-role-info` - Get IAM role information (AWS only)

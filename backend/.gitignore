@@ -148,3 +148,5 @@ querypilot.db
 /dump.rdb
 train_*
 *dataset*
+
+temp*
