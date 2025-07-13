@@ -12,6 +12,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import Index from './pages/Index';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Welcome from './pages/Welcome';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -51,7 +52,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider
-      defaultTheme='system'
+      defaultTheme='light'
       storageKey={LOCAL_STORAGE_THEME_KEY}
     >
       <TooltipProvider>
@@ -75,7 +76,7 @@ const App = () => (
               path='/'
               element={
                 <ProtectedRoute>
-                  <Index />
+                  <Welcome />
                 </ProtectedRoute>
               }
             />
