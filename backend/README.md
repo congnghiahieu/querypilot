@@ -15,8 +15,8 @@ DATABASE_URL=postgresql+psycopg2://querypilot:querypilot@localhost:5432/querypil
 
 - Chạy service `db` với `postgres:15` như trong file `docker-compose.dev.yml`
 
-```
-
+```bash
+docker compose -f docker-compose.dev.yml up -d
 ```
 
 - Cài dependencies và chạy
