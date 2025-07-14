@@ -4,10 +4,11 @@ import {
 } from '@/api/@tanstack/react-query.gen';
 import ChatHeader from '@/components/ChatHeader';
 import ChatInput from '@/components/ChatInput';
-import MessageList from '@/components/MessageList';
+import MessageList, { MessageListRef } from '@/components/MessageList';
 import Sidebar from '@/components/Sidebar';
+import { useChatStore } from '@/stores/chatStore';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 type Message = {
@@ -48,6 +49,8 @@ const Index = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string | null>(chatId || null);
   const [chatTitle, setChatTitle] = useState<string>('');
+  const messageListRef = useRef<MessageListRef>(null);
+  const { updateChat } = useChatStore();
 
   // Query to get chat history
   const { data: chatData, isLoading: isLoadingChat } = useQuery({
@@ -61,6 +64,12 @@ const Index = () => {
   const continueChatMutation = useMutation({
     ...continueChatChatContinueChatIdPostMutation(),
     onSuccess: (data) => {
+      // Update chat in Zustand store with new message count and updated time
+      updateChat(data.chat_id, {
+        updated_at: data.updated_at,
+        message_count: messages.length + 1, // Approximate count
+      });
+
       // Add the new assistant message to messages
       const response = data.response;
       const newMessage: Message = {
@@ -101,6 +110,11 @@ const Index = () => {
       };
 
       setMessages((prev) => [...prev, newMessage]);
+
+      // Scroll to bottom after assistant message
+      setTimeout(() => {
+        messageListRef.current?.scrollToBottom();
+      }, 100);
     },
     onError: (error) => {
       console.error('Error continuing chat:', error);
@@ -158,6 +172,11 @@ const Index = () => {
     };
     setMessages((prev) => [...prev, userMessage]);
 
+    // Scroll to bottom after user message
+    setTimeout(() => {
+      messageListRef.current?.scrollToBottom();
+    }, 100);
+
     // Call backend to continue chat
     continueChatMutation.mutate({
       path: { chat_id: chatId },
@@ -211,7 +230,10 @@ const Index = () => {
         <div className='flex-1 pt-[60px]'>
           {/* Scrollable messages area */}
           <div className='h-full overflow-y-auto pb-[120px]'>
-            <MessageList messages={messages} />
+            <MessageList
+              ref={messageListRef}
+              messages={messages}
+            />
           </div>
 
           {/* Fixed input at bottom */}

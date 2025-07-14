@@ -13,9 +13,10 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { LOCAL_STORAGE_AUTH_DATA_KEY } from '@/lib/constants';
 import { cn } from '@/lib/utils';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useChatStore } from '@/stores/chatStore';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { FileText, LogOut, PanelLeft, SquarePen, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import KnowledgeUpload from './KnowledgeUpload';
@@ -41,24 +42,32 @@ interface ChatSession {
 const Sidebar = ({ isOpen, onToggle, onChatSelect, onNewChat, currentChatId }: SidebarProps) => {
   const navigate = useNavigate();
   const { chatId } = useParams();
-  const queryClient = useQueryClient();
   const [isKnowledgeOpen, setIsKnowledgeOpen] = useState(false);
 
-  // Query to get chat history
-  const { data: chatHistory = [], isLoading: isLoadingHistory } = useQuery({
+  // Use Zustand store for chat history
+  const { chatHistory, setChatHistory, removeChat } = useChatStore();
+
+  // Query to get chat history from server
+  const { data: fetchedChatHistory = [], isLoading: isLoadingHistory } = useQuery({
     ...getChatHistoryChatHistoryGetOptions(),
   });
+
+  // Sync server data with Zustand store - Only depend on chatHistoryData
+  useEffect(() => {
+    if (fetchedChatHistory && fetchedChatHistory.length > 0) {
+      setChatHistory(fetchedChatHistory);
+    }
+  }, [fetchedChatHistory, setChatHistory]); // Only depend on chatHistoryData
 
   // Mutation to delete chat
   const deleteChatMutation = useMutation({
     ...deleteChatByIdChatHistoryChatIdDeleteMutation(),
     onSuccess: (_, variables) => {
-      // Invalidate and refetch chat history
-      queryClient.invalidateQueries({
-        queryKey: ['getChatHistoryChatHistoryGet'],
-      });
+      // Remove from Zustand store immediately
+      removeChat(variables.path.chat_id);
 
       // If we're currently viewing the deleted chat, navigate to welcome
+      // Use chatId from useParams() instead of relying on currentChatId prop
       if (chatId === variables.path.chat_id) {
         navigate('/');
       }
@@ -106,21 +115,18 @@ const Sidebar = ({ isOpen, onToggle, onChatSelect, onNewChat, currentChatId }: S
       items: todayChats.map((chat) => ({ id: chat.id, title: chat.title })),
     });
   }
-
   if (yesterdayChats.length > 0) {
     timeframes.push({
       title: 'Hôm qua',
       items: yesterdayChats.map((chat) => ({ id: chat.id, title: chat.title })),
     });
   }
-
   if (last7DaysChats.length > 0) {
     timeframes.push({
       title: '7 ngày qua',
       items: last7DaysChats.map((chat) => ({ id: chat.id, title: chat.title })),
     });
   }
-
   if (last30DaysChats.length > 0) {
     timeframes.push({
       title: '30 ngày qua',
@@ -181,7 +187,6 @@ const Sidebar = ({ isOpen, onToggle, onChatSelect, onNewChat, currentChatId }: S
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-
           {isOpen && (
             <TooltipProvider>
               <Tooltip>
@@ -200,7 +205,6 @@ const Sidebar = ({ isOpen, onToggle, onChatSelect, onNewChat, currentChatId }: S
             </TooltipProvider>
           )}
         </div>
-
         {/* Main content - only show when expanded */}
         {isOpen && (
           <div className='relative -mr-2 flex-1 flex-col overflow-y-auto pr-2 transition-opacity duration-500'>
@@ -226,7 +230,6 @@ const Sidebar = ({ isOpen, onToggle, onChatSelect, onNewChat, currentChatId }: S
                   </DialogContent>
                 </Dialog>
               </div>
-
               <div className='mt-4 flex flex-col gap-4'>
                 {isLoadingHistory ?
                   <div className='px-3 py-2 text-sm text-gray-500'>Đang tải lịch sử...</div>
@@ -267,7 +270,6 @@ const Sidebar = ({ isOpen, onToggle, onChatSelect, onNewChat, currentChatId }: S
             </div>
           </div>
         )}
-
         <div className='border-t border-gray-200 py-2 dark:border-gray-700'>
           <div
             className={cn(
@@ -279,7 +281,6 @@ const Sidebar = ({ isOpen, onToggle, onChatSelect, onNewChat, currentChatId }: S
               <UserMenu />
               <ThemeToggle />
             </div>
-
             {isOpen && (
               <TooltipProvider>
                 <Tooltip>
@@ -300,7 +301,6 @@ const Sidebar = ({ isOpen, onToggle, onChatSelect, onNewChat, currentChatId }: S
               </TooltipProvider>
             )}
           </div>
-
           {!isOpen && (
             <div className='flex justify-center pt-2'>
               <TooltipProvider>

@@ -2,7 +2,7 @@ import { newChatChatNewPostMutation } from '@/api/@tanstack/react-query.gen';
 import ChatInput from '@/components/ChatInput';
 import EmptyChatState from '@/components/EmptyChatState';
 import Sidebar from '@/components/Sidebar';
-import { NEW_CHAT_EVENT_NAME } from '@/lib/constants';
+import { useChatStore } from '@/stores/chatStore';
 import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -10,13 +10,22 @@ import { useNavigate } from 'react-router-dom';
 const Welcome = () => {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const { addChat } = useChatStore();
 
   const newChatMutation = useMutation({
     ...newChatChatNewPostMutation(),
     onSuccess: (data) => {
+      // Add to Zustand store immediately
+      addChat({
+        id: data.chat_id,
+        title: data.title,
+        created_at: data.created_at,
+        updated_at: data.updated_at,
+        message_count: 1, // First message
+      });
+
       // Navigate to the new chat with the returned chat_id
-      const chatId = data.chat_id;
-      navigate(`/${chatId}`);
+      navigate(`/${data.chat_id}`);
     },
     onError: (error) => {
       console.error('Error creating new chat:', error);
