@@ -257,8 +257,11 @@ async def new_chat(
 
     return {
         "chat_id": str(chat_session.id),
+        "title": chat_session.title,
         "message_id": str(assistant_message.id),
-        "response": result.dict(),
+        "created_at": chat_session.created_at.isoformat(),
+        "updated_at": chat_session.updated_at.isoformat(),
+        "response": result.model_dump(),
     }
 
 
@@ -333,8 +336,11 @@ async def continue_chat(
 
     return {
         "chat_id": str(chat_session.id),
+        "title": chat_session.title,
         "message_id": str(assistant_message.id),
-        "response": result.dict(),
+        "created_at": chat_session.created_at.isoformat(),
+        "updated_at": chat_session.updated_at.isoformat(),
+        "response": result.model_dump(),
     }
 
 
