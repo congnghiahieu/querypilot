@@ -19,15 +19,25 @@ DATABASE_URL=postgresql+psycopg2://querypilot:querypilot@localhost:5432/querypil
 docker compose -f docker-compose.dev.yml up -d
 ```
 
+- Database
+Download vpbank.sqlite and put it under dataset directory
+
 - Cài dependencies và chạy
 
 ```bash
 uv sync # nhớ tải uv
 source ./.venv/bin/activate
+make migrate # Initiate db
 make dev # Port 8080
 ```
 
 - Sang folder `frontend` chạy:
+
+- Tạo file `.env` với nội dung
+
+```bash
+VITE_API_BASE_URL=http://localhost:8080
+```
 
 ```bash
 npm install

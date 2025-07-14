@@ -12,6 +12,7 @@ from sqlmodel import Session, desc, select
 from src.api.auth import get_current_user
 from src.core.db import get_session
 from src.core.rag import rag_service
+from src.core.settings import APP_SETTINGS
 from src.core.sql_execution import get_sql_execution_service
 from src.models.chat import ChatDataResult, ChatMessage, ChatSession
 from src.models.user import User
@@ -75,7 +76,9 @@ async def process_nl2sql_message(message: str, user_id: UUID) -> ChatResponse:
         if sql_service:
             try:
                 # Get database schema for better SQL generation
-                schema_info = sql_service.get_database_schema()
+                # For local environment, use default SQLite database
+                database_name = "vpbank" if not APP_SETTINGS.is_aws else None
+                schema_info = sql_service.get_database_schema(database_name)
 
                 # TODO: Implement actual NL2SQL conversion with schema
                 # For now, we'll use a placeholder SQL generation
@@ -101,7 +104,7 @@ async def process_nl2sql_message(message: str, user_id: UUID) -> ChatResponse:
                         )
 
                     # Execute SQL query
-                    result = await sql_service.execute_query(sql_query)
+                    result = await sql_service.execute_query(sql_query, database_name)
 
                     if result["status"] == "success":
                         return ChatResponse(

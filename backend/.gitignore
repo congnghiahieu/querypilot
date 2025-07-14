@@ -147,6 +147,7 @@ cython_debug/
 querypilot.db
 /dump.rdb
 train_*
-*dataset*
+
+*.sqlite
 
 temp*

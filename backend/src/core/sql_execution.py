@@ -7,6 +7,7 @@ from botocore.exceptions import NoCredentialsError
 
 from src.core.iam_service import get_iam_service
 from src.core.settings import APP_SETTINGS
+from src.core.sqlite_service import SQLiteService, get_sqlite_service
 
 
 class SQLExecutionService:
@@ -114,20 +115,46 @@ class SQLExecutionService:
         except Exception as e:
             print(f"Warning: Could not assume user role, using default credentials: {e}")
 
-    async def execute_query(self, sql_query: str) -> dict[str, Any]:
+    async def execute_query(self, sql_query: str, database: str = None) -> dict[str, Any]:
         """
         Execute SQL query and return results
 
         Args:
             sql_query (str): SQL query to execute
+            database (str): Database to execute on (for SQLite) or None for default behavior
 
         Returns:
             Dict containing query results, metadata, and execution info
         """
-        if not APP_SETTINGS.is_aws:
-            raise ValueError("SQL execution service requires AWS environment")
+        if APP_SETTINGS.is_aws:
+            raise ValueError("AWS environment is not supported for SQLite queries")
+        else:
+            # For local environment, use SQLite
+            return await self._execute_sqlite_query(sql_query, database)
 
-        return await self._execute_athena_query(sql_query)
+    async def _execute_sqlite_query(self, sql_query: str, database: str = None) -> dict[str, Any]:
+        """Execute SQL query on SQLite database"""
+        try:
+            db_name = database or "chinook"
+            sqlite_service = get_sqlite_service(db_name)
+            
+            if not sqlite_service:
+                return {
+                    "status": "error",
+                    "error": f"Failed to connect to SQLite database: {db_name}",
+                    "sql_query": sql_query
+                }
+            
+            # Execute query synchronously (SQLite operations are usually fast)
+            result = sqlite_service.execute_query(sql_query)
+            return result
+            
+        except Exception as e:
+            return {
+                "status": "error",
+                "error": str(e),
+                "sql_query": sql_query
+            }
 
     async def _execute_athena_query(self, sql_query: str) -> dict[str, Any]:
         """Execute SQL query on AWS Athena"""
@@ -281,11 +308,29 @@ class SQLExecutionService:
 
         return sql_query
 
-    def get_database_schema(self) -> dict[str, Any]:
-        """Get database schema from Glue Catalog"""
-        if not APP_SETTINGS.is_aws:
-            raise ValueError("Schema retrieval requires AWS environment")
+    def get_database_schema(self, database: str = None) -> dict[str, Any]:
+        """Get database schema information"""
+        if APP_SETTINGS.is_aws:
+            raise ValueError("AWS environment is not supported for SQLite queries")
+        else:
+            return self._get_sqlite_schema(database)
 
+    def _get_sqlite_schema(self, database: str = None) -> dict[str, Any]:
+        """Get SQLite database schema information"""
+        try:
+            db_name = database or "chinook"
+            sqlite_service = get_sqlite_service(db_name)
+            
+            if not sqlite_service:
+                return {"error": f"Failed to connect to SQLite database: {db_name}", "tables": []}
+            
+            return sqlite_service.get_database_schema()
+            
+        except Exception as e:
+            return {"error": str(e), "tables": []}
+
+    def _get_athena_schema(self) -> dict[str, Any]:
+        """Get AWS Athena database schema from Glue Catalog"""
         try:
             # Get all tables in the database
             response = self.glue_client.get_tables(DatabaseName=self.database)

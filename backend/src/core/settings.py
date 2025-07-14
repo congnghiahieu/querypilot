@@ -33,6 +33,17 @@ class AppSettings(BaseSettings):
     # Local Database Configuration
     DATABASE_URL: str = "postgresql+psycopg2://querypilot:querypilot@localhost:5432/querypilot"
 
+    # SQLite Database Configuration
+    SQLITE_DB_PATH: str = Field(default="Chinook.db", description="Default SQLite database path")
+    SQLITE_DATABASES: dict[str, str] = Field(
+        default={
+            "chinook": "Chinook.db",
+            # Path formats (all relative to backend/ directory):
+            "vpbank": "dataset/vpbank.sqlite",                    # In backend/dataset/ root
+        },
+        description="Available SQLite databases (paths relative to backend/ directory)"
+    )
+
     # AWS RDS Configuration
     AWS_RDS_HOST: str = ""
     AWS_RDS_PORT: int = 5432
