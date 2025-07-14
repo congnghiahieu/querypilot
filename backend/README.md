@@ -1,9 +1,38 @@
 # QueryPilot
 
-## Download dataset
+## Dựng môi trường dev tạm thời
 
-- Please download dataset at [here](https://drive.google.com/drive/folders/1ULVZNXlYoXFdZBoDg87rwTbGXiO11yFb?usp=sharing) and put it (BIRD_dataset) in the top-level of directory
-- Download 3 files [1](https://drive.google.com/file/d/1UmYvqLLxEoRsYnkde3rsnzEwEQn6I4xz/view?usp=sharing), [2](https://drive.google.com/file/d/1hAE7vK485lRaGZ521gZUabe4sa8JmRJf/view?usp=sharing), [3](https://drive.google.com/file/d/1wYj-zm7izgjuyBwJr8o-N_dmmSepB99P/view?usp=sharing) and put it in this `backend` folder
+- Tạo file `.env` với nội dung tối thiểu
+
+```bash
+STAGE=dev
+ENV=local
+DEEPSEEK_API_KEY=<api_key>
+SECRET_KEY=KtKKEojaAvRWStFaEXtIg6fZ3lqQui2P
+CLIENT_URL=http://localhost:3000
+DATABASE_URL=postgresql+psycopg2://querypilot:querypilot@localhost:5432/querypilot
+```
+
+- Chạy service `db` với `postgres:15` như trong file `docker-compose.dev.yml`
+
+```
+
+```
+
+- Cài dependencies và chạy
+
+```bash
+uv sync # nhớ tải uv
+source ./.venv/bin/activate
+make dev # Port 8080
+```
+
+- Sang folder `frontend` chạy:
+
+```bash
+npm install
+npm run dev # Port 3000
+```
 
 ## Requirements
 
