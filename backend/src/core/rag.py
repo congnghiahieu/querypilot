@@ -51,21 +51,8 @@ class DocumentProcessor:
             text = f"Dataset with {len(df)} rows and {len(df.columns)} columns.\n"
             text += f"Columns: {', '.join(df.columns.tolist())}\n\n"
 
-            # Add sample data and statistics
-            text += "Sample data:\n"
-            text += df.head().to_string() + "\n\n"
-
-            # Add basic statistics for numeric columns
-            numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
-            if numeric_cols:
-                text += "Statistical summary for numeric columns:\n"
-                text += df[numeric_cols].describe().to_string() + "\n\n"
-
-            # Add value counts for categorical columns
-            categorical_cols = df.select_dtypes(include=["object"]).columns.tolist()
-            for col in categorical_cols[:3]:  # Limit to first 3 categorical columns
-                text += f"Value counts for {col}:\n"
-                text += df[col].value_counts().head().to_string() + "\n\n"
+            text += "Data:\n"
+            text += df.to_string() + "\n\n"
 
             return text.strip()
         except Exception as e:
@@ -81,10 +68,8 @@ class DocumentProcessor:
             for sheet_name in excel_file.sheet_names:
                 df = pd.read_excel(file_path, sheet_name=sheet_name)
                 text += f"Sheet: {sheet_name}\n"
-                text += f"Size: {len(df)} rows, {len(df.columns)} columns\n"
-                text += f"Columns: {', '.join(df.columns.tolist())}\n"
-                text += "Sample data:\n"
-                text += df.head().to_string() + "\n\n"
+                text += "Data:\n"
+                text += df.to_string() + "\n\n"
 
             return text.strip()
         except Exception as e:
