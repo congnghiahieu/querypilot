@@ -33,6 +33,8 @@ class AppSettings(BaseSettings):
     # Local Database Configuration
     DATABASE_URL: str = "postgresql+psycopg2://querypilot:querypilot@localhost:5432/querypilot"
 
+    AWS_REGION: str = ""
+
     # AWS RDS Configuration
     AWS_RDS_HOST: str = ""
     AWS_RDS_PORT: int = 5432
@@ -53,10 +55,14 @@ class AppSettings(BaseSettings):
     AWS_ATHENA_OUTPUT_LOCATION: str = Field(
         default="", description="S3 bucket for Athena query results"
     )
+    AWS_ATHENA_CATALOG: str = Field(default="AwsDataCatalog", description="Athena catalog name")
     AWS_ATHENA_TIMEOUT: int = Field(default=300, description="Athena query timeout in seconds")
 
     # AWS Cognito Configuration
     AWS_COGNITO_USER_POOL_ID: str = Field(default="", description="AWS Cognito User Pool ID")
+    AWS_COGNITO_IDENTITY_POOL_ID: str = Field(
+        default="", description="AWS Cognito Identity Pool ID"
+    )
     AWS_COGNITO_CLIENT_ID: str = Field(default="", description="AWS Cognito App Client ID")
     AWS_COGNITO_CLIENT_SECRET: str = Field(default="", description="AWS Cognito App Client Secret")
     AWS_COGNITO_REGION: str = Field(default="", description="AWS Cognito Region")

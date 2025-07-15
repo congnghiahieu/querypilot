@@ -205,6 +205,7 @@ dependencies = [
     { name = "passlib", extra = ["bcrypt"] },
     { name = "psutil" },
     { name = "psycopg2-binary" },
+    { name = "pyathena" },
     { name = "pydantic-settings" },
     { name = "pypdf2" },
     { name = "python-docx" },
@@ -243,6 +244,7 @@ requires-dist = [
     { name = "passlib", extras = ["bcrypt"], specifier = ">=1.7.4" },
     { name = "psutil", specifier = ">=7.0.0" },
     { name = "psycopg2-binary", specifier = ">=2.9.6" },
+    { name = "pyathena", specifier = ">=3.14.1" },
     { name = "pydantic-settings", specifier = ">=2.10.1" },
     { name = "pypdf2", specifier = ">=3.0.1" },
     { name = "python-docx", specifier = ">=1.2.0" },
@@ -2459,6 +2461,22 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/ba/e9/01f1a64245b89f039897cb0130016d79f77d52669aae6ee7b159a6c4c018/pyasn1-0.6.1.tar.gz", hash = "sha256:6f580d2bdd84365380830acf45550f2511469f673cb4a5ae3857a3170128b034", size = 145322, upload-time = "2024-09-10T22:41:42.55Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c8/f1/d6a797abb14f6283c0ddff96bbdd46937f64122b8c925cab503dd37f8214/pyasn1-0.6.1-py3-none-any.whl", hash = "sha256:0d632f46f2ba09143da3a8afe9e33fb6f92fa2320ab7e886e2d0f7672af84629", size = 83135, upload-time = "2024-09-11T16:00:36.122Z" },
+]
+
+[[package]]
+name = "pyathena"
+version = "3.14.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "boto3" },
+    { name = "botocore" },
+    { name = "fsspec" },
+    { name = "python-dateutil" },
+    { name = "tenacity" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/1c/09/0768a7f58d82b42544124d97d6bee5097397f6addf377e8b46e54c9b9f2b/pyathena-3.14.1.tar.gz", hash = "sha256:ff628261595b52bc2b74809c42ef89886f74be01371506e289fdb0bc4f653993", size = 56049, upload-time = "2025-05-25T16:02:28.272Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9d/48/23e2eadd819220e8a799734175058bf31c93e6f3f493eb72b73f8c5e1ce5/pyathena-3.14.1-py3-none-any.whl", hash = "sha256:cdba338da81cc982d9babdbf801631655a5fd4ce9bf4e44a257efa431d891b36", size = 76151, upload-time = "2025-05-25T16:02:26.353Z" },
 ]
 
 [[package]]
