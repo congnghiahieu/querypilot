@@ -1,6 +1,7 @@
 import json
+import time
 from io import BytesIO
-from typing import Literal, Optional
+from typing import Any, Dict, List, Literal, Optional
 from uuid import UUID
 
 import pandas as pd
@@ -26,8 +27,9 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     type: Literal["text", "table", "chart"]
-    content: str
-    sql_query: str = ""
+    content: str  # Human-readable message to user
+    sql_query: Optional[str] = None  # SQL query if generated
+    data: Optional[List[Dict[str, Any]]] = None  # Query results if available
     execution_time: float = 0.0
     rows_count: int = 0
 
@@ -55,51 +57,68 @@ class ChatMessageResponse(BaseModel):
 async def process_nl2sql_message(message: str, user_id: UUID) -> ChatResponse:
     """
     Process nl2sql message with RAG context from knowledge base.
-    Returns either text response or data response with JSON.
+    Returns structured response with content, SQL, and results.
     """
+
+    start = time.time()
+    print(f"[TIME] Starting process_nl2sql_message")
 
     try:
         # Get relevant context from knowledge base using RAG
-        context = rag_service.get_context_for_query(message, user_id)
+        context = ""
+        #context = rag_service.get_context_for_query(message, user_id)
 
         # Check if we're in AWS environment and can use SQL execution service
         sql_service = get_sql_execution_service()
+        print(f"[TIME] SQL execution service: {time.time() - start}")
 
         if sql_service:
             try:
                 # Get database schema for better SQL generation
                 # For local environment, use vpbank SQLite database
                 database_name = "vpbank" if not APP_SETTINGS.is_aws else None
-                schema_info = sql_service.get_database_schema(database_name)
+                #schema_info = sql_service.get_database_schema(database_name)
 
                 # Generate SQL query based on message content and schema
-                sql_query = "SELECT DISTINCT segment FROM t24_customer__s2 ORDER BY segment;"
+                sql_query = "PRAGMA table_info(t24_customer__s2);"
 
                 if sql_query:
                     # Execute SQL query
+                    time_execute = time.time()
                     result = await sql_service.execute_query(sql_query, database_name)
+                    print(f"[TIME] SQL execution time: {time.time() - time_execute}")
 
                     if result["status"] == "success":
+                        # Prepare user-friendly content message
+                        content_message = f"I found {result['row_count']} results for your query about customer segments. Here's the data:"
+                        
                         return ChatResponse(
                             type="table",
-                            content=json.dumps(result["data"]),
+                            content=content_message,
                             sql_query=sql_query,
+                            data=result["data"],
                             execution_time=result["execution_time"],
                             rows_count=result["row_count"],
                         )
                     else:
+                        # SQL execution failed
+                        error_message = f"I generated this SQL query but encountered an error during execution: {result['error']}"
+                        
                         return ChatResponse(
                             type="text",
-                            content=f"Error executing SQL query: {result['error']}\n\nSQL: {sql_query}",
+                            content=error_message,
                             sql_query=sql_query,
+                            data=None,
                             execution_time=result.get("execution_time", 0.0),
                             rows_count=0,
                         )
                 else:
+                    # Could not generate SQL
                     return ChatResponse(
                         type="text",
-                        content=f"Could not generate SQL query for: {message}. Please try rephrasing your question or be more specific about what data you want to see.",
-                        sql_query="",
+                        content=f"I couldn't generate a SQL query for your request: '{message}'. Please try rephrasing your question or be more specific about what data you want to see.",
+                        sql_query=None,
+                        data=None,
                         execution_time=0.0,
                         rows_count=0,
                     )
@@ -107,8 +126,9 @@ async def process_nl2sql_message(message: str, user_id: UUID) -> ChatResponse:
             except Exception as e:
                 return ChatResponse(
                     type="text",
-                    content=f"Error processing query with SQL execution service: {str(e)}",
-                    sql_query="",
+                    content=f"I encountered an error while processing your query: {str(e)}. Please try again or rephrase your question.",
+                    sql_query=None,
+                    data=None,
                     execution_time=0.0,
                     rows_count=0,
                 )
@@ -132,7 +152,8 @@ The SQL execution functionality requires AWS configuration to execute queries on
         return ChatResponse(
             type="text",
             content=response_content,
-            sql_query="",
+            sql_query=None,
+            data=None,
             execution_time=0.0,
             rows_count=0,
         )
@@ -140,46 +161,12 @@ The SQL execution functionality requires AWS configuration to execute queries on
     except Exception as e:
         return ChatResponse(
             type="text",
-            content=f"Error processing your message: {str(e)}. Please try again.",
-            sql_query="",
+            content=f"I encountered an error processing your message: {str(e)}. Please try again.",
+            sql_query=None,
+            data=None,
             execution_time=0.0,
             rows_count=0,
         )
-
-
-def generate_placeholder_sql(message: str, schema_info: dict) -> str:
-    """
-    Generate placeholder SQL based on message content and schema.
-    This is a temporary implementation until the full NL2SQL pipeline is integrated.
-    """
-    if not schema_info or not schema_info.get("tables"):
-        return ""
-
-    # Get first table for demo
-    first_table = schema_info["tables"][0]
-    table_name = first_table["name"]
-    columns = [col["name"] for col in first_table["columns"]]
-
-    # Simple keyword-based SQL generation for demo
-    if any(keyword in message.lower() for keyword in ["count", "total", "number"]):
-        return f"SELECT COUNT(*) as total_count FROM {table_name}"
-    elif any(keyword in message.lower() for keyword in ["all", "show", "list"]):
-        column_list = ", ".join(columns[:5])  # Limit to first 5 columns
-        return f"SELECT {column_list} FROM {table_name} LIMIT 10"
-    elif "average" in message.lower() or "avg" in message.lower():
-        # Find numeric columns
-        numeric_cols = [
-            col["name"]
-            for col in first_table["columns"]
-            if col["type"].lower() in ["int", "bigint", "double", "float", "decimal"]
-        ]
-        if numeric_cols:
-            return f"SELECT AVG({numeric_cols[0]}) as average FROM {table_name}"
-
-    # Default query
-    column_list = ", ".join(columns[:3])  # Limit to first 3 columns
-    return f"SELECT {column_list} FROM {table_name} LIMIT 5"
-
 
 @chat_router.post("/new")
 async def new_chat(
@@ -207,12 +194,18 @@ async def new_chat(
     # Process message through nl2sql pipeline with RAG and SQL execution service
     result = await process_nl2sql_message(payload.message, current_user.id)
 
+    # Store data as JSON in content field for database compatibility
+    content_for_db = result.content
+    if result.data:
+        # For table/chart responses, store the data as JSON in content field for database
+        content_for_db = json.dumps(result.data)
+
     # Add assistant message
     assistant_message = ChatMessage(
         chat_session_id=chat_session.id,
         role="assistant",
-        content=result.content,
-        sql_query=result.sql_query if result.sql_query else None,
+        content=content_for_db,
+        sql_query=result.sql_query,
         response_type=result.type,
         execution_time=result.execution_time,
         rows_count=result.rows_count,
@@ -221,17 +214,16 @@ async def new_chat(
     session.commit()
     session.refresh(assistant_message)
 
-    # Store data if it's table or chart type (only for assistant messages with JSON data)
-    if result.type in ["table", "chart"] and result.content:
+    # Store data if it's table or chart type (only for assistant messages with data)
+    if result.type in ["table", "chart"] and result.data:
         try:
-            # Parse JSON data for storage
-            data_df = pd.read_json(result.content)
+            # Create data result for download functionality
             data_result = ChatDataResult(
                 message_id=assistant_message.id,
-                data_json=result.content,
-                columns=json.dumps(data_df.columns.tolist()),
-                shape_rows=len(data_df),
-                shape_cols=len(data_df.columns),
+                data_json=json.dumps(result.data),
+                columns=json.dumps(list(result.data[0].keys()) if result.data else []),
+                shape_rows=len(result.data),
+                shape_cols=len(result.data[0].keys()) if result.data else 0,
             )
             session.add(data_result)
             session.commit()
@@ -282,12 +274,18 @@ async def continue_chat(
     # Process message through nl2sql pipeline with RAG and SQL execution service
     result = await process_nl2sql_message(payload.message, current_user.id)
 
+    # Store data as JSON in content field for database compatibility
+    content_for_db = result.content
+    if result.data:
+        # For table/chart responses, store the data as JSON in content field for database
+        content_for_db = json.dumps(result.data)
+
     # Add assistant message
     assistant_message = ChatMessage(
         chat_session_id=chat_session.id,
         role="assistant",
-        content=result.content,
-        sql_query=result.sql_query if result.sql_query else None,
+        content=content_for_db,
+        sql_query=result.sql_query,
         response_type=result.type,
         execution_time=result.execution_time,
         rows_count=result.rows_count,
@@ -302,16 +300,16 @@ async def continue_chat(
     session.commit()
     session.refresh(assistant_message)
 
-    # Store data if needed (only for assistant messages with JSON data)
-    if result.type in ["table", "chart"] and result.content:
+    # Store data if it's table or chart type (only for assistant messages with data)
+    if result.type in ["table", "chart"] and result.data:
         try:
-            data_df = pd.read_json(result.content)
+            # Create data result for download functionality
             data_result = ChatDataResult(
                 message_id=assistant_message.id,
-                data_json=result.content,
-                columns=json.dumps(data_df.columns.tolist()),
-                shape_rows=len(data_df),
-                shape_cols=len(data_df.columns),
+                data_json=json.dumps(result.data),
+                columns=json.dumps(list(result.data[0].keys()) if result.data else []),
+                shape_rows=len(result.data),
+                shape_cols=len(result.data[0].keys()) if result.data else 0,
             )
             session.add(data_result)
             session.commit()
