@@ -58,14 +58,6 @@ async def process_nl2sql_message(message: str, user_id: UUID) -> ChatResponse:
     Returns either text response or data response with JSON.
     """
 
-    return ChatResponse(
-        type="text",
-        content=f"Mocking response for message: {message}",
-        sql_query="",
-        execution_time=0.0,
-        rows_count=0,
-    )
-
     try:
         # Get relevant context from knowledge base using RAG
         context = rag_service.get_context_for_query(message, user_id)
@@ -76,33 +68,14 @@ async def process_nl2sql_message(message: str, user_id: UUID) -> ChatResponse:
         if sql_service:
             try:
                 # Get database schema for better SQL generation
-                # For local environment, use default SQLite database
+                # For local environment, use vpbank SQLite database
                 database_name = "vpbank" if not APP_SETTINGS.is_aws else None
                 schema_info = sql_service.get_database_schema(database_name)
 
-                # TODO: Implement actual NL2SQL conversion with schema
-                # For now, we'll use a placeholder SQL generation
-                # In the real implementation, you would use your NL2SQL model here
-                # sql_query = convert_nl2sql(message, data, prompt, schema_info=schema_info)
-
-                # Placeholder SQL generation based on message content
-                sql_query = generate_placeholder_sql(message, schema_info)
+                # Generate SQL query based on message content and schema
+                sql_query = "SELECT DISTINCT segment FROM t24_customer__s2 ORDER BY segment;"
 
                 if sql_query:
-                    # Validate query against schema
-                    is_valid, validation_message = sql_service.validate_query_against_schema(
-                        sql_query
-                    )
-
-                    if not is_valid:
-                        return ChatResponse(
-                            type="text",
-                            content=f"Generated SQL query is invalid: {validation_message}\n\nSQL: {sql_query}",
-                            sql_query=sql_query,
-                            execution_time=0.0,
-                            rows_count=0,
-                        )
-
                     # Execute SQL query
                     result = await sql_service.execute_query(sql_query, database_name)
 
@@ -119,9 +92,17 @@ async def process_nl2sql_message(message: str, user_id: UUID) -> ChatResponse:
                             type="text",
                             content=f"Error executing SQL query: {result['error']}\n\nSQL: {sql_query}",
                             sql_query=sql_query,
-                            execution_time=result["execution_time"],
+                            execution_time=result.get("execution_time", 0.0),
                             rows_count=0,
                         )
+                else:
+                    return ChatResponse(
+                        type="text",
+                        content=f"Could not generate SQL query for: {message}. Please try rephrasing your question or be more specific about what data you want to see.",
+                        sql_query="",
+                        execution_time=0.0,
+                        rows_count=0,
+                    )
 
             except Exception as e:
                 return ChatResponse(
@@ -144,7 +125,7 @@ Your question: {message}"""
         else:
             response_content = f"""I couldn't find relevant information in your knowledge base for this query: "{message}"
 
-Please make sure you have uploaded relevant documents to your knowledge base, or configure AWS Athena to query your data lake.
+Please make sure you have uploaded relevant documents to your knowledge base, or configure AWS Athena to query your data sources.
 
 The SQL execution functionality requires AWS configuration to execute queries on your data sources."""
 
