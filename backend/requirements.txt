@@ -86,7 +86,7 @@ nvidia-cusparselt-cu12==0.6.3 ; platform_machine == 'x86_64' and sys_platform ==
 nvidia-nccl-cu12==2.26.2 ; platform_machine == 'x86_64' and sys_platform == 'linux'
 nvidia-nvjitlink-cu12==12.6.85 ; platform_machine == 'x86_64' and sys_platform == 'linux'
 nvidia-nvtx-cu12==12.6.77 ; platform_machine == 'x86_64' and sys_platform == 'linux'
-openai==1.93.1
+openai==0.28.0
 openpyxl==3.1.5
 orjson==3.10.18 ; platform_python_implementation != 'PyPy'
 packaging==24.2

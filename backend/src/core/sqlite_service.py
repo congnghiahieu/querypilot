@@ -4,7 +4,7 @@ import time
 from typing import Any, Optional
 
 from src.core.settings import APP_SETTINGS
-from src.nl2sql.dail_sql.utils.utils import get_tables_from_db
+from src.nl2sql.dail_sql.utils.utils import get_tables
 
 
 def get_backend_directory() -> str:

@@ -54,7 +54,7 @@ class ChatMessageResponse(BaseModel):
     has_data: bool = False  # Indicates if this message has downloadable data
 
 
-async def process_nl2sql_message(message: str, user_id: UUID) -> ChatResponse:
+async def process_nl2sql_message(message: str, db_id: str, user_id: UUID) -> ChatResponse:
     """
     Process nl2sql message with RAG context from knowledge base.
     Returns structured response with content, SQL, and results.
@@ -65,8 +65,8 @@ async def process_nl2sql_message(message: str, user_id: UUID) -> ChatResponse:
 
     try:
         # Get relevant context from knowledge base using RAG
-        context = ""
-        #context = rag_service.get_context_for_query(message, user_id)
+        context = rag_service.get_context_for_query(message, user_id)
+        print(f"[TIME] Context retrieval: {time.time() - start}")
 
         # Check if we're in AWS environment and can use SQL execution service
         sql_service = get_sql_execution_service()
@@ -79,8 +79,11 @@ async def process_nl2sql_message(message: str, user_id: UUID) -> ChatResponse:
                 database_name = "vpbank" if not APP_SETTINGS.is_aws else None
                 #schema_info = sql_service.get_database_schema(database_name)
 
-                # Generate SQL query based on message content and schema
-                sql_query = "PRAGMA table_info(t24_customer__s2);"
+                # Import and use nl2sql function to generate SQL query based on message content and context
+                from src.nl2sql.dail_sql.nl2sql import nl2sql
+                print(f"[DEBUG] Calling nl2sql with message: {message}, context: {context}, db_id: {db_id}")
+                sql_query = nl2sql(message, context, db_id)
+                print(f"[DEBUG] nl2sql returned: {sql_query}")
 
                 if sql_query:
                     # Execute SQL query
@@ -132,32 +135,15 @@ async def process_nl2sql_message(message: str, user_id: UUID) -> ChatResponse:
                     execution_time=0.0,
                     rows_count=0,
                 )
-
-        # Fallback to context-based response if SQL execution service is not available
-        if context:
-            response_content = f"""Based on your knowledge base, here's what I found relevant to your question:
-
-{context}
-
-Note: SQL execution service is not configured. To execute SQL queries on your data lake, please configure AWS Athena settings.
-
-Your question: {message}"""
         else:
-            response_content = f"""I couldn't find relevant information in your knowledge base for this query: "{message}"
-
-Please make sure you have uploaded relevant documents to your knowledge base, or configure AWS Athena to query your data sources.
-
-The SQL execution functionality requires AWS configuration to execute queries on your data sources."""
-
-        return ChatResponse(
-            type="text",
-            content=response_content,
-            sql_query=None,
-            data=None,
-            execution_time=0.0,
-            rows_count=0,
-        )
-
+            return ChatResponse(
+                type="text",
+                content="SQL execution service is not available. Please check your configuration and try again.",
+                sql_query=None,
+                data=None,
+                execution_time=0.0,
+                rows_count=0,
+            )
     except Exception as e:
         return ChatResponse(
             type="text",
@@ -192,7 +178,7 @@ async def new_chat(
     session.add(user_message)
 
     # Process message through nl2sql pipeline with RAG and SQL execution service
-    result = await process_nl2sql_message(payload.message, current_user.id)
+    result = await process_nl2sql_message(payload.message, "vpbank", current_user.id)
 
     # Store data as JSON in content field for database compatibility
     content_for_db = result.content
@@ -272,7 +258,7 @@ async def continue_chat(
     session.add(user_message)
 
     # Process message through nl2sql pipeline with RAG and SQL execution service
-    result = await process_nl2sql_message(payload.message, current_user.id)
+    result = await process_nl2sql_message(payload.message, "vpbank", current_user.id)
 
     # Store data as JSON in content field for database compatibility
     content_for_db = result.content

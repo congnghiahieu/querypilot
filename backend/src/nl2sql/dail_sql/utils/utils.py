@@ -1,11 +1,12 @@
 import collections
+import json
 import os
 import re
 import sqlite3
 
-from sql_metadata import Parser
-
+from transformers import AutoTokenizer
 from src.nl2sql.dail_sql.utils.enums import LLM
+from sql_metadata import Parser
 
 
 class SqliteTable(dict):
@@ -13,7 +14,7 @@ class SqliteTable(dict):
     __setattr__ = dict.__setitem__
 
 
-def get_tables_from_db(path_db):
+def get_tables(path_db):
     if not os.path.exists(path_db):
         raise RuntimeError(f"{path_db} not exists")
 
@@ -23,6 +24,7 @@ def get_tables_from_db(path_db):
 
     # extract table information
     table_info = parse_db(path_db, cur)
+    # TODO: ! add here
     table_names = get_table_names(cur=cur)
 
     res = list()
@@ -40,7 +42,7 @@ def get_tables_from_db(path_db):
                 name=table_name,
                 schema=schema,
                 data=data,
-                table_info=table_info.get(table_name, dict()),
+                table_info=table_info.get(table_name, dict())
             )
         )
 
@@ -58,18 +60,21 @@ def parse_db(path_db, cur=None):
     table_names = get_table_names(path_db, cur)
 
     for table_name in table_names:
-        pks = get_primary_key(table_name, path_db, cur)
+        pks = get_primary_key(table_name, path_db,cur)
         fks = get_foreign_key(table_name, path_db, cur)
 
-        table_info[table_name] = {"primary_key": pks, "foreign_key": fks}
+        table_info[table_name] = {
+            "primary_key": pks,
+            "foreign_key": fks
+        }
     return table_info
 
 
 def execute_query(queries, path_db=None, cur=None):
-    """Execute queries and return results. Reuse cur if it's not None."""
-    assert not (path_db is None and cur is None), (
-        "path_db and cur cannot be NoneType at the same time"
-    )
+    """Execute queries and return results. Reuse cur if it's not None.
+
+    """
+    assert not (path_db is None and cur is None), "path_db and cur cannot be NoneType at the same time"
 
     close_in_func = False
     if cur is None:
@@ -92,7 +97,6 @@ def execute_query(queries, path_db=None, cur=None):
         con.close()
 
     return results
-
 
 def format_foreign_key(table_name: str, res: list):
     # FROM: self key | TO: target key
@@ -120,10 +124,10 @@ def get_primary_key(table_name, path_db=None, cur=None):
 
 
 def get_table_names(path_db=None, cur=None):
-    """Get names of all tables within the database, and reuse cur if it's not None"""
-    table_names = execute_query(
-        queries="SELECT name FROM sqlite_master WHERE type='table'", path_db=path_db, cur=cur
-    )
+    """Get names of all tables within the database, and reuse cur if it's not None
+
+    """
+    table_names = execute_query(queries="SELECT name FROM sqlite_master WHERE type='table'", path_db=path_db, cur=cur)
     table_names = [_[0] for _ in table_names]
     return table_names
 
@@ -135,7 +139,7 @@ def filter_json(raw_response: str) -> str:
         if id_s > id_e:
             raise ValueError("Wrong json format")
         else:
-            return raw_response[id_s : id_e + 1]
+            return raw_response[id_s: id_e + 1]
     except ValueError:
         raise ValueError("Wrong json format")
 
@@ -145,29 +149,42 @@ def cost_estimate(n_tokens: int, model):
 
 
 def get_sql_for_database(path_db=None, cur=None):
+    import sqlite3
     close_in_func = False
     if cur is None:
         con = sqlite3.connect(path_db)
         cur = con.cursor()
         close_in_func = True
 
-    table_names = get_table_names(path_db, cur)
+    # Get table names
+    table_query = "SELECT name FROM sqlite_master WHERE type='table';"
+    cur.execute(table_query)
+    table_names = [row[0] for row in cur.fetchall()]
 
-    queries = [f"SELECT sql FROM sqlite_master WHERE tbl_name='{name}'" for name in table_names]
-
-    sqls = execute_query(queries, path_db, cur)
+    column_names_original = []
+    for tid, table_name in enumerate(table_names):
+        pragma_query = f"PRAGMA table_info('{table_name}');"
+        cur.execute(pragma_query)
+        columns = cur.fetchall()
+        for col in columns:
+            column_names_original.append((tid, col[1]))  # col[1] = column name
 
     if close_in_func:
         cur.close()
 
-    return [_[0][0] for _ in sqls]
+    return {
+        "table_names_original": table_names,
+        "column_names_original": column_names_original
+    }
 
 
 def get_tokenizer(tokenizer_type: str):
     return 0
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_type, use_fast=False)
+    return tokenizer
 
 
-def count_tokens(string: str, tokenizer_type: str = None, tokenizer=None):
+def count_tokens(string: str, tokenizer_type: str=None, tokenizer=None):
     return 0
     # if tokenizer is None:
     #     tokenizer = get_tokenizer(tokenizer_type)
@@ -178,7 +195,6 @@ def count_tokens(string: str, tokenizer_type: str = None, tokenizer=None):
 
 def sql_normalization(sql):
     sql = sql.strip()
-
     def white_space_fix(s):
         parsed_s = Parser(s)
         s = " ".join([token.value for token in parsed_s.tokens])
@@ -211,12 +227,10 @@ def sql_normalization(sql):
 
     # double quotation -> single quotation
     def double2single(s):
-        return s.replace('"', "'")
+        return s.replace("\"", "'")
 
     def add_asc(s):
-        pattern = re.compile(
-            r"order by (?:\w+ \( \S+ \)|\w+\.\w+|\w+)(?: (?:\+|\-|\<|\<\=|\>|\>\=) (?:\w+ \( \S+ \)|\w+\.\w+|\w+))*"
-        )
+        pattern = re.compile(r'order by (?:\w+ \( \S+ \)|\w+\.\w+|\w+)(?: (?:\+|\-|\<|\<\=|\>|\>\=) (?:\w+ \( \S+ \)|\w+\.\w+|\w+))*')
         if "order by" in s and "asc" not in s and "desc" not in s:
             for p_str in pattern.findall(s):
                 s = s.replace(p_str, p_str + " asc")
@@ -253,12 +267,12 @@ def sql_normalization(sql):
         tables_aliases = Parser(s).tables_aliases
         new_tables_aliases = {}
         for i in range(1, 11):
-            if f"t{i}" in tables_aliases.keys():
-                new_tables_aliases[f"t{i}"] = tables_aliases[f"t{i}"]
+            if "t{}".format(i) in tables_aliases.keys():
+                new_tables_aliases["t{}".format(i)] = tables_aliases["t{}".format(i)]
         table_names = []
         for tok in sql_split(s):
-            if "." in tok:
-                table_names.append(tok.split(".")[0])
+            if '.' in tok:
+                table_names.append(tok.split('.')[0])
         for table_name in table_names:
             if table_name in tables_aliases.keys():
                 new_tables_aliases[table_name] = tables_aliases[table_name]
@@ -268,23 +282,19 @@ def sql_normalization(sql):
         pre_tok = ""
         for tok in sql_split(s):
             if tok in tables_aliases.keys():
-                if pre_tok == "as":
+                if pre_tok == 'as':
                     new_s = new_s[:-1]
                 elif pre_tok != tables_aliases[tok]:
                     new_s.append(tables_aliases[tok])
-            elif "." in tok:
-                split_toks = tok.split(".")
+            elif '.' in tok:
+                split_toks = tok.split('.')
                 for i in range(len(split_toks)):
-                    if (
-                        len(split_toks[i]) > 2
-                        and split_toks[i][0] == "'"
-                        and split_toks[i][-1] == "'"
-                    ):
+                    if len(split_toks[i]) > 2 and split_toks[i][0] == "'" and split_toks[i][-1] == "'":
                         split_toks[i] = split_toks[i].replace("'", "")
                         split_toks[i] = split_toks[i].lower()
                     if split_toks[i] in tables_aliases.keys():
                         split_toks[i] = tables_aliases[split_toks[i]]
-                new_s.append(".".join(split_toks))
+                new_s.append('.'.join(split_toks))
             else:
                 new_s.append(tok)
             pre_tok = tok
@@ -295,10 +305,10 @@ def sql_normalization(sql):
         for i in range(len(s)):
             if s[i] == "as":
                 continue
-            if i > 0 and s[i - 1] == "as":
+            if i > 0 and s[i-1] == "as":
                 continue
             new_s.append(s[i])
-        new_s = " ".join(new_s)
+        new_s = ' '.join(new_s)
 
         # for k, v in tables_aliases.items():
         #     s = s.replace("as " + k + " ", "")
@@ -306,9 +316,7 @@ def sql_normalization(sql):
 
         return new_s
 
-    processing_func = lambda x: remove_table_alias(
-        add_asc(lower(white_space_fix(double2single(remove_semicolon(x)))))
-    )
+    processing_func = lambda x: remove_table_alias(add_asc(lower(white_space_fix(double2single(remove_semicolon(x))))))
 
     return processing_func(sql.strip())
 
@@ -324,9 +332,7 @@ def sql2skeleton(sql: str, db_schema):
         for column_id_and_name in db_schema["column_names_original"]:
             column_id = column_id_and_name[0]
             column_name_original = column_id_and_name[1]
-            table_dot_column_names_original.append(
-                table_name_original.lower() + "." + column_name_original.lower()
-            )
+            table_dot_column_names_original.append(table_name_original.lower() + "." + column_name_original.lower())
             column_names_original.append(column_name_original.lower())
 
     parsed_sql = Parser(sql)
@@ -336,7 +342,8 @@ def sql2skeleton(sql: str, db_schema):
         if token.value in table_names_original:
             new_sql_tokens.append("_")
         # mask column names
-        elif token.value in column_names_original or token.value in table_dot_column_names_original:
+        elif token.value in column_names_original \
+                or token.value in table_dot_column_names_original:
             new_sql_tokens.append("_")
         # mask string values
         elif token.value.startswith("'") and token.value.endswith("'"):
@@ -363,15 +370,15 @@ def sql2skeleton(sql: str, db_schema):
     sql_skeleton = re.sub(pattern3, "_ ", sql_skeleton)
 
     # "_ , _ , ..., _" -> "_"
-    while "_ , _" in sql_skeleton:
+    while ("_ , _" in sql_skeleton):
         sql_skeleton = sql_skeleton.replace("_ , _", "_")
 
     # remove clauses in WHERE keywords
     ops = ["=", "!=", ">", ">=", "<", "<="]
     for op in ops:
-        if f"_ {op} _" in sql_skeleton:
-            sql_skeleton = sql_skeleton.replace(f"_ {op} _", "_")
-    while "where _ and _" in sql_skeleton or "where _ or _" in sql_skeleton:
+        if "_ {} _".format(op) in sql_skeleton:
+            sql_skeleton = sql_skeleton.replace("_ {} _".format(op), "_")
+    while ("where _ and _" in sql_skeleton or "where _ or _" in sql_skeleton):
         if "where _ and _" in sql_skeleton:
             sql_skeleton = sql_skeleton.replace("where _ and _", "where _")
         if "where _ or _" in sql_skeleton:
@@ -384,11 +391,7 @@ def sql2skeleton(sql: str, db_schema):
     # double check for order by
     split_skeleton = sql_skeleton.split(" ")
     for i in range(2, len(split_skeleton)):
-        if (
-            split_skeleton[i - 2] == "order"
-            and split_skeleton[i - 1] == "by"
-            and split_skeleton[i] != "_"
-        ):
+        if split_skeleton[i-2] == "order" and split_skeleton[i-1] == "by" and split_skeleton[i] != "_":
             split_skeleton[i] = "_"
     sql_skeleton = " ".join(split_skeleton)
 
@@ -426,7 +429,6 @@ def jaccard_similarity(skeleton1, skeleton2):
         for t in tokens:
             token_dict[t] += 1
         return token_dict
-
     token_dict1 = list_to_dict(tokens1)
     token_dict2 = list_to_dict(tokens2)
 

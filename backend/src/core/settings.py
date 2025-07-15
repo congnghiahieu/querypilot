@@ -1,9 +1,13 @@
 import os
+from pathlib import Path
 from typing import Literal
 
 from openai import OpenAI
 from pydantic import Field
 from pydantic_settings import BaseSettings
+
+# Project root directory (backend folder)
+PROJECT_ROOT = Path(__file__).parent.parent.parent
 
 
 class AppSettings(BaseSettings):
