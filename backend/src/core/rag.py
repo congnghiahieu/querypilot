@@ -99,6 +99,7 @@ class VectorStore:
         # Load existing index and metadata
         self.index = None
         self.metadata = []
+        self.deleted_count = 0  # Track deleted items
         self._load_index()
 
     def _load_index(self):
@@ -108,53 +109,163 @@ class VectorStore:
                 self.index = faiss.read_index(self.index_path)
                 with open(self.metadata_path, "r", encoding="utf-8") as f:
                     self.metadata = json.load(f)
+
+                # Count existing deleted items
+                self.deleted_count = sum(1 for m in self.metadata if m.get("deleted", False))
+                print(f"Loaded {self.index.ntotal if self.index else 0} vectors, {self.deleted_count} deleted")
+
             except Exception as e:
                 print(f"Error loading index: {e}")
                 self.index = None
                 self.metadata = []
+                self.deleted_count = 0
 
     def _save_index(self):
         """Save FAISS index and metadata"""
         if self.index is not None:
             faiss.write_index(self.index, self.index_path)
-            with open(self.metadata_path, "w", encoding="utf-8") as f:
-                json.dump(self.metadata, f, ensure_ascii=False, indent=2)
 
-    def add_documents(self, kb_id: str, chunks: list[str], filename: str):
-        """Add document chunks to vector store"""
-        if not chunks:
+        with open(self.metadata_path, "w", encoding="utf-8") as f:
+            json.dump(self.metadata, f, ensure_ascii=False, indent=2)
+
+    def remove_documents(self, kb_id: str) -> dict[str, Any]:
+        """Remove documents with smart strategy"""
+        if not self.metadata:
+            return {"removed_count": 0, "strategy": "no_data"}
+
+        # Count documents to remove
+        docs_to_remove = [m for m in self.metadata if m["kb_id"] == kb_id and not m.get("deleted", False)]
+
+        if not docs_to_remove:
+            return {"removed_count": 0, "strategy": "not_found"}
+
+        # Calculate deletion ratio
+        active_count = len([m for m in self.metadata if not m.get("deleted", False)])
+        removal_count = len(docs_to_remove)
+        deletion_ratio = (self.deleted_count + removal_count) / len(self.metadata)
+
+        # Strategy decision
+        if deletion_ratio > 0.4:  # >40% would be deleted -> rebuild
+            return self._hard_delete(kb_id, docs_to_remove)
+        else:  # <40% -> soft delete
+            return self._soft_delete(kb_id, docs_to_remove)
+
+    def _soft_delete(self, kb_id: str, docs_to_remove: list) -> dict[str, Any]:
+        """Mark documents as deleted (fast)"""
+        removed_count = 0
+
+        for meta in self.metadata:
+            if meta["kb_id"] == kb_id and not meta.get("deleted", False):
+                meta["deleted"] = True
+                meta["deleted_at"] = time.time()
+                removed_count += 1
+
+        self.deleted_count += removed_count
+        self._save_index()
+
+        return {
+            "removed_count": removed_count,
+            "strategy": "soft_delete",
+            "deleted_total": self.deleted_count,
+            "suggestion": "Consider cleanup_deleted() for better performance"
+        }
+
+    def _hard_delete(self, kb_id: str, docs_to_remove: list) -> dict[str, Any]:
+        """Rebuild index without deleted documents"""
+        start_time = time.time()
+
+        # Get active metadata (excluding kb_id and already deleted)
+        active_metadata = [
+            m for m in self.metadata
+            if m["kb_id"] != kb_id and not m.get("deleted", False)
+        ]
+
+        removed_count = len(docs_to_remove) + self.deleted_count
+
+        if not active_metadata:
+            # No documents left
+            self.index = None
+            self.metadata = []
+            self.deleted_count = 0
+        else:
+            # Rebuild index
+            self._rebuild_index_from_metadata(active_metadata)
+
+        rebuild_time = time.time() - start_time
+
+        return {
+            "removed_count": len(docs_to_remove),
+            "strategy": "hard_delete",
+            "cleaned_total": removed_count,
+            "rebuild_time": rebuild_time,
+            "active_documents": len(active_metadata)
+        }
+
+    def _rebuild_index_from_metadata(self, active_metadata: list):
+        """Rebuild FAISS index from active metadata"""
+        if not active_metadata:
+            self.index = None
+            self.metadata = []
+            self.deleted_count = 0
             return
+
+        # Extract text chunks
+        chunks = [m["text"] for m in active_metadata]
 
         # Generate embeddings
         embeddings = self.embedding_model.encode(chunks)
         embeddings = np.array(embeddings).astype("float32")
 
-        # Create or update FAISS index
-        if self.index is None:
-            dimension = embeddings.shape[1]
-            self.index = faiss.IndexFlatL2(dimension)
-
-        # Add embeddings to index
-        start_idx = self.index.ntotal
+        # Create new index
+        dimension = embeddings.shape[1]
+        self.index = faiss.IndexFlatL2(dimension)
         self.index.add(embeddings)
 
-        # Add metadata
-        for i, chunk in enumerate(chunks):
-            self.metadata.append(
-                {
-                    "kb_id": kb_id,
-                    "filename": filename,
-                    "chunk_index": i,
-                    "text": chunk,
-                    "vector_index": start_idx + i,
-                }
-            )
+        # Update vector indices and clean metadata
+        for i, metadata in enumerate(active_metadata):
+            metadata["vector_index"] = i
+            # Remove deletion flags
+            metadata.pop("deleted", None)
+            metadata.pop("deleted_at", None)
 
-        # Save index
+        self.metadata = active_metadata
+        self.deleted_count = 0
         self._save_index()
 
+    def cleanup_deleted(self, force: bool = False) -> dict[str, Any]:
+        """Manual cleanup of deleted documents"""
+        if self.deleted_count == 0:
+            return {"message": "No deleted documents to clean", "cleaned_count": 0}
+
+        deletion_ratio = self.deleted_count / len(self.metadata)
+
+        if not force and deletion_ratio < 0.3:
+            return {
+                "message": f"Cleanup not recommended (only {deletion_ratio:.1%} deleted)",
+                "deleted_count": self.deleted_count,
+                "suggestion": "Use force=True to cleanup anyway"
+            }
+
+        start_time = time.time()
+
+        # Get active metadata
+        active_metadata = [m for m in self.metadata if not m.get("deleted", False)]
+        cleaned_count = self.deleted_count
+
+        # Rebuild
+        self._rebuild_index_from_metadata(active_metadata)
+
+        cleanup_time = time.time() - start_time
+
+        return {
+            "message": "Cleanup completed",
+            "cleaned_count": cleaned_count,
+            "active_documents": len(active_metadata),
+            "cleanup_time": cleanup_time
+        }
+
     def search(self, query: str, k: int = 5) -> list[dict[str, Any]]:
-        """Search for similar documents"""
+        """Search with soft delete support"""
         if self.index is None or self.index.ntotal == 0:
             return []
 
@@ -162,51 +273,44 @@ class VectorStore:
         query_embedding = self.embedding_model.encode([query])
         query_embedding = np.array(query_embedding).astype("float32")
 
-        # Search
-        distances, indices = self.index.search(query_embedding, min(k, self.index.ntotal))
+        # Search with buffer for deleted items
+        active_ratio = 1 - (self.deleted_count / len(self.metadata)) if self.metadata else 1
+        search_k = min(int(k / max(active_ratio, 0.1)), self.index.ntotal)
+        search_k = max(search_k, k)  # At least k results
 
-        # Return results
+        distances, indices = self.index.search(query_embedding, search_k)
+
+        # Filter out deleted documents
         results = []
         for i, idx in enumerate(indices[0]):
             if idx < len(self.metadata):
-                result = self.metadata[idx].copy()
-                result["distance"] = float(distances[0][i])
-                results.append(result)
+                meta = self.metadata[idx]
+                if not meta.get("deleted", False):  # Skip deleted
+                    result = meta.copy()
+                    result["distance"] = float(distances[0][i])
+                    # Remove internal fields
+                    result.pop("deleted", None)
+                    result.pop("deleted_at", None)
+                    results.append(result)
+
+                    if len(results) >= k:
+                        break
 
         return results
 
-    def remove_documents(self, kb_id: str):
-        """Remove documents from vector store"""
-        if not self.metadata:
-            return
+    def get_stats(self) -> dict[str, Any]:
+        """Get vector store statistics"""
+        total_docs = len(self.metadata)
+        active_docs = total_docs - self.deleted_count
 
-        # Filter out metadata for the kb_id
-        new_metadata = [m for m in self.metadata if m["kb_id"] != kb_id]
-
-        if len(new_metadata) == len(self.metadata):
-            return  # No documents to remove
-
-        # Rebuild index if documents were removed
-        if new_metadata:
-            chunks = [m["text"] for m in new_metadata]
-            embeddings = self.embedding_model.encode(chunks)
-            embeddings = np.array(embeddings).astype("float32")
-
-            dimension = embeddings.shape[1]
-            self.index = faiss.IndexFlatL2(dimension)
-            self.index.add(embeddings)
-
-            # Update vector indices
-            for i, metadata in enumerate(new_metadata):
-                metadata["vector_index"] = i
-
-            self.metadata = new_metadata
-        else:
-            # No documents left
-            self.index = None
-            self.metadata = []
-
-        self._save_index()
+        return {
+            "total_documents": total_docs,
+            "active_documents": active_docs,
+            "deleted_documents": self.deleted_count,
+            "deletion_ratio": self.deleted_count / total_docs if total_docs > 0 else 0,
+            "vector_count": self.index.ntotal if self.index else 0,
+            "cleanup_recommended": self.deleted_count / total_docs > 0.3 if total_docs > 0 else False
+        }
 
 
 class RAGService:
