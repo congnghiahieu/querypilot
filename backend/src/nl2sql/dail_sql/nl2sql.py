@@ -1,30 +1,19 @@
-# sk-nDNNEaojQq1qrG9WNFHFLTsvqPzexVJvcKhELf1HKqDiRAGu
-import argparse
 import sys
-import re
-import sqlite3
 print(">>> Import done 1")
 from src.nl2sql.dail_sql.utils.linking_utils.application import (
-    mask_question_with_schema_linking,
-    get_question_pattern_with_schema_linking,
-    get_relevant_tables
+    mask_question_with_schema_linking
 )
 print(">>> Import done 2")
 from src.nl2sql.dail_sql.utils.utils import sql2skeleton, get_sql_for_database
 print(">>> Import done 3")
 from src.nl2sql.dail_sql.prompt.prompt_builder import prompt_factory
 print(">>> Import done 4")
-from src.nl2sql.dail_sql.llm.chatgpt import ask_llm, init_chatgpt, ask_deepseek_sql, ask_deepseek
+from src.nl2sql.dail_sql.llm.chatgpt import ask_deepseek_sql, ask_deepseek
 print(">>> Import done 5")
 from src.nl2sql.dail_sql.utils.enums import REPR_TYPE, EXAMPLE_TYPE, SELECTOR_TYPE
 print(">>> All imports OK")
 from src.nl2sql.dail_sql.prompt.PromptReprTemplate import SQLPrompt
 from src.core.settings import PROJECT_ROOT
-
-import os
-OPENAI_API_KEY = "sk-jpWR1cYJW7gqbxzuGtcPHv5CVA4xXm5oa3DikbAKxZrTkVxL"
-OPENAI_GROUP_ID = ""
-LLM_MODEL = "gpt-4"
 
 def clean_sql_query(sql_str):
     """
@@ -36,6 +25,7 @@ def clean_sql_query(sql_str):
     Returns:
         str: Clean SQL query
     """
+
     # If the query contains markdown code block
     if "```sql" in sql_str:
         # Extract content between ```sql and ```
@@ -48,42 +38,6 @@ def clean_sql_query(sql_str):
     sql_str = sql_str.strip()
 
     return sql_str
-
-
-def clean_sql_output(raw_sql: str) -> str:
-    """
-    Loại bỏ markdown block ```sql ... ``` và strip dòng thừa.
-    """
-    # Xoá ```sql và ``` nếu có
-    cleaned = re.sub(r"^```sql\s*", "", raw_sql.strip(), flags=re.IGNORECASE | re.MULTILINE)
-    cleaned = re.sub(r"```$", "", cleaned.strip(), flags=re.MULTILINE)
-    return cleaned.strip()
-
-init_chatgpt(OPENAI_API_KEY, OPENAI_GROUP_ID, LLM_MODEL)
-
-def execute_sql(db_path, sql):
-    """
-    Thực thi câu SQL trên SQLite và in kết quả.
-    """
-    sql = clean_sql_output(sql)
-    print(f"\n▶️ Thực thi SQL:\n{sql}")
-    con = sqlite3.connect(db_path)
-    cur = con.cursor()
-    try:
-        cur.execute(sql)
-        rows = cur.fetchall()
-        col_names = [desc[0] for desc in cur.description] if cur.description else []
-
-        print("\n✅ Kết quả truy vấn:")
-        print("\t".join(col_names))
-        for row in rows:
-            print("\t".join(str(v) for v in row))
-
-    except Exception as e:
-        print(f"❌ Lỗi khi thực thi SQL: {e}")
-    finally:
-        cur.close()
-        con.close()
 
 def auto_link_and_mask(question, tables, columns):
     """
@@ -188,7 +142,6 @@ def nl2sql(question, context, db_id):
         
         print(f"question = {question}\ndb_id = {db_id}")
         print(f"Database path: {path_db}")
-        print("before get id question")
         schema = get_sql_for_database(path_db)
         # Sau khi có schema
         table_names = schema["table_names_original"]

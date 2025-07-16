@@ -1,6 +1,4 @@
 from src.nl2sql.dail_sql.utils.utils import get_sql_for_database
-import json
-
 
 class BasicPrompt(object):
     def __init__(self, *args, **kwargs):

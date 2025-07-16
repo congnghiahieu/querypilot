@@ -1,6 +1,5 @@
 from src.nl2sql.dail_sql.utils.utils import get_tokenizer, count_tokens, jaccard_similarity
 import numpy as np
-import json
 
 class BasicICLPrompt(object):
     NUM_EXAMPLE = None

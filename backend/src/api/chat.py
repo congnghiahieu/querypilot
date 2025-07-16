@@ -1,7 +1,7 @@
 import json
 import time
 from io import BytesIO
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Dict, List, Optional
 from uuid import UUID
 
 import pandas as pd
@@ -25,13 +25,22 @@ class ChatRequest(BaseModel):
     message: str
 
 
-class ChatResponse(BaseModel):
-    type: Literal["text", "table", "chart"]
-    content: str  # Human-readable message to user
-    sql_query: Optional[str] = None  # SQL query if generated
-    data: Optional[List[Dict[str, Any]]] = None  # Query results if available
-    execution_time: float = 0.0
-    rows_count: int = 0
+class ChatMessageResponse(BaseModel):
+    # Core response fields
+    content: str  # Always human-readable content
+    response_type: str  # "text", "table", "chart"  
+    sql_query: Optional[str] = None
+    execution_time: Optional[float] = None
+    rows_count: Optional[int] = None
+    
+    # Database fields (when retrieving from DB)
+    id: Optional[str] = None
+    role: Optional[str] = None
+    created_at: Optional[str] = None
+    has_data: bool = False
+    
+    # Response data (for immediate API responses, not stored in DB)
+    data: Optional[List[Dict[str, Any]]] = None
 
 
 class ChatSessionResponse(BaseModel):
@@ -42,19 +51,7 @@ class ChatSessionResponse(BaseModel):
     message_count: int
 
 
-class ChatMessageResponse(BaseModel):
-    id: str
-    role: str
-    content: str
-    sql_query: Optional[str] = None
-    response_type: Optional[str] = None
-    execution_time: Optional[float] = None
-    rows_count: Optional[int] = None
-    created_at: str
-    has_data: bool = False  # Indicates if this message has downloadable data
-
-
-async def process_nl2sql_message(message: str, db_id: str, user_id: UUID) -> ChatResponse:
+async def process_nl2sql_message(message: str, db_id: str, user_id: UUID) -> ChatMessageResponse:
     """
     Process nl2sql message with RAG context from knowledge base.
     Returns structured response with content, SQL, and results.
@@ -95,9 +92,9 @@ async def process_nl2sql_message(message: str, db_id: str, user_id: UUID) -> Cha
                         # Prepare user-friendly content message
                         content_message = f"I found {result['row_count']} results for your query about customer segments. Here's the data:"
                         
-                        return ChatResponse(
-                            type="table",
+                        return ChatMessageResponse(
                             content=content_message,
+                            response_type="table",
                             sql_query=sql_query,
                             data=result["data"],
                             execution_time=result["execution_time"],
@@ -107,9 +104,9 @@ async def process_nl2sql_message(message: str, db_id: str, user_id: UUID) -> Cha
                         # SQL execution failed
                         error_message = f"I generated this SQL query but encountered an error during execution: {result['error']}"
                         
-                        return ChatResponse(
-                            type="text",
+                        return ChatMessageResponse(
                             content=error_message,
+                            response_type="text",
                             sql_query=sql_query,
                             data=None,
                             execution_time=result.get("execution_time", 0.0),
@@ -117,9 +114,9 @@ async def process_nl2sql_message(message: str, db_id: str, user_id: UUID) -> Cha
                         )
                 else:
                     # Could not generate SQL
-                    return ChatResponse(
-                        type="text",
+                    return ChatMessageResponse(
                         content=f"I couldn't generate a SQL query for your request: '{message}'. Please try rephrasing your question or be more specific about what data you want to see.",
+                        response_type="text",
                         sql_query=None,
                         data=None,
                         execution_time=0.0,
@@ -127,27 +124,27 @@ async def process_nl2sql_message(message: str, db_id: str, user_id: UUID) -> Cha
                     )
 
             except Exception as e:
-                return ChatResponse(
-                    type="text",
+                return ChatMessageResponse(
                     content=f"I encountered an error while processing your query: {str(e)}. Please try again or rephrase your question.",
+                    response_type="text",
                     sql_query=None,
                     data=None,
                     execution_time=0.0,
                     rows_count=0,
                 )
         else:
-            return ChatResponse(
-                type="text",
+            return ChatMessageResponse(
                 content="SQL execution service is not available. Please check your configuration and try again.",
+                response_type="text",
                 sql_query=None,
                 data=None,
                 execution_time=0.0,
                 rows_count=0,
             )
     except Exception as e:
-        return ChatResponse(
-            type="text",
+        return ChatMessageResponse(
             content=f"I encountered an error processing your message: {str(e)}. Please try again.",
+            response_type="text",
             sql_query=None,
             data=None,
             execution_time=0.0,
@@ -180,19 +177,14 @@ async def new_chat(
     # Process message through nl2sql pipeline with RAG and SQL execution service
     result = await process_nl2sql_message(payload.message, "vpbank", current_user.id)
 
-    # Store data as JSON in content field for database compatibility
-    content_for_db = result.content
-    if result.data:
-        # For table/chart responses, store the data as JSON in content field for database
-        content_for_db = json.dumps(result.data)
-
-    # Add assistant message
+    # Always store human-readable content in the database
+    # Data will be stored separately in ChatDataResult table
     assistant_message = ChatMessage(
         chat_session_id=chat_session.id,
         role="assistant",
-        content=content_for_db,
+        content=result.content,  # Always store human-readable content
         sql_query=result.sql_query,
-        response_type=result.type,
+        response_type=result.response_type,
         execution_time=result.execution_time,
         rows_count=result.rows_count,
     )
@@ -201,7 +193,7 @@ async def new_chat(
     session.refresh(assistant_message)
 
     # Store data if it's table or chart type (only for assistant messages with data)
-    if result.type in ["table", "chart"] and result.data:
+    if result.response_type in ["table", "chart"] and result.data:
         try:
             # Create data result for download functionality
             data_result = ChatDataResult(
@@ -260,19 +252,14 @@ async def continue_chat(
     # Process message through nl2sql pipeline with RAG and SQL execution service
     result = await process_nl2sql_message(payload.message, "vpbank", current_user.id)
 
-    # Store data as JSON in content field for database compatibility
-    content_for_db = result.content
-    if result.data:
-        # For table/chart responses, store the data as JSON in content field for database
-        content_for_db = json.dumps(result.data)
-
-    # Add assistant message
+    # Always store human-readable content in the database
+    # Data will be stored separately in ChatDataResult table
     assistant_message = ChatMessage(
         chat_session_id=chat_session.id,
         role="assistant",
-        content=content_for_db,
+        content=result.content,  # Always store human-readable content
         sql_query=result.sql_query,
-        response_type=result.type,
+        response_type=result.response_type,
         execution_time=result.execution_time,
         rows_count=result.rows_count,
     )
@@ -287,7 +274,7 @@ async def continue_chat(
     session.refresh(assistant_message)
 
     # Store data if it's table or chart type (only for assistant messages with data)
-    if result.type in ["table", "chart"] and result.data:
+    if result.response_type in ["table", "chart"] and result.data:
         try:
             # Create data result for download functionality
             data_result = ChatDataResult(
