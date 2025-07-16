@@ -28,6 +28,7 @@ def sanitize_data_for_json(data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     - Infinity -> None
     - NaN -> None  
     - Very large numbers -> string representation
+    - Bytestrings -> hex string representation
     """
     if not data:
         return data
@@ -45,6 +46,9 @@ def sanitize_data_for_json(data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
                     sanitized_row[key] = f"{value:.2e}"  # Convert to scientific notation string
                 else:
                     sanitized_row[key] = value
+            elif isinstance(value, bytes):
+                # Convert bytestrings to hex representation
+                sanitized_row[key] = value.hex()
             else:
                 sanitized_row[key] = value
         sanitized_data.append(sanitized_row)
@@ -54,6 +58,7 @@ def sanitize_data_for_json(data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
 class ChatRequest(BaseModel):
     message: str
+    database_type: Optional[str] = "raw"  # "raw", "agg", or None for auto-detection
 
 
 class ChatMessageResponse(BaseModel):
@@ -81,8 +86,7 @@ class ChatSessionResponse(BaseModel):
     updated_at: str
     message_count: int
 
-
-async def process_nl2sql_message(message: str, db_id: str, user_id: UUID) -> ChatMessageResponse:
+async def process_nl2sql_message(message: str, db_id: str, user_id: UUID, database_type: str) -> ChatMessageResponse:
     """
     Process nl2sql message with RAG context from knowledge base.
     Returns structured response with content, SQL, and results.
@@ -116,15 +120,27 @@ async def process_nl2sql_message(message: str, db_id: str, user_id: UUID) -> Cha
                 if sql_query:
                     # Execute SQL query
                     time_execute = time.time()
-                    result = await sql_service.execute_query(sql_query, database_name)
+                    # For AWS, pass database_type; for SQLite, pass database_name
+                    if APP_SETTINGS.use_aws_data:
+                        result = await sql_service.execute_query(sql_query, database_type)
+                    else:
+                        result = await sql_service.execute_query(sql_query, database_name)
+
+                    print(f"result = {result}")
                     print(f"[TIME] SQL execution time: {time.time() - time_execute}")
 
                     if result["status"] == "success":
                         # Sanitize data to handle Infinity and very large numbers
                         sanitized_data = sanitize_data_for_json(result["data"])
                         
-                        # Prepare user-friendly content message
-                        content_message = f"I found {result['row_count']} results for your query about customer segments. Here's the data:"
+                        # Prepare user-friendly content message with database info
+                        db_info = ""
+                        if APP_SETTINGS.use_aws_data and result.get("database_type"):
+                            db_name = result.get("database", "unknown")
+                            db_type = result.get("database_type", "default")
+                            db_info = f" (from {db_type} database: {db_name})"
+                        
+                        content_message = f"I found {result['row_count']} results for your query{db_info}. Here's the data:"
                         
                         return ChatMessageResponse(
                             content=content_message,
@@ -209,7 +225,9 @@ async def new_chat(
     session.add(user_message)
 
     # Process message through nl2sql pipeline with RAG and SQL execution service
-    result = await process_nl2sql_message(payload.message, "vpbank", current_user.id)
+    # Use database type for AWS Athena (raw, agg, default), vpbank for local SQLite
+    db_id = payload.database_type if APP_SETTINGS.use_aws_data else "vpbank"
+    result = await process_nl2sql_message(payload.message, db_id, current_user.id, payload.database_type)
 
     # Always store human-readable content in the database
     # Data will be stored separately in ChatDataResult table
@@ -284,7 +302,9 @@ async def continue_chat(
     session.add(user_message)
 
     # Process message through nl2sql pipeline with RAG and SQL execution service
-    result = await process_nl2sql_message(payload.message, "vpbank", current_user.id)
+    # Use database type for AWS Athena (raw, agg, default), vpbank for local SQLite
+    db_id = payload.database_type if APP_SETTINGS.use_aws_data else "vpbank"
+    result = await process_nl2sql_message(payload.message, db_id, current_user.id, payload.database_type)
 
     # Always store human-readable content in the database
     # Data will be stored separately in ChatDataResult table
@@ -440,6 +460,54 @@ def delete_chat_by_id(
     session.commit()
 
     return {"message": "Chat deleted successfully"}
+
+
+@chat_router.get("/databases")
+def get_available_databases(
+    current_user: User = Depends(get_current_user),
+):
+    """Get information about available databases for queries"""
+    if APP_SETTINGS.use_aws_data:
+        available_dbs = APP_SETTINGS.get_available_athena_databases()
+        
+        # Get SQL execution service to check database schemas
+        sql_service = get_sql_execution_service()
+        if sql_service:
+            try:
+                all_schemas = sql_service.get_all_database_schemas()
+                return {
+                    "data_source": "aws_athena",
+                    "available_databases": available_dbs,
+                    "schemas": all_schemas,
+                    "auto_selection": True,
+                    "description": {
+                        "raw": "Detailed transaction-level data",
+                        "agg": "Pre-aggregated summary data", 
+                        "default": "Primary database (fallback)"
+                    }
+                }
+            except Exception as e:
+                return {
+                    "data_source": "aws_athena",
+                    "available_databases": available_dbs,
+                    "error": f"Could not retrieve schemas: {str(e)}",
+                    "auto_selection": True
+                }
+        else:
+            return {
+                "data_source": "aws_athena",
+                "available_databases": available_dbs,
+                "error": "SQL execution service not available",
+                "auto_selection": True
+            }
+    else:
+        sqlite_dbs = APP_SETTINGS.SQLITE_DATABASES
+        return {
+            "data_source": "local_sqlite",
+            "available_databases": sqlite_dbs,
+            "auto_selection": False,
+            "description": "Local SQLite databases for development"
+        }
 
 
 @chat_router.get("/data/{message_id}")

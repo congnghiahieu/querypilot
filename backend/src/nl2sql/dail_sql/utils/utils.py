@@ -178,6 +178,56 @@ def get_sql_for_database(path_db=None, cur=None):
     }
 
 
+def get_sql_for_athena_database(database_name: str, sql_execution_service=None):
+    """
+    Get schema information for AWS Athena database in the format expected by nl2sql
+    
+    Args:
+        database_name (str): The Athena database name or type ('raw', 'agg', 'default')
+        sql_execution_service: Instance of SQLExecutionService for Athena operations
+        
+    Returns:
+        dict: Schema information in the format expected by nl2sql module
+    """
+    if sql_execution_service is None:
+        from src.core.sql_execution import get_sql_execution_service
+        sql_execution_service = get_sql_execution_service()
+    
+    try:
+        # Get schema from Athena via Glue Catalog
+        schema_info = sql_execution_service.get_database_schema(database_name)
+        
+        if "error" in schema_info:
+            raise Exception(f"Error getting Athena schema: {schema_info['error']}")
+        
+        # Extract table names
+        table_names = []
+        column_names_original = []
+        
+        for table in schema_info.get("tables", []):
+            table_name = table["name"]
+            table_names.append(table_name)
+            
+            # Add columns with table index
+            table_id = len(table_names) - 1  # Current table index
+            for column in table.get("columns", []):
+                column_name = column["name"]
+                column_names_original.append((table_id, column_name))
+        
+        return {
+            "table_names_original": table_names,
+            "column_names_original": column_names_original
+        }
+        
+    except Exception as e:
+        print(f"Error getting Athena schema for database {database_name}: {str(e)}")
+        # Fallback to empty schema
+        return {
+            "table_names_original": [],
+            "column_names_original": []
+        }
+
+
 def get_tokenizer(tokenizer_type: str):
     return 0
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_type, use_fast=False)

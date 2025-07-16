@@ -2,12 +2,12 @@ import sys
 from src.nl2sql.dail_sql.utils.linking_utils.application import (
     mask_question_with_schema_linking
 )
-from src.nl2sql.dail_sql.utils.utils import sql2skeleton, get_sql_for_database
+from src.nl2sql.dail_sql.utils.utils import sql2skeleton, get_sql_for_database, get_sql_for_athena_database
 from src.nl2sql.dail_sql.prompt.prompt_builder import prompt_factory
 from src.nl2sql.dail_sql.llm.chatgpt import ask_deepseek_sql, ask_deepseek
 from src.nl2sql.dail_sql.utils.enums import REPR_TYPE, EXAMPLE_TYPE, SELECTOR_TYPE
 from src.nl2sql.dail_sql.prompt.PromptReprTemplate import SQLPrompt
-from src.core.settings import PROJECT_ROOT
+from src.core.settings import PROJECT_ROOT, APP_SETTINGS
 
 def clean_sql_query(sql_str):
     """
@@ -131,12 +131,27 @@ def get_tables_input(prompt_obj, schema):
 
 def nl2sql(question, context, db_id):
     try:
-        # Construct database path relative to project root
-        path_db = PROJECT_ROOT / "dataset" / f"{db_id}.sqlite"
-        
         print(f"question = {question}\ndb_id = {db_id}")
-        print(f"Database path: {path_db}")
-        schema = get_sql_for_database(path_db)
+        
+        # Check if using AWS data source
+        if APP_SETTINGS.use_aws_data:
+            print(f"Using AWS Athena for database: {db_id}")
+            
+            # For Athena, db_id represents the database type (raw, agg, default)
+            # Get SQL execution service for Athena operations
+            from src.core.sql_execution import get_sql_execution_service
+            sql_execution_service = get_sql_execution_service()
+            
+            # Get schema from Athena
+            schema = get_sql_for_athena_database(db_id, sql_execution_service)
+            path_db = f"athena://{db_id}"  # Virtual path for Athena
+            
+        else:
+            # Use local SQLite database
+            path_db = PROJECT_ROOT / "dataset" / f"{db_id}.sqlite"
+            print(f"Using SQLite database path: {path_db}")
+            schema = get_sql_for_database(path_db)
+        
         # Sau khi có schema
         table_names = schema["table_names_original"]
         columns = schema["column_names_original"]
@@ -145,7 +160,6 @@ def nl2sql(question, context, db_id):
         table_columns = {}
         for tid, col in columns:
             table_columns.setdefault(tid, []).append(col)
-
 
         print("Schema:", schema)
         print("after get id question")

@@ -190,7 +190,7 @@ class SQLiteService:
         return APP_SETTINGS.SQLITE_DATABASES
 
 
-def get_sqlite_service(db_name: str = "chinook") -> Optional[SQLiteService]:
+def get_sqlite_service(db_name: str) -> Optional[SQLiteService]:
     """Get SQLite service instance"""
     try:
         return SQLiteService(db_name)

@@ -10,6 +10,9 @@ from src.api.sqlite import sqlite_router
 from src.api.user import user_router
 from src.core.settings import ALLOWED_ORIGINS, STATIC_FOLDER
 
+import logging
+logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
+
 app = FastAPI(title="QueryPilot API", description="A text2sql chatbot API", version="1.0.0")
 
 app.add_middleware(

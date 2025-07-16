@@ -20,11 +20,12 @@ class SQLExecutionService:
         self.timeout = APP_SETTINGS.AWS_ATHENA_TIMEOUT
         self.user_context = user_context or {}
 
-        if APP_SETTINGS.is_aws:
+        if APP_SETTINGS.use_aws_data:
             self._initialize_aws_clients()
 
     def _initialize_aws_clients(self):
         """Initialize AWS clients for Athena and related services"""
+
         if not self.output_location:
             raise ValueError("AWS_ATHENA_OUTPUT_LOCATION must be configured")
 
@@ -35,6 +36,7 @@ class SQLExecutionService:
                 aws_secret_access_key=APP_SETTINGS.AWS_SECRET_ACCESS_KEY,
                 region_name=APP_SETTINGS.AWS_REGION,
             )
+            print("Athena client initialized")
 
             self.s3_client = boto3.client(
                 "s3",
@@ -115,27 +117,29 @@ class SQLExecutionService:
         except Exception as e:
             print(f"Warning: Could not assume user role, using default credentials: {e}")
 
-    async def execute_query(self, sql_query: str, database: str = None) -> dict[str, Any]:
+    async def execute_query(self, sql_query: str, database: str) -> dict[str, Any]:
         """
         Execute SQL query and return results
 
         Args:
             sql_query (str): SQL query to execute
-            database (str): Database to execute on (for SQLite) or None for default behavior
+            database (str): Database to execute on. For SQLite: database name. For Athena: database type ("raw", "agg", "default")
 
         Returns:
             Dict containing query results, metadata, and execution info
         """
-        if APP_SETTINGS.is_aws:
-            raise ValueError("AWS environment is not supported for SQLite queries")
+
+        if APP_SETTINGS.use_aws_data:
+            # For AWS data source, use Athena
+            return await self._execute_athena_query(sql_query, database)
         else:
-            # For local environment, use SQLite
+            # For local data source, use SQLite
             return await self._execute_sqlite_query(sql_query, database)
 
     async def _execute_sqlite_query(self, sql_query: str, database: str = None) -> dict[str, Any]:
         """Execute SQL query on SQLite database"""
         try:
-            db_name = database or "chinook"
+            db_name = database
             sqlite_service = get_sqlite_service(db_name)
             
             if not sqlite_service:
@@ -156,7 +160,7 @@ class SQLExecutionService:
                 "sql_query": sql_query
             }
 
-    async def _execute_athena_query(self, sql_query: str) -> dict[str, Any]:
+    async def _execute_athena_query(self, sql_query: str, database_type: str) -> dict[str, Any]:
         """Execute SQL query on AWS Athena"""
         start_time = time.time()
 
@@ -164,10 +168,18 @@ class SQLExecutionService:
             # Clean and validate SQL query
             cleaned_sql = self._clean_sql_query(sql_query)
 
+            # Determine which database to use
+            if database_type:
+                target_database = APP_SETTINGS.get_athena_database(database_type)
+            else:
+                target_database = self.database
+
+            print(f"[DEBUG] Executing Athena query on database: {target_database} (type: {database_type})")
+
             # Start query execution
             response = self.athena_client.start_query_execution(
                 QueryString=cleaned_sql,
-                QueryExecutionContext={"Database": self.database},
+                QueryExecutionContext={"Database": target_database},
                 ResultConfiguration={"OutputLocation": self.output_location},
                 WorkGroup=self.workgroup,
             )
@@ -178,8 +190,11 @@ class SQLExecutionService:
             execution_result = await self._wait_for_query_completion(query_execution_id)
 
             if execution_result["QueryExecution"]["Status"]["State"] == "SUCCEEDED":
+                print(f"Query execution details: {execution_result['QueryExecution']['Statistics']}")
+                
                 # Get query results
                 results = await self._get_query_results(query_execution_id)
+                print(f"result in _execute_athena_query = {results}")
 
                 execution_time = time.time() - start_time
 
@@ -192,6 +207,8 @@ class SQLExecutionService:
                     "row_count": len(results["data"]),
                     "column_count": len(results["columns"]),
                     "sql_query": cleaned_sql,
+                    "database": target_database,
+                    "database_type": database_type or "default",
                     "data_scanned_bytes": execution_result["QueryExecution"]["Statistics"].get(
                         "DataScannedInBytes", 0
                     ),
@@ -209,6 +226,8 @@ class SQLExecutionService:
                     "execution_time": time.time() - start_time,
                     "error": error_reason,
                     "sql_query": cleaned_sql,
+                    "database": target_database,
+                    "database_type": database_type or "default",
                 }
 
         except Exception as e:
@@ -241,35 +260,58 @@ class SQLExecutionService:
         """Get query results from Athena"""
         try:
             response = self.athena_client.get_query_results(QueryExecutionId=query_execution_id)
-
+            print(f"Raw Athena response structure: {list(response.keys())}")
+            
             result_set = response["ResultSet"]
+            print(f"ResultSet keys: {list(result_set.keys())}")
+            
+            if "ResultSetMetadata" in result_set:
+                print(f"ResultSetMetadata keys: {list(result_set['ResultSetMetadata'].keys())}")
 
             # Extract column names
             columns = []
-            if "ColumnInfos" in result_set["ResultSetMetadata"]:
-                columns = [col["Name"] for col in result_set["ResultSetMetadata"]["ColumnInfos"]]
-
+            if "ResultSetMetadata" in result_set and "ColumnInfo" in result_set["ResultSetMetadata"]:
+                columns = [col["Name"] for col in result_set["ResultSetMetadata"]["ColumnInfo"]]
+                print(f"Found columns: {columns}")
+            
             # Extract data rows
             data = []
-            rows = result_set["Rows"]
-
-            # Skip header row if present
-            data_rows = rows[1:] if len(rows) > 1 else []
-
-            for row in data_rows:
+            rows = result_set.get("Rows", [])
+            
+            # If we have rows but no columns, try to extract column names from the first row
+            if not columns and rows and len(rows) > 0:
+                # First row might be header
+                header_row = rows[0]
+                if "Data" in header_row:
+                    # Extract column names from header row
+                    columns = [
+                        item.get("VarCharValue", f"col_{i}") 
+                        for i, item in enumerate(header_row["Data"])
+                    ]
+                    print(f"Extracted columns from header row: {columns}")
+                    # Skip header row in data processing
+                    rows = rows[1:]
+            
+            # Process data rows
+            for row in rows:
                 row_data = {}
-                for i, col_name in enumerate(columns):
-                    if i < len(row["Data"]):
-                        value = row["Data"][i].get("VarCharValue", "")
+                if "Data" in row:
+                    for i, col_value in enumerate(row["Data"]):
+                        # Use column name if available, otherwise use index
+                        col_name = columns[i] if i < len(columns) else f"col_{i}"
+                        value = col_value.get("VarCharValue", "")
                         # Try to convert to appropriate type
                         row_data[col_name] = self._convert_value(value)
-                    else:
-                        row_data[col_name] = None
                 data.append(row_data)
 
+            print(f"Processed {len(data)} rows with {len(columns)} columns")
+            if data and len(data) > 0:
+                print(f"Sample row: {data[0]}")
+                
             return {"columns": columns, "data": data}
 
         except Exception as e:
+            print(f"Error in _get_query_results: {str(e)}")
             raise Exception(f"Error retrieving query results: {str(e)}")
 
     def _convert_value(self, value: str) -> Any:
@@ -310,8 +352,8 @@ class SQLExecutionService:
 
     def get_database_schema(self, database: str = None) -> dict[str, Any]:
         """Get database schema information"""
-        if APP_SETTINGS.is_aws:
-            raise ValueError("AWS environment is not supported for SQLite queries")
+        if APP_SETTINGS.use_aws_data:
+            return self._get_athena_schema(database)
         else:
             return self._get_sqlite_schema(database)
 
@@ -329,13 +371,23 @@ class SQLExecutionService:
         except Exception as e:
             return {"error": str(e), "tables": []}
 
-    def _get_athena_schema(self) -> dict[str, Any]:
+    def _get_athena_schema(self, database_type: str = None) -> dict[str, Any]:
         """Get AWS Athena database schema from Glue Catalog"""
         try:
-            # Get all tables in the database
-            response = self.glue_client.get_tables(DatabaseName=self.database)
+            # Determine which database to get schema for
+            if database_type:
+                target_database = APP_SETTINGS.get_athena_database(database_type)
+            else:
+                target_database = self.database
 
-            schema = {"database": self.database, "tables": []}
+            # Get all tables in the database
+            response = self.glue_client.get_tables(DatabaseName=target_database)
+
+            schema = {
+                "database": target_database, 
+                "database_type": database_type or "default",
+                "tables": []
+            }
 
             for table in response["TableList"]:
                 table_info = {"name": table["Name"], "columns": []}
@@ -355,6 +407,30 @@ class SQLExecutionService:
 
         except Exception as e:
             raise Exception(f"Error retrieving database schema: {str(e)}")
+
+    def get_all_database_schemas(self) -> dict[str, Any]:
+        """Get schema information for all configured Athena databases"""
+        if not APP_SETTINGS.use_aws_data:
+            return {"error": "Multiple database schemas only available for AWS Athena"}
+            
+        try:
+            all_schemas = {}
+            available_dbs = APP_SETTINGS.get_available_athena_databases()
+            
+            for db_type, db_name in available_dbs.items():
+                try:
+                    schema = self._get_athena_schema(db_type if db_type != "default" else None)
+                    all_schemas[db_type] = schema
+                except Exception as e:
+                    all_schemas[db_type] = {"error": str(e), "database": db_name}
+            
+            return {
+                "status": "success",
+                "databases": all_schemas,
+                "available_types": list(available_dbs.keys())
+            }
+        except Exception as e:
+            return {"error": str(e)}
 
     def validate_query_against_schema(self, sql_query: str) -> Tuple[bool, str]:
         """Validate SQL query against the database schema"""
@@ -392,52 +468,62 @@ class SQLExecutionService:
 
     def check_service_health(self) -> dict[str, Any]:
         """Check the health of SQL execution service"""
-        if not APP_SETTINGS.is_aws:
-            return {
-                "status": "not_configured",
-                "message": "SQL execution service requires AWS environment",
-            }
+        if APP_SETTINGS.use_aws_data:
+            try:
+                # Test basic connectivity
+                self.glue_client.get_databases()
+                print("Glue client initialized")
 
-        try:
-            # Test basic connectivity
-            self.glue_client.get_databases()
+                # Get schema info for health check
+                schema = self.get_database_schema()
+                print("Schema retrieved")
 
-            # Get schema info for health check
-            schema = self.get_database_schema()
-
+                return {
+                    "status": "healthy",
+                    "database": self.database,
+                    "workgroup": self.workgroup,
+                    "tables_count": len(schema.get("tables", [])),
+                    "tables": [table["name"] for table in schema.get("tables", [])],
+                }
+            except Exception as e:
+                return {"status": "error", "error": str(e)}
+        else:
             return {
                 "status": "healthy",
-                "database": self.database,
-                "workgroup": self.workgroup,
-                "tables_count": len(schema.get("tables", [])),
-                "tables": [table["name"] for table in schema.get("tables", [])],
+                "message": "Using local SQLite database",
+                "environment": "local"
             }
-        except Exception as e:
-            return {"status": "error", "error": str(e)}
 
 
 # Global SQL execution service instance
 sql_execution_service = None
 
-
 def get_sql_execution_service(
     user_context: Optional[dict[str, Any]] = None,
 ) -> Optional[SQLExecutionService]:
-    """Get SQL execution service instance with user context"""
-    # Always create a new instance with user context for security
-    if APP_SETTINGS.is_aws:
+    """Get SQL execution service instance with user context
+    
+    This function returns an instance of SQLExecutionService, configured for either AWS Athena or a local data source.
+    - For AWS Athena: Always creates a new instance (for security, with user context).
+    - For local data source: Uses a global singleton instance (for efficiency).
+    """
+
+    if APP_SETTINGS.use_aws_data:
         try:
+            # Always create a new instance for each request, passing user context for security
             return SQLExecutionService(user_context=user_context)
         except Exception as e:
             print(f"Failed to initialize SQL execution service: {e}")
             return None
     else:
-        # For local environment, use global instance
+        # For local data source (e.g., SQLite), use a global singleton instance
         global sql_execution_service
         if sql_execution_service is None:
             try:
+                # Initialize the singleton instance if it doesn't exist
                 sql_execution_service = SQLExecutionService()
             except Exception as e:
                 print(f"Failed to initialize SQL execution service: {e}")
                 return None
+            
         return sql_execution_service

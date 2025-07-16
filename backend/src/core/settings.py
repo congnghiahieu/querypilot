@@ -12,7 +12,13 @@ PROJECT_ROOT = Path(__file__).parent.parent.parent
 
 class AppSettings(BaseSettings):
     STAGE: Literal["dev", "prod"] = "dev"
-    ENV: Literal["local", "aws"] = "local"
+    ENV: Literal["local", "aws"] = "local"  # Global environment (legacy, for backward compatibility)
+    
+    # Fine-grained service configurations
+    DATA_SOURCE: Literal["local", "aws"] = "local"  # Controls where data queries go (SQLite vs Athena)
+    AUTH_SOURCE: Literal["local", "aws"] = "local"  # Controls authentication (local vs Cognito)
+    FILE_STORAGE: Literal["local", "aws"] = "local"  # Controls file storage (local vs S3)
+    USER_DB: Literal["local", "aws"] = "local"  # Controls user/session database (local PostgreSQL vs RDS)
 
     @property
     def is_dev(self):
@@ -29,6 +35,57 @@ class AppSettings(BaseSettings):
     @property
     def is_aws(self):
         return self.ENV == "aws"
+    
+    # New granular properties
+    @property
+    def use_aws_data(self):
+        """Whether to use AWS Athena for data queries"""
+        return self.DATA_SOURCE == "aws"
+    
+    @property
+    def use_aws_auth(self):
+        """Whether to use AWS Cognito for authentication"""
+        return self.AUTH_SOURCE == "aws"
+    
+    @property
+    def use_aws_storage(self):
+        """Whether to use AWS S3 for file storage"""
+        return self.FILE_STORAGE == "aws"
+    
+    @property
+    def use_aws_user_db(self):
+        """Whether to use AWS RDS for user/session database"""
+        return self.USER_DB == "aws"
+    
+    # Athena database selection methods
+    def get_athena_database(self, database_type: str = "raw") -> str:
+        """
+        Get Athena database name based on type
+        
+        Args:
+            database_type: "raw", "agg", "aggregated", or "default"
+            
+        Returns:
+            Database name to use for queries
+        """
+        if database_type.lower() in ["raw", "raw_data", "detailed"]:
+            return self.AWS_ATHENA_RAW_DATABASE or self.AWS_ATHENA_DATABASE
+        elif database_type.lower() in ["agg", "aggregated", "summary", "aggregate"]:
+            return self.AWS_ATHENA_AGG_DATABASE or self.AWS_ATHENA_DATABASE
+        else:
+            # Default fallback
+            return self.AWS_ATHENA_DATABASE
+    
+    def get_available_athena_databases(self) -> dict[str, str]:
+        """Get all configured Athena databases"""
+        databases = {"default": self.AWS_ATHENA_DATABASE}
+        
+        if self.AWS_ATHENA_RAW_DATABASE:
+            databases["raw"] = self.AWS_ATHENA_RAW_DATABASE
+        if self.AWS_ATHENA_AGG_DATABASE:
+            databases["agg"] = self.AWS_ATHENA_AGG_DATABASE
+            
+        return databases
 
     DEEPSEEK_API_KEY: str
     SECRET_KEY: str
@@ -63,7 +120,9 @@ class AppSettings(BaseSettings):
     AWS_S3_BUCKET_URL: str = ""  # Optional: Custom S3 URL
 
     # AWS Athena Configuration
-    AWS_ATHENA_DATABASE: str = Field(default="default", description="Athena database name")
+    AWS_ATHENA_DATABASE: str = Field(default="default", description="Primary Athena database name (for backward compatibility)")
+    AWS_ATHENA_RAW_DATABASE: str = Field(default="", description="Athena database for raw/detailed data")
+    AWS_ATHENA_AGG_DATABASE: str = Field(default="", description="Athena database for aggregated/summary data")
     AWS_ATHENA_WORKGROUP: str = Field(default="primary", description="Athena workgroup")
     AWS_ATHENA_OUTPUT_LOCATION: str = Field(
         default="", description="S3 bucket for Athena query results"
@@ -85,7 +144,8 @@ class AppSettings(BaseSettings):
 
     @property
     def get_database_url(self) -> str:
-        if self.is_aws:
+        """Get database URL for user/session data (not data queries)"""
+        if self.use_aws_user_db:
             return f"postgresql+psycopg2://{self.AWS_RDS_USERNAME}:{self.AWS_RDS_PASSWORD}@{self.AWS_RDS_HOST}:{self.AWS_RDS_PORT}/{self.AWS_RDS_DB_NAME}"
         return self.DATABASE_URL
 
