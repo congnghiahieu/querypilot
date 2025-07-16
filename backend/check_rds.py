@@ -1,5 +1,5 @@
 from sqlalchemy.exc import SQLAlchemyError
-from sqlmodel import Session, create_engine
+from sqlmodel import Session, create_engine, text
 
 from src.core.settings import APP_SETTINGS
 
@@ -11,7 +11,7 @@ engine = create_engine(
 # ✅ 3. Dùng session kiểm tra kết nối
 try:
     with Session(engine) as session:
-        result = session.exec("SELECT 1;")
+        result = session.exec(text("SELECT 1;"))
         print("RDS OK:", result.one())
 except SQLAlchemyError as e:
     print("RDS ERROR:", str(e))
