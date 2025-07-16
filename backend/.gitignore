@@ -83,7 +83,8 @@ celerybeat.pid
 # SageMath parsed files
 *.sage.py
 # Environments
-.env
+.env*
+!.env.example
 .venv
 env/
 venv/
@@ -150,3 +151,4 @@ querypilot.db
 *.sqlite
 
 temp*
+*.pem

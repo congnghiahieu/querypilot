@@ -12,13 +12,19 @@ PROJECT_ROOT = Path(__file__).parent.parent.parent
 
 class AppSettings(BaseSettings):
     STAGE: Literal["dev", "prod"] = "dev"
-    ENV: Literal["local", "aws"] = "local"  # Global environment (legacy, for backward compatibility)
-    
+    ENV: Literal["local", "aws"] = (
+        "local"  # Global environment (legacy, for backward compatibility)
+    )
+
     # Fine-grained service configurations
-    DATA_SOURCE: Literal["local", "aws"] = "local"  # Controls where data queries go (SQLite vs Athena)
+    DATA_SOURCE: Literal["local", "aws"] = (
+        "local"  # Controls where data queries go (SQLite vs Athena)
+    )
     AUTH_SOURCE: Literal["local", "aws"] = "local"  # Controls authentication (local vs Cognito)
     FILE_STORAGE: Literal["local", "aws"] = "local"  # Controls file storage (local vs S3)
-    USER_DB: Literal["local", "aws"] = "local"  # Controls user/session database (local PostgreSQL vs RDS)
+    USER_DB: Literal["local", "aws"] = (
+        "local"  # Controls user/session database (local PostgreSQL vs RDS)
+    )
 
     @property
     def is_dev(self):
@@ -35,36 +41,36 @@ class AppSettings(BaseSettings):
     @property
     def is_aws(self):
         return self.ENV == "aws"
-    
+
     # New granular properties
     @property
     def use_aws_data(self):
         """Whether to use AWS Athena for data queries"""
         return self.DATA_SOURCE == "aws"
-    
+
     @property
     def use_aws_auth(self):
         """Whether to use AWS Cognito for authentication"""
         return self.AUTH_SOURCE == "aws"
-    
+
     @property
     def use_aws_storage(self):
         """Whether to use AWS S3 for file storage"""
         return self.FILE_STORAGE == "aws"
-    
+
     @property
     def use_aws_user_db(self):
         """Whether to use AWS RDS for user/session database"""
         return self.USER_DB == "aws"
-    
+
     # Athena database selection methods
     def get_athena_database(self, database_type: str = "raw") -> str:
         """
         Get Athena database name based on type
-        
+
         Args:
             database_type: "raw", "agg", "aggregated", or "default"
-            
+
         Returns:
             Database name to use for queries
         """
@@ -75,16 +81,16 @@ class AppSettings(BaseSettings):
         else:
             # Default fallback
             return self.AWS_ATHENA_DATABASE
-    
+
     def get_available_athena_databases(self) -> dict[str, str]:
         """Get all configured Athena databases"""
         databases = {"default": self.AWS_ATHENA_DATABASE}
-        
+
         if self.AWS_ATHENA_RAW_DATABASE:
             databases["raw"] = self.AWS_ATHENA_RAW_DATABASE
         if self.AWS_ATHENA_AGG_DATABASE:
             databases["agg"] = self.AWS_ATHENA_AGG_DATABASE
-            
+
         return databases
 
     DEEPSEEK_API_KEY: str
@@ -100,9 +106,9 @@ class AppSettings(BaseSettings):
         default={
             "chinook": "Chinook.db",
             # Path formats (all relative to backend/ directory):
-            "vpbank": "dataset/vpbank.sqlite",                    # In backend/dataset/ root
+            "vpbank": "dataset/vpbank.sqlite",  # In backend/dataset/ root
         },
-        description="Available SQLite databases (paths relative to backend/ directory)"
+        description="Available SQLite databases (paths relative to backend/ directory)",
     )
 
     # AWS RDS Configuration
@@ -115,22 +121,32 @@ class AppSettings(BaseSettings):
     # AWS S3 Configuration
     AWS_ACCESS_KEY_ID: str = ""
     AWS_SECRET_ACCESS_KEY: str = ""
-    AWS_REGION: str = "us-east-1"
+    AWS_REGION: str = ""
     AWS_S3_BUCKET_NAME: str = ""
     AWS_S3_BUCKET_URL: str = ""  # Optional: Custom S3 URL
 
     # AWS Athena Configuration
-    AWS_ATHENA_DATABASE: str = Field(default="default", description="Primary Athena database name (for backward compatibility)")
-    AWS_ATHENA_RAW_DATABASE: str = Field(default="", description="Athena database for raw/detailed data")
-    AWS_ATHENA_AGG_DATABASE: str = Field(default="", description="Athena database for aggregated/summary data")
+    AWS_ATHENA_DATABASE: str = Field(
+        default="default", description="Primary Athena database name (for backward compatibility)"
+    )
+    AWS_ATHENA_RAW_DATABASE: str = Field(
+        default="", description="Athena database for raw/detailed data"
+    )
+    AWS_ATHENA_AGG_DATABASE: str = Field(
+        default="", description="Athena database for aggregated/summary data"
+    )
     AWS_ATHENA_WORKGROUP: str = Field(default="primary", description="Athena workgroup")
     AWS_ATHENA_OUTPUT_LOCATION: str = Field(
         default="", description="S3 bucket for Athena query results"
     )
+    AWS_ATHENA_CATALOG: str = Field(default="AwsDataCatalog", description="Athena catalog name")
     AWS_ATHENA_TIMEOUT: int = Field(default=300, description="Athena query timeout in seconds")
 
     # AWS Cognito Configuration
     AWS_COGNITO_USER_POOL_ID: str = Field(default="", description="AWS Cognito User Pool ID")
+    AWS_COGNITO_IDENTITY_POOL_ID: str = Field(
+        default="", description="AWS Cognito Identity Pool ID"
+    )
     AWS_COGNITO_CLIENT_ID: str = Field(default="", description="AWS Cognito App Client ID")
     AWS_COGNITO_CLIENT_SECRET: str = Field(default="", description="AWS Cognito App Client Secret")
     AWS_COGNITO_REGION: str = Field(default="", description="AWS Cognito Region")
@@ -154,6 +170,7 @@ class AppSettings(BaseSettings):
         "env_file_encoding": "utf-8",
         "env_ignore_empty": True,
         "case_sensitive": False,
+        "extra": "allow",
     }
 
 
