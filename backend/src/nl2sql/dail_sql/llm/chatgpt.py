@@ -31,13 +31,13 @@ def ask_deepseek(prompt, api_key=None, temperature=0.0):
             time.sleep(1)
             continue
 
-def ask_deepseek_sql(prompt, api_key=None, temperature=0.0):
+def ask_deepseek_sql(prompt, db_name, api_key=None, temperature=0.0):
     if api_key is None:
         api_key = os.getenv("DEEPSEEK_API_KEY")
     
     client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
     trial = 3
-    system_prompt = """You are an expert SQL developer specializing in SQLite. Your task is to convert natural language questions into valid SQLite SQL queries.
+    system_prompt = """You are an expert SQL developer specializing in Athena. Your task is to convert natural language questions into valid Athena SQL queries.
 IMPORTANT RESTRICTIONS:
 1. ONLY generate SELECT queries - no other query types allowed
 2. DO NOT generate:
@@ -52,7 +52,9 @@ IMPORTANT RESTRICTIONS:
    - Reduces network bandwidth usage
 """
 
-    prompt = system_prompt + "\n\n" + prompt
+    prompt = system_prompt + "\n\n" + prompt + "\n\n" + f"Catalog of the database: {db_name}"
+
+    print(f"Prompt for ask_deepseek_sql: {prompt}")
 
     while trial > 0:
         try:

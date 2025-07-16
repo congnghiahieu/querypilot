@@ -58,7 +58,7 @@ def sanitize_data_for_json(data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
 class ChatRequest(BaseModel):
     message: str
-    database_type: Optional[str] = "raw"  # "raw", "agg", or None for auto-detection
+    database_type: Optional[str] = "raw_database"  # "raw_database", "agg_database", or None for auto-detection
 
 
 class ChatMessageResponse(BaseModel):
@@ -86,7 +86,7 @@ class ChatSessionResponse(BaseModel):
     updated_at: str
     message_count: int
 
-async def process_nl2sql_message(message: str, db_id: str, user_id: UUID, database_type: str) -> ChatMessageResponse:
+async def process_nl2sql_message(message: str, db_id: str, user_id: UUID) -> ChatMessageResponse:
     """
     Process nl2sql message with RAG context from knowledge base.
     Returns structured response with content, SQL, and results.
@@ -122,9 +122,9 @@ async def process_nl2sql_message(message: str, db_id: str, user_id: UUID, databa
                     time_execute = time.time()
                     # For AWS, pass database_type; for SQLite, pass database_name
                     if APP_SETTINGS.use_aws_data:
-                        result = await sql_service.execute_query(sql_query, database_type)
+                        result = await sql_service.execute_query(sql_query, db_id)
                     else:
-                        result = await sql_service.execute_query(sql_query, database_name)
+                        result = await sql_service.execute_query(sql_query, db_id)
 
                     print(f"result = {result}")
                     print(f"[TIME] SQL execution time: {time.time() - time_execute}")
@@ -227,7 +227,7 @@ async def new_chat(
     # Process message through nl2sql pipeline with RAG and SQL execution service
     # Use database type for AWS Athena (raw, agg, default), vpbank for local SQLite
     db_id = payload.database_type if APP_SETTINGS.use_aws_data else "vpbank"
-    result = await process_nl2sql_message(payload.message, db_id, current_user.id, payload.database_type)
+    result = await process_nl2sql_message(payload.message, db_id, current_user.id)
 
     # Always store human-readable content in the database
     # Data will be stored separately in ChatDataResult table
@@ -304,7 +304,7 @@ async def continue_chat(
     # Process message through nl2sql pipeline with RAG and SQL execution service
     # Use database type for AWS Athena (raw, agg, default), vpbank for local SQLite
     db_id = payload.database_type if APP_SETTINGS.use_aws_data else "vpbank"
-    result = await process_nl2sql_message(payload.message, db_id, current_user.id, payload.database_type)
+    result = await process_nl2sql_message(payload.message, db_id, current_user.id)
 
     # Always store human-readable content in the database
     # Data will be stored separately in ChatDataResult table

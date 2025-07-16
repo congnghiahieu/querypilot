@@ -68,9 +68,9 @@ class AppSettings(BaseSettings):
         Returns:
             Database name to use for queries
         """
-        if database_type.lower() in ["raw", "raw_data", "detailed"]:
+        if database_type.lower() in ["raw", "raw_data", "detailed", "raw_database"]:
             return self.AWS_ATHENA_RAW_DATABASE or self.AWS_ATHENA_DATABASE
-        elif database_type.lower() in ["agg", "aggregated", "summary", "aggregate"]:
+        elif database_type.lower() in ["agg", "aggregated", "summary", "aggregate", "agg_database"]:
             return self.AWS_ATHENA_AGG_DATABASE or self.AWS_ATHENA_DATABASE
         else:
             # Default fallback

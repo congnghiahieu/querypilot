@@ -214,7 +214,7 @@ def nl2sql(question, context, db_id):
         print("Prompt 1:", prompt1)
 
         #pre_sql = ask_llm(LLM_MODEL, [prompt1], temperature=0.0, n=1)["response"][0]
-        pre_sql = ask_deepseek_sql(prompt1)['response']
+        pre_sql = ask_deepseek_sql(prompt1, db_id)['response']
         clean_sql = [l.strip() for l in pre_sql.splitlines() if l.strip().upper().startswith("SELECT")][0]
 
         # === Skeleton ===
@@ -251,7 +251,7 @@ def nl2sql(question, context, db_id):
             prompt2 += "\n\n-- Context: " + context
 
         #final_sql = ask_llm(LLM_MODEL, [prompt2], temperature=0.0, n=1)["response"][0]
-        final_sql = ask_deepseek_sql(prompt2)['response']
+        final_sql = ask_deepseek_sql(prompt2, db_id)['response']
         print("✅ Final SQL:", final_sql)
         
         # Clean and return the SQL query
