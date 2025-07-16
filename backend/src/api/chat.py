@@ -1,5 +1,6 @@
 import json
 import time
+import math
 from io import BytesIO
 from typing import Any, Dict, List, Optional
 from uuid import UUID
@@ -19,6 +20,36 @@ from src.models.chat import ChatDataResult, ChatMessage, ChatSession
 from src.models.user import User
 
 chat_router = APIRouter(prefix="/chat", tags=["Chat"])
+
+
+def sanitize_data_for_json(data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Sanitize data to handle values that can't be JSON serialized:
+    - Infinity -> None
+    - NaN -> None  
+    - Very large numbers -> string representation
+    """
+    if not data:
+        return data
+    
+    sanitized_data = []
+    for row in data:
+        sanitized_row = {}
+        for key, value in row.items():
+            if isinstance(value, float):
+                if math.isinf(value):
+                    sanitized_row[key] = None  # Convert Infinity to None
+                elif math.isnan(value):
+                    sanitized_row[key] = None  # Convert NaN to None
+                elif abs(value) > 1e15:  # Very large numbers
+                    sanitized_row[key] = f"{value:.2e}"  # Convert to scientific notation string
+                else:
+                    sanitized_row[key] = value
+            else:
+                sanitized_row[key] = value
+        sanitized_data.append(sanitized_row)
+    
+    return sanitized_data
 
 
 class ChatRequest(BaseModel):
@@ -89,6 +120,9 @@ async def process_nl2sql_message(message: str, db_id: str, user_id: UUID) -> Cha
                     print(f"[TIME] SQL execution time: {time.time() - time_execute}")
 
                     if result["status"] == "success":
+                        # Sanitize data to handle Infinity and very large numbers
+                        sanitized_data = sanitize_data_for_json(result["data"])
+                        
                         # Prepare user-friendly content message
                         content_message = f"I found {result['row_count']} results for your query about customer segments. Here's the data:"
                         
@@ -96,7 +130,7 @@ async def process_nl2sql_message(message: str, db_id: str, user_id: UUID) -> Cha
                             content=content_message,
                             response_type="table",
                             sql_query=sql_query,
-                            data=result["data"],
+                            data=sanitized_data,
                             execution_time=result["execution_time"],
                             rows_count=result["row_count"],
                         )
@@ -435,10 +469,14 @@ def get_message_data(
         raise HTTPException(status_code=404, detail="Message data not found")
 
     data_result = message.data_result
+    
+    # Load and sanitize data from database in case it contains unsanitized values
+    raw_data = json.loads(data_result.data_json)
+    sanitized_data = sanitize_data_for_json(raw_data)
 
     return {
         "message_id": message_id,
-        "data": json.loads(data_result.data_json),
+        "data": sanitized_data,
         "columns": json.loads(data_result.columns),
         "shape": [data_result.shape_rows, data_result.shape_cols],
         "sql_query": message.sql_query,
@@ -473,20 +511,22 @@ def download_message_data(
     if not message or not message.data_result:
         raise HTTPException(status_code=404, detail="Message data not found")
 
-    # Load data from database
+    # Load data from database and sanitize it
     data_result = message.data_result
+    raw_data = json.loads(data_result.data_json)
+    sanitized_data = sanitize_data_for_json(raw_data)
 
     filename = f"message_{current_user.username}_{message_id[:8]}_data.{format}"
 
     if format == "json":
         return StreamingResponse(
-            BytesIO(data_result.data_json.encode()),
+            BytesIO(json.dumps(sanitized_data).encode()),
             media_type="application/json",
             headers={"Content-Disposition": f"attachment; filename={filename}"},
         )
 
     # For other formats, convert to DataFrame first
-    df = pd.read_json(data_result.data_json)
+    df = pd.DataFrame(sanitized_data)
 
     if df.empty:
         raise HTTPException(status_code=400, detail="No data to download")

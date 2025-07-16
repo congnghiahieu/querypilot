@@ -1,10 +1,18 @@
 import json.decoder
+import os
+from dotenv import load_dotenv
 
 from openai import OpenAI
 from src.nl2sql.dail_sql.utils.enums import LLM
 import time
 
-def ask_deepseek(prompt, api_key="sk-317896dd505c4723b7a28c36f65f135c", temperature=0.0):
+# Load environment variables from .env file
+load_dotenv()
+
+def ask_deepseek(prompt, api_key=None, temperature=0.0):
+    if api_key is None:
+        api_key = os.getenv("DEEPSEEK_API_KEY")
+    
     client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
     trial = 3
 
@@ -23,7 +31,10 @@ def ask_deepseek(prompt, api_key="sk-317896dd505c4723b7a28c36f65f135c", temperat
             time.sleep(1)
             continue
 
-def ask_deepseek_sql(prompt, api_key="sk-317896dd505c4723b7a28c36f65f135c", temperature=0.0):
+def ask_deepseek_sql(prompt, api_key=None, temperature=0.0):
+    if api_key is None:
+        api_key = os.getenv("DEEPSEEK_API_KEY")
+    
     client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
     trial = 3
     system_prompt = """You are an expert SQL developer specializing in SQLite. Your task is to convert natural language questions into valid SQLite SQL queries.

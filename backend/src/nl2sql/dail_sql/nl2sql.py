@@ -1,17 +1,11 @@
 import sys
-print(">>> Import done 1")
 from src.nl2sql.dail_sql.utils.linking_utils.application import (
     mask_question_with_schema_linking
 )
-print(">>> Import done 2")
 from src.nl2sql.dail_sql.utils.utils import sql2skeleton, get_sql_for_database
-print(">>> Import done 3")
 from src.nl2sql.dail_sql.prompt.prompt_builder import prompt_factory
-print(">>> Import done 4")
 from src.nl2sql.dail_sql.llm.chatgpt import ask_deepseek_sql, ask_deepseek
-print(">>> Import done 5")
 from src.nl2sql.dail_sql.utils.enums import REPR_TYPE, EXAMPLE_TYPE, SELECTOR_TYPE
-print(">>> All imports OK")
 from src.nl2sql.dail_sql.prompt.PromptReprTemplate import SQLPrompt
 from src.core.settings import PROJECT_ROOT
 
@@ -193,13 +187,13 @@ def nl2sql(question, context, db_id):
         print("QMS examples:", qms_examples)
         tables_input = get_tables_input(qms_prompt, schema)
         prompt1 = qms_prompt.format_question({
-            "question": masked_question_final,
+            "question": question,
             "tables": schema,
             "db_id": db_id,
             "path_db": path_db
         })
         for ex in qms_examples:
-            prompt1 += "\n\n" + qms_prompt.format_example_only(ex) + "\nSELECT " + ex["query"]
+            prompt1 += "\n\n" + qms_prompt.format_example_only(ex) + "\n " + ex["query"]
 
         prompt1 += "\n\n-- Chỉ trả về duy nhất câu SQL."
 
