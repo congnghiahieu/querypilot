@@ -1,0 +1,89 @@
+{
+  "grant_policies": [
+    {
+      "principal": "group_region_1",
+      "table": "banca_aia_agent_info__mnp",
+      "filter": "region = '6dccd61646ecd355ec982288b89e082b'"
+    },
+    {
+      "principal": "group_region_2",
+      "table": "banca_aia_agent_info__mnp",
+      "filter": "region = '7f46cc9be08937bf1cde57bd5e11e11c'"
+    },
+    {
+      "principal": "group_region_3",
+      "table": "banca_aia_agent_info__mnp",
+      "filter": "region = '9cdd115170b59f76e6368c8b8fc25dbb'"
+    },
+    {
+      "principal": "group_region_4",
+      "table": "banca_aia_agent_info__mnp",
+      "filter": "region = '3c8ec90575484cfa8534e17c9f1f8415'"
+    },
+    {
+      "principal": "group_region_5",
+      "table": "banca_aia_agent_info__mnp",
+      "filter": "region = '8997fe6e42fa5c47dd2943fb6be995fa'"
+    },
+    {
+      "principal": "group_region_6",
+      "table": "banca_aia_agent_info__mnp",
+      "filter": "region = '5ac8eb42288a2d5c09bc72ba31ec1182'"
+    },
+    {
+      "principal": "group_region_7",
+      "table": "banca_aia_agent_info__mnp",
+      "filter": "region = '7a4c5ff6aa317609acbc6800dc49ee27'"
+    },
+    {
+      "principal": "group_region_8",
+      "table": "banca_aia_agent_info__mnp",
+      "filter": "region = 'cd696f3dff64fe73ccf811015fd84f17'"
+    },
+    {
+      "principal": "group_region_9",
+      "table": "banca_aia_agent_info__mnp",
+      "filter": "region = 'a8570e42bc7850a668a802894a019b38'"
+    },
+    {
+      "principal": "group_region_10",
+      "table": "banca_aia_agent_info__mnp",
+      "filter": "region = '44c93a08dba706e6207f7640309daf37'"
+    },
+    {
+      "principal": "group_region_11",
+      "table": "banca_aia_agent_info__mnp",
+      "filter": "region = '35e1a0c381b7a0243a99cff487ca44e9'"
+    },
+    {
+      "principal": "group_region_12",
+      "table": "banca_aia_agent_info__mnp",
+      "filter": "region = 'f361f134123e92bb0311eaf196988e9d'"
+    },
+    {
+      "principal": "group_region_13",
+      "table": "banca_aia_agent_info__mnp",
+      "filter": "region = '41d806236a6e2afba27610a3dfb43376'"
+    },
+    {
+      "principal": "group_role_Staff",
+      "table": "t24_customer__s2",
+      "filter": "segment IN ('KHCN', 'HH', 'AF', 'MAF', 'Private', 'PRIVATE')"
+    },
+    {
+      "principal": "group_role_Staff",
+      "table": "TBL_LD",
+      "filter": "segment IN ('KHCN', 'HH', 'AF', 'MAF', 'Private', 'PRIVATE')"
+    },
+    {
+      "principal": "group_role_Director",
+      "table": "t24_customer__s2",
+      "filter": null
+    },
+    {
+      "principal": "group_role_Director",
+      "table": "TBL_LD",
+      "filter": null
+    }
+  ]
+}
