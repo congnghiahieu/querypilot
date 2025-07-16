@@ -15,9 +15,6 @@ from src.core.settings import (
     CHUNK_OVERLAP,
     CHUNK_SIZE,
     EMBEDDING_MODEL,
-    LLM_CLIENT,
-    LLM_MODEL_NAME,
-    MAX_CONTEXT_TOKENS,
     VECTOR_STORE_FOLDER,
 )
 
@@ -99,7 +96,6 @@ class VectorStore:
         # Load existing index and metadata
         self.index = None
         self.metadata = []
-        self.deleted_count = 0  # Track deleted items
         self._load_index()
 
     def _load_index(self):
@@ -109,163 +105,53 @@ class VectorStore:
                 self.index = faiss.read_index(self.index_path)
                 with open(self.metadata_path, "r", encoding="utf-8") as f:
                     self.metadata = json.load(f)
-
-                # Count existing deleted items
-                self.deleted_count = sum(1 for m in self.metadata if m.get("deleted", False))
-                print(f"Loaded {self.index.ntotal if self.index else 0} vectors, {self.deleted_count} deleted")
-
             except Exception as e:
                 print(f"Error loading index: {e}")
                 self.index = None
                 self.metadata = []
-                self.deleted_count = 0
 
     def _save_index(self):
         """Save FAISS index and metadata"""
         if self.index is not None:
             faiss.write_index(self.index, self.index_path)
+            with open(self.metadata_path, "w", encoding="utf-8") as f:
+                json.dump(self.metadata, f, ensure_ascii=False, indent=2)
 
-        with open(self.metadata_path, "w", encoding="utf-8") as f:
-            json.dump(self.metadata, f, ensure_ascii=False, indent=2)
-
-    def remove_documents(self, kb_id: str) -> dict[str, Any]:
-        """Remove documents with smart strategy"""
-        if not self.metadata:
-            return {"removed_count": 0, "strategy": "no_data"}
-
-        # Count documents to remove
-        docs_to_remove = [m for m in self.metadata if m["kb_id"] == kb_id and not m.get("deleted", False)]
-
-        if not docs_to_remove:
-            return {"removed_count": 0, "strategy": "not_found"}
-
-        # Calculate deletion ratio
-        active_count = len([m for m in self.metadata if not m.get("deleted", False)])
-        removal_count = len(docs_to_remove)
-        deletion_ratio = (self.deleted_count + removal_count) / len(self.metadata)
-
-        # Strategy decision
-        if deletion_ratio > 0.4:  # >40% would be deleted -> rebuild
-            return self._hard_delete(kb_id, docs_to_remove)
-        else:  # <40% -> soft delete
-            return self._soft_delete(kb_id, docs_to_remove)
-
-    def _soft_delete(self, kb_id: str, docs_to_remove: list) -> dict[str, Any]:
-        """Mark documents as deleted (fast)"""
-        removed_count = 0
-
-        for meta in self.metadata:
-            if meta["kb_id"] == kb_id and not meta.get("deleted", False):
-                meta["deleted"] = True
-                meta["deleted_at"] = time.time()
-                removed_count += 1
-
-        self.deleted_count += removed_count
-        self._save_index()
-
-        return {
-            "removed_count": removed_count,
-            "strategy": "soft_delete",
-            "deleted_total": self.deleted_count,
-            "suggestion": "Consider cleanup_deleted() for better performance"
-        }
-
-    def _hard_delete(self, kb_id: str, docs_to_remove: list) -> dict[str, Any]:
-        """Rebuild index without deleted documents"""
-        start_time = time.time()
-
-        # Get active metadata (excluding kb_id and already deleted)
-        active_metadata = [
-            m for m in self.metadata
-            if m["kb_id"] != kb_id and not m.get("deleted", False)
-        ]
-
-        removed_count = len(docs_to_remove) + self.deleted_count
-
-        if not active_metadata:
-            # No documents left
-            self.index = None
-            self.metadata = []
-            self.deleted_count = 0
-        else:
-            # Rebuild index
-            self._rebuild_index_from_metadata(active_metadata)
-
-        rebuild_time = time.time() - start_time
-
-        return {
-            "removed_count": len(docs_to_remove),
-            "strategy": "hard_delete",
-            "cleaned_total": removed_count,
-            "rebuild_time": rebuild_time,
-            "active_documents": len(active_metadata)
-        }
-
-    def _rebuild_index_from_metadata(self, active_metadata: list):
-        """Rebuild FAISS index from active metadata"""
-        if not active_metadata:
-            self.index = None
-            self.metadata = []
-            self.deleted_count = 0
+    def add_documents(self, kb_id: str, chunks: list[str], filename: str):
+        """Add document chunks to vector store"""
+        if not chunks:
             return
-
-        # Extract text chunks
-        chunks = [m["text"] for m in active_metadata]
 
         # Generate embeddings
         embeddings = self.embedding_model.encode(chunks)
         embeddings = np.array(embeddings).astype("float32")
 
-        # Create new index
-        dimension = embeddings.shape[1]
-        self.index = faiss.IndexFlatL2(dimension)
+        # Create or update FAISS index
+        if self.index is None:
+            dimension = embeddings.shape[1]
+            self.index = faiss.IndexFlatL2(dimension)
+
+        # Add embeddings to index
+        start_idx = self.index.ntotal
         self.index.add(embeddings)
 
-        # Update vector indices and clean metadata
-        for i, metadata in enumerate(active_metadata):
-            metadata["vector_index"] = i
-            # Remove deletion flags
-            metadata.pop("deleted", None)
-            metadata.pop("deleted_at", None)
+        # Add metadata
+        for i, chunk in enumerate(chunks):
+            self.metadata.append(
+                {
+                    "kb_id": kb_id,
+                    "filename": filename,
+                    "chunk_index": i,
+                    "text": chunk,
+                    "vector_index": start_idx + i,
+                }
+            )
 
-        self.metadata = active_metadata
-        self.deleted_count = 0
+        # Save index
         self._save_index()
 
-    def cleanup_deleted(self, force: bool = False) -> dict[str, Any]:
-        """Manual cleanup of deleted documents"""
-        if self.deleted_count == 0:
-            return {"message": "No deleted documents to clean", "cleaned_count": 0}
-
-        deletion_ratio = self.deleted_count / len(self.metadata)
-
-        if not force and deletion_ratio < 0.3:
-            return {
-                "message": f"Cleanup not recommended (only {deletion_ratio:.1%} deleted)",
-                "deleted_count": self.deleted_count,
-                "suggestion": "Use force=True to cleanup anyway"
-            }
-
-        start_time = time.time()
-
-        # Get active metadata
-        active_metadata = [m for m in self.metadata if not m.get("deleted", False)]
-        cleaned_count = self.deleted_count
-
-        # Rebuild
-        self._rebuild_index_from_metadata(active_metadata)
-
-        cleanup_time = time.time() - start_time
-
-        return {
-            "message": "Cleanup completed",
-            "cleaned_count": cleaned_count,
-            "active_documents": len(active_metadata),
-            "cleanup_time": cleanup_time
-        }
-
     def search(self, query: str, k: int = 5) -> list[dict[str, Any]]:
-        """Search with soft delete support"""
+        """Search for similar documents"""
         if self.index is None or self.index.ntotal == 0:
             return []
 
@@ -273,44 +159,51 @@ class VectorStore:
         query_embedding = self.embedding_model.encode([query])
         query_embedding = np.array(query_embedding).astype("float32")
 
-        # Search with buffer for deleted items
-        active_ratio = 1 - (self.deleted_count / len(self.metadata)) if self.metadata else 1
-        search_k = min(int(k / max(active_ratio, 0.1)), self.index.ntotal)
-        search_k = max(search_k, k)  # At least k results
+        # Search
+        distances, indices = self.index.search(query_embedding, min(k, self.index.ntotal))
 
-        distances, indices = self.index.search(query_embedding, search_k)
-
-        # Filter out deleted documents
+        # Return results
         results = []
         for i, idx in enumerate(indices[0]):
             if idx < len(self.metadata):
-                meta = self.metadata[idx]
-                if not meta.get("deleted", False):  # Skip deleted
-                    result = meta.copy()
-                    result["distance"] = float(distances[0][i])
-                    # Remove internal fields
-                    result.pop("deleted", None)
-                    result.pop("deleted_at", None)
-                    results.append(result)
-
-                    if len(results) >= k:
-                        break
+                result = self.metadata[idx].copy()
+                result["distance"] = float(distances[0][i])
+                results.append(result)
 
         return results
 
-    def get_stats(self) -> dict[str, Any]:
-        """Get vector store statistics"""
-        total_docs = len(self.metadata)
-        active_docs = total_docs - self.deleted_count
+    def remove_documents(self, kb_id: str):
+        """Remove documents from vector store"""
+        if not self.metadata:
+            return
 
-        return {
-            "total_documents": total_docs,
-            "active_documents": active_docs,
-            "deleted_documents": self.deleted_count,
-            "deletion_ratio": self.deleted_count / total_docs if total_docs > 0 else 0,
-            "vector_count": self.index.ntotal if self.index else 0,
-            "cleanup_recommended": self.deleted_count / total_docs > 0.3 if total_docs > 0 else False
-        }
+        # Filter out metadata for the kb_id
+        new_metadata = [m for m in self.metadata if m["kb_id"] != kb_id]
+
+        if len(new_metadata) == len(self.metadata):
+            return  # No documents to remove
+
+        # Rebuild index if documents were removed
+        if new_metadata:
+            chunks = [m["text"] for m in new_metadata]
+            embeddings = self.embedding_model.encode(chunks)
+            embeddings = np.array(embeddings).astype("float32")
+
+            dimension = embeddings.shape[1]
+            self.index = faiss.IndexFlatL2(dimension)
+            self.index.add(embeddings)
+
+            # Update vector indices
+            for i, metadata in enumerate(new_metadata):
+                metadata["vector_index"] = i
+
+            self.metadata = new_metadata
+        else:
+            # No documents left
+            self.index = None
+            self.metadata = []
+
+        self._save_index()
 
 
 class RAGService:
@@ -343,19 +236,17 @@ class RAGService:
             vector_store = VectorStore(user_id)
             vector_store.add_documents(kb_id, chunks, filename)
 
-            # Generate insights using LLM
-            insights = self._generate_insights(text)
-
             processing_time = time.time() - start_time
 
             return {
-                "summary": insights["summary"],
-                "key_insights": insights["key_insights"],
-                "entities": insights.get("entities", []),
-                "topics": insights.get("topics", []),
+                "status": "success",
+                "message": f"Document '{filename}' processed successfully",
                 "processing_time": processing_time,
                 "chunks_count": len(chunks),
-                "processed_content": text[:2000],  # Store first 2000 chars for reference
+                "text_length": len(text),
+                "processed_content": text[:500] + "..." if len(text) > 500 else text,
+                "kb_id": kb_id,
+                "filename": filename
             }
 
         except Exception as e:
@@ -373,82 +264,21 @@ class RAGService:
             vector_store = VectorStore(user_id)
             vector_store.add_documents(kb_id, chunks, "text_input")
 
-            # Generate insights using LLM
-            insights = self._generate_insights(text)
-
             processing_time = time.time() - start_time
 
             return {
-                "summary": insights["summary"],
-                "key_insights": insights["key_insights"],
-                "entities": insights.get("entities", []),
-                "topics": insights.get("topics", []),
+                "status": "success",
+                "message": "Text processed successfully",
                 "processing_time": processing_time,
                 "chunks_count": len(chunks),
-                "processed_content": text[:2000],
+                "text_length": len(text),
+                "processed_content": text[:500] + "..." if len(text) > 500 else text,
+                "kb_id": kb_id,
+                "filename": "text_input"
             }
 
         except Exception as e:
             raise Exception(f"Error processing text: {str(e)}")
-
-    def _generate_insights(self, text: str) -> dict[str, Any]:
-        """Generate insights from text using LLM"""
-        try:
-            # Truncate text if too long
-            if len(text) > MAX_CONTEXT_TOKENS * 4:  # Rough estimate
-                text = text[: MAX_CONTEXT_TOKENS * 4]
-
-            prompt = f"""
-            Please analyze the following document and provide insights in JSON format:
-
-            Document:
-            {text}
-
-            Please provide:
-            1. A concise summary (2-3 sentences)
-            2. Key insights (3-5 important points)
-            3. Entities (people, organizations, locations, etc.)
-            4. Topics (main themes or subjects)
-
-            Format your response as JSON with keys: summary, key_insights, entities, topics
-            """
-
-            response = LLM_CLIENT.chat.completions.create(
-                model=LLM_MODEL_NAME,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.3,
-                max_tokens=1000,
-            )
-
-            result = response.choices[0].message.content
-
-            # Try to parse JSON response
-            try:
-                insights = json.loads(result)
-                return insights
-            except json.JSONDecodeError:
-                # Fallback if JSON parsing fails
-                return {
-                    "summary": "Document processed successfully. Detailed analysis available.",
-                    "key_insights": [
-                        "Document contains valuable information",
-                        "Successfully processed and indexed",
-                    ],
-                    "entities": [],
-                    "topics": ["General content"],
-                }
-
-        except Exception as e:
-            print(f"Error generating insights: {e}")
-            return {
-                "summary": "Document processed successfully. Detailed analysis available.",
-                "key_insights": [
-                    "Document contains valuable information",
-                    "Successfully processed and indexed",
-                ],
-                "entities": [],
-                "topics": ["General content"],
-            }
 
     def search_knowledge_base(self, query: str, user_id: UUID, k: int = 5) -> list[dict[str, Any]]:
         """Search knowledge base for relevant context"""
@@ -460,7 +290,7 @@ class RAGService:
         vector_store = VectorStore(user_id)
         vector_store.remove_documents(kb_id)
 
-    def get_context_for_query(self, query: str, user_id: UUID) -> str:
+    def get_context_for_query(self, query: str, user_id: UUID, max_context_length: int = 4000) -> str:
         """Get relevant context from knowledge base for a query"""
         results = self.search_knowledge_base(query, user_id)
 
@@ -468,11 +298,87 @@ class RAGService:
             return ""
 
         context_parts = []
+        current_length = 0
+
         for result in results:
-            context_parts.append(f"From {result['filename']}: {result['text']}")
+            context_part = f"From {result['filename']}: {result['text']}"
+
+            # Check if adding this context would exceed limit
+            if current_length + len(context_part) > max_context_length:
+                # Truncate the last part to fit
+                remaining_length = max_context_length - current_length
+                if remaining_length > 100:  # Only add if meaningful length
+                    context_part = context_part[:remaining_length] + "..."
+                    context_parts.append(context_part)
+                break
+
+            context_parts.append(context_part)
+            current_length += len(context_part) + 2  # +2 for \n\n
 
         return "\n\n".join(context_parts)
 
+    def get_document_stats(self, user_id: UUID) -> dict[str, Any]:
+        """Get statistics about user's documents"""
+        vector_store = VectorStore(user_id)
+
+        if not vector_store.metadata:
+            return {
+                "total_documents": 0,
+                "total_chunks": 0,
+                "knowledge_bases": {},
+                "file_types": {}
+            }
+
+        # Count by knowledge base
+        kb_stats = {}
+        file_type_stats = {}
+
+        for meta in vector_store.metadata:
+            kb_id = meta["kb_id"]
+            filename = meta["filename"]
+
+            # KB stats
+            if kb_id not in kb_stats:
+                kb_stats[kb_id] = {"chunks": 0, "files": set()}
+            kb_stats[kb_id]["chunks"] += 1
+            kb_stats[kb_id]["files"].add(filename)
+
+            # File type stats
+            if filename != "text_input":
+                file_ext = filename.split(".")[-1].lower() if "." in filename else "unknown"
+                file_type_stats[file_ext] = file_type_stats.get(file_ext, 0) + 1
+
+        # Convert sets to counts
+        for kb_id in kb_stats:
+            kb_stats[kb_id]["files"] = len(kb_stats[kb_id]["files"])
+
+        return {
+            "total_documents": len(set(meta["filename"] for meta in vector_store.metadata)),
+            "total_chunks": len(vector_store.metadata),
+            "knowledge_bases": kb_stats,
+            "file_types": file_type_stats,
+            "vector_count": vector_store.index.ntotal if vector_store.index else 0
+        }
 
 # Global RAG service instance
 rag_service = RAGService()
+
+if __name__ == "__main__":
+    # Example usage
+    # Process document
+    # result = rag_service.process_document("/home/phong/VScode/HackathonVPB/Kiến thức cơ bản.pdf", "pdf", "kb_123", "report.pdf", 200)
+    # print(f"Processed {result['chunks_count']} chunks in {result['processing_time']:.2f}s")
+
+    # Get context for query
+    # context = rag_service.get_context_for_query("Cổ phiếu là gì", 100)
+    # print(f"Context for query: {context[:500]}...")  # Print first 500 characters
+    # # Get stats
+    # stats = rag_service.get_document_stats(100)
+    # print(f"Total documents: {stats['total_documents']}")
+
+    # result = rag_service.process_document("/home/phong/Downloads/knowledgebase_upload_sample.xlsx", "xlsx", "vpbank_ex", "knowledgebase_upload_sample", 200)
+    # print(f"Processed {result['chunks_count']} chunks in {result['processing_time']:.2f}s")
+
+    # context = rag_service.get_context_for_query("Tài sản khách hàng", 200)
+    # print(f"Context for query: {context}...")  # Print first 500 characters
+    rag_service.remove_knowledge_base("kb_123", 200)
