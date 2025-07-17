@@ -246,7 +246,7 @@ class RAGService:
                 "text_length": len(text),
                 "processed_content": text[:500] + "..." if len(text) > 500 else text,
                 "kb_id": kb_id,
-                "filename": filename
+                "filename": filename,
             }
 
         except Exception as e:
@@ -290,7 +290,9 @@ class RAGService:
         vector_store = VectorStore(user_id)
         vector_store.remove_documents(kb_id)
 
-    def get_context_for_query(self, query: str, user_id: UUID, max_context_length: int = 4000) -> str:
+    def get_context_for_query(
+        self, query: str, user_id: UUID, max_context_length: int = 4000
+    ) -> str:
         """Get relevant context from knowledge base for a query"""
         results = self.search_knowledge_base(query, user_id)
 
@@ -326,7 +328,7 @@ class RAGService:
                 "total_documents": 0,
                 "total_chunks": 0,
                 "knowledge_bases": {},
-                "file_types": {}
+                "file_types": {},
             }
 
         # Count by knowledge base
@@ -357,7 +359,7 @@ class RAGService:
             "total_chunks": len(vector_store.metadata),
             "knowledge_bases": kb_stats,
             "file_types": file_type_stats,
-            "vector_count": vector_store.index.ntotal if vector_store.index else 0
+            "vector_count": vector_store.index.ntotal if vector_store.index else 0,
         }
 
 # Global RAG service instance

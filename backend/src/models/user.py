@@ -3,6 +3,11 @@ from typing import Optional
 from uuid import UUID, uuid4
 
 from sqlmodel import Field, Relationship, SQLModel
+from .chat import ChatSession
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .knowledge_base import KnowledgeBase
 
 
 class User(SQLModel, table=True):

@@ -101,7 +101,7 @@ DOWNLOADS_FOLDER = os.path.join(STATIC_FOLDER, "downloads")
 VECTOR_STORE_FOLDER = os.path.join(STATIC_FOLDER, "vector_store")
 
 # RAG Configuration
-EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2" # or BAAI/bge-small-en-v1.5 but need prefix "Represent this sentence for retrieval: "
+EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"  # or BAAI/bge-small-en-v1.5 but need prefix "Represent this sentence for retrieval: "
 CHUNK_SIZE = 1024
 CHUNK_OVERLAP = 200
 MAX_CONTEXT_TOKENS = 4000

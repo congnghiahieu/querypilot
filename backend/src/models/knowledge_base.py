@@ -7,6 +7,7 @@ from sqlalchemy import DateTime
 from sqlmodel import Column, Field, Relationship, SQLModel, Text
 
 from src.core.file_storage import S3FileStorage, file_storage
+from .user import User
 
 
 class KnowledgeBase(SQLModel, table=True):
@@ -26,9 +27,16 @@ class KnowledgeBase(SQLModel, table=True):
         default="pending", max_length=20
     )  # pending, processing, completed, failed
 
+    # Fields from RAG processing result
+    chunks_count: Optional[int] = Field(default=None)
+    text_length: Optional[int] = Field(default=None)
+    processing_time: Optional[float] = Field(default=None)
+    processed_content: Optional[str] = Field(
+        default=None, sa_column=Column(Text)
+    )  # Snippet of processed content for preview
+
     # Relationships - use string reference
     user: "User" = Relationship(back_populates="knowledge_bases")
-    insight: Optional["KnowledgeBaseInsight"] = Relationship(back_populates="knowledge_base")
 
     def get_download_url(self) -> str:
         """Get download URL for the knowledge base file"""
@@ -42,62 +50,22 @@ class KnowledgeBase(SQLModel, table=True):
             return file_storage.get_presigned_url(self.file_path, expiration)
         return self.get_download_url()
 
+    def update_from_rag_result(self, rag_result: dict):
+        """Update knowledge base with results from RAG processing"""
+        if rag_result.get("status") == "success":
+            self.processing_status = "completed"
+            self.chunks_count = rag_result.get("chunks_count")
+            self.text_length = rag_result.get("text_length")
+            self.processing_time = rag_result.get("processing_time")
+            self.processed_content = rag_result.get("processed_content")
+        else:
+            self.processing_status = "failed"
 
-class KnowledgeBaseInsight(SQLModel, table=True):
-    __tablename__ = "knowledge_base_insights"
-
-    id: UUID = Field(default_factory=uuid4, primary_key=True)
-    knowledge_base_id: UUID = Field(foreign_key="knowledge_bases.id", unique=True, index=True)
-    summary: str = Field(sa_column=Column(Text))
-    key_insights: str = Field(sa_column=Column(Text))  # JSON array of insights
-    entities: Optional[str] = Field(default=None, sa_column=Column(Text))  # JSON array of entities
-    topics: Optional[str] = Field(default=None, sa_column=Column(Text))  # JSON array of topics
-    processed_content: Optional[str] = Field(
-        default=None, sa_column=Column(Text)
-    )  # Processed/cleaned content
-    processing_time: Optional[float] = Field(default=None)
-    created_at: datetime = Field(
-        default_factory=datetime.utcnow, sa_column=Column(DateTime(timezone=True))
-    )
-
-    # Relationships
-    knowledge_base: "KnowledgeBase" = Relationship(back_populates="insight")
-
-    def get_key_insights(self) -> list:
-        """Safely parse key_insights JSON string to list"""
-        if not self.key_insights:
-            return []
-        try:
-            return json.loads(self.key_insights)
-        except json.JSONDecodeError:
-            return []
-
-    def get_entities(self) -> list:
-        """Safely parse entities JSON string to list"""
-        if not self.entities:
-            return []
-        try:
-            return json.loads(self.entities)
-        except json.JSONDecodeError:
-            return []
-
-    def get_topics(self) -> list:
-        """Safely parse topics JSON string to list"""
-        if not self.topics:
-            return []
-        try:
-            return json.loads(self.topics)
-        except json.JSONDecodeError:
-            return []
-
-    def set_key_insights(self, insights: list):
-        """Safely convert list to JSON string for storage"""
-        self.key_insights = json.dumps(insights)
-
-    def set_entities(self, entities: list):
-        """Safely convert list to JSON string for storage"""
-        self.entities = json.dumps(entities)
-
-    def set_topics(self, topics: list):
-        """Safely convert list to JSON string for storage"""
-        self.topics = json.dumps(topics)
+    def get_processing_stats(self) -> dict:
+        """Get processing statistics"""
+        return {
+            "chunks_count": self.chunks_count,
+            "text_length": self.text_length,
+            "processing_time": self.processing_time,
+            "status": self.processing_status,
+        }
