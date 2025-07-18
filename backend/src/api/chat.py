@@ -1,6 +1,8 @@
 import json
+import time
+import math
 from io import BytesIO
-from typing import Literal, Optional
+from typing import Any, Dict, List, Optional
 from uuid import UUID
 
 import pandas as pd
@@ -12,6 +14,7 @@ from sqlmodel import Session, desc, select
 from src.api.auth import get_current_user
 from src.core.db import get_session
 from src.core.rag import rag_service
+from src.core.settings import APP_SETTINGS
 from src.core.sql_execution import get_sql_execution_service
 from src.models.chat import ChatDataResult, ChatMessage, ChatSession
 from src.models.user import User
@@ -19,16 +22,61 @@ from src.models.user import User
 chat_router = APIRouter(prefix="/chat", tags=["Chat"])
 
 
+def sanitize_data_for_json(data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Sanitize data to handle values that can't be JSON serialized:
+    - Infinity -> None
+    - NaN -> None  
+    - Very large numbers -> string representation
+    - Bytestrings -> hex string representation
+    """
+    if not data:
+        return data
+    
+    sanitized_data = []
+    for row in data:
+        sanitized_row = {}
+        for key, value in row.items():
+            if isinstance(value, float):
+                if math.isinf(value):
+                    sanitized_row[key] = None  # Convert Infinity to None
+                elif math.isnan(value):
+                    sanitized_row[key] = None  # Convert NaN to None
+                elif abs(value) > 1e15:  # Very large numbers
+                    sanitized_row[key] = f"{value:.2e}"  # Convert to scientific notation string
+                else:
+                    sanitized_row[key] = value
+            elif isinstance(value, bytes):
+                # Convert bytestrings to hex representation
+                sanitized_row[key] = value.hex()
+            else:
+                sanitized_row[key] = value
+        sanitized_data.append(sanitized_row)
+    
+    return sanitized_data
+
+
 class ChatRequest(BaseModel):
     message: str
+    database_type: Optional[str] = "raw_database"  # "raw_database", "agg_database", or None for auto-detection
 
 
-class ChatResponse(BaseModel):
-    type: Literal["text", "table", "chart"]
-    content: str
-    sql_query: str = ""
-    execution_time: float = 0.0
-    rows_count: int = 0
+class ChatMessageResponse(BaseModel):
+    # Core response fields
+    content: str  # Always human-readable content
+    response_type: str  # "text", "table", "chart"  
+    sql_query: Optional[str] = None
+    execution_time: Optional[float] = None
+    rows_count: Optional[int] = None
+    
+    # Database fields (when retrieving from DB)
+    id: Optional[str] = None
+    role: Optional[str] = None
+    created_at: Optional[str] = None
+    has_data: bool = False
+    
+    # Response data (for immediate API responses, not stored in DB)
+    data: Optional[List[Dict[str, Any]]] = None
 
 
 class ChatSessionResponse(BaseModel):
@@ -38,164 +86,120 @@ class ChatSessionResponse(BaseModel):
     updated_at: str
     message_count: int
 
-
-class ChatMessageResponse(BaseModel):
-    id: str
-    role: str
-    content: str
-    sql_query: Optional[str] = None
-    response_type: Optional[str] = None
-    execution_time: Optional[float] = None
-    rows_count: Optional[int] = None
-    created_at: str
-    has_data: bool = False  # Indicates if this message has downloadable data
-
-
-async def process_nl2sql_message(message: str, user_id: UUID) -> ChatResponse:
+async def process_nl2sql_message(message: str, db_id: str, user_id: UUID) -> ChatMessageResponse:
     """
     Process nl2sql message with RAG context from knowledge base.
-    Returns either text response or data response with JSON.
+    Returns structured response with content, SQL, and results.
     """
 
-    return ChatResponse(
-        type="text",
-        content=f"Mocking response for message: {message}",
-        sql_query="",
-        execution_time=0.0,
-        rows_count=0,
-    )
+    start = time.time()
+    print(f"[TIME] Starting process_nl2sql_message")
 
     try:
         # Get relevant context from knowledge base using RAG
         context = rag_service.get_context_for_query(message, user_id)
+        print(f"[TIME] Context retrieval: {time.time() - start}")
 
         # Check if we're in AWS environment and can use SQL execution service
         sql_service = get_sql_execution_service()
+        print(f"[TIME] SQL execution service: {time.time() - start}")
 
         if sql_service:
             try:
                 # Get database schema for better SQL generation
-                schema_info = sql_service.get_database_schema()
+                # For local environment, use vpbank SQLite database
+                database_name = "vpbank" if not APP_SETTINGS.is_aws else None
+                #schema_info = sql_service.get_database_schema(database_name)
 
-                # TODO: Implement actual NL2SQL conversion with schema
-                # For now, we'll use a placeholder SQL generation
-                # In the real implementation, you would use your NL2SQL model here
-                # sql_query = convert_nl2sql(message, data, prompt, schema_info=schema_info)
-
-                # Placeholder SQL generation based on message content
-                sql_query = generate_placeholder_sql(message, schema_info)
+                # Import and use nl2sql function to generate SQL query based on message content and context
+                from src.nl2sql.dail_sql.nl2sql import nl2sql
+                print(f"[DEBUG] Calling nl2sql with message: {message}, context: {context}, db_id: {db_id}")
+                sql_query = nl2sql(message, context, db_id)
+                print(f"[DEBUG] nl2sql returned: {sql_query}")
 
                 if sql_query:
-                    # Validate query against schema
-                    is_valid, validation_message = sql_service.validate_query_against_schema(
-                        sql_query
-                    )
-
-                    if not is_valid:
-                        return ChatResponse(
-                            type="text",
-                            content=f"Generated SQL query is invalid: {validation_message}\n\nSQL: {sql_query}",
-                            sql_query=sql_query,
-                            execution_time=0.0,
-                            rows_count=0,
-                        )
-
                     # Execute SQL query
-                    result = await sql_service.execute_query(sql_query)
+                    time_execute = time.time()
+                    # For AWS, pass database_type; for SQLite, pass database_name
+                    if APP_SETTINGS.use_aws_data:
+                        result = await sql_service.execute_query(sql_query, db_id)
+                    else:
+                        result = await sql_service.execute_query(sql_query, db_id)
+
+                    print(f"result = {result}")
+                    print(f"[TIME] SQL execution time: {time.time() - time_execute}")
 
                     if result["status"] == "success":
-                        return ChatResponse(
-                            type="table",
-                            content=json.dumps(result["data"]),
+                        # Sanitize data to handle Infinity and very large numbers
+                        sanitized_data = sanitize_data_for_json(result["data"])
+                        
+                        # Prepare user-friendly content message with database info
+                        db_info = ""
+                        if APP_SETTINGS.use_aws_data and result.get("database_type"):
+                            db_name = result.get("database", "unknown")
+                            db_type = result.get("database_type", "default")
+                            db_info = f" (from {db_type} database: {db_name})"
+                        
+                        content_message = f"I found {result['row_count']} results for your query{db_info}. Here's the data:"
+                        
+                        return ChatMessageResponse(
+                            content=content_message,
+                            response_type="table",
                             sql_query=sql_query,
+                            data=sanitized_data,
                             execution_time=result["execution_time"],
                             rows_count=result["row_count"],
                         )
                     else:
-                        return ChatResponse(
-                            type="text",
-                            content=f"Error executing SQL query: {result['error']}\n\nSQL: {sql_query}",
+                        # SQL execution failed
+                        error_message = f"I generated this SQL query but encountered an error during execution: {result['error']}"
+                        
+                        return ChatMessageResponse(
+                            content=error_message,
+                            response_type="text",
                             sql_query=sql_query,
-                            execution_time=result["execution_time"],
+                            data=None,
+                            execution_time=result.get("execution_time", 0.0),
                             rows_count=0,
                         )
+                else:
+                    # Could not generate SQL
+                    return ChatMessageResponse(
+                        content=f"I couldn't generate a SQL query for your request: '{message}'. Please try rephrasing your question or be more specific about what data you want to see.",
+                        response_type="text",
+                        sql_query=None,
+                        data=None,
+                        execution_time=0.0,
+                        rows_count=0,
+                    )
 
             except Exception as e:
-                return ChatResponse(
-                    type="text",
-                    content=f"Error processing query with SQL execution service: {str(e)}",
-                    sql_query="",
+                return ChatMessageResponse(
+                    content=f"I encountered an error while processing your query: {str(e)}. Please try again or rephrase your question.",
+                    response_type="text",
+                    sql_query=None,
+                    data=None,
                     execution_time=0.0,
                     rows_count=0,
                 )
-
-        # Fallback to context-based response if SQL execution service is not available
-        if context:
-            response_content = f"""Based on your knowledge base, here's what I found relevant to your question:
-
-{context}
-
-Note: SQL execution service is not configured. To execute SQL queries on your data lake, please configure AWS Athena settings.
-
-Your question: {message}"""
         else:
-            response_content = f"""I couldn't find relevant information in your knowledge base for this query: "{message}"
-
-Please make sure you have uploaded relevant documents to your knowledge base, or configure AWS Athena to query your data lake.
-
-The SQL execution functionality requires AWS configuration to execute queries on your data sources."""
-
-        return ChatResponse(
-            type="text",
-            content=response_content,
-            sql_query="",
-            execution_time=0.0,
-            rows_count=0,
-        )
-
+            return ChatMessageResponse(
+                content="SQL execution service is not available. Please check your configuration and try again.",
+                response_type="text",
+                sql_query=None,
+                data=None,
+                execution_time=0.0,
+                rows_count=0,
+            )
     except Exception as e:
-        return ChatResponse(
-            type="text",
-            content=f"Error processing your message: {str(e)}. Please try again.",
-            sql_query="",
+        return ChatMessageResponse(
+            content=f"I encountered an error processing your message: {str(e)}. Please try again.",
+            response_type="text",
+            sql_query=None,
+            data=None,
             execution_time=0.0,
             rows_count=0,
         )
-
-
-def generate_placeholder_sql(message: str, schema_info: dict) -> str:
-    """
-    Generate placeholder SQL based on message content and schema.
-    This is a temporary implementation until the full NL2SQL pipeline is integrated.
-    """
-    if not schema_info or not schema_info.get("tables"):
-        return ""
-
-    # Get first table for demo
-    first_table = schema_info["tables"][0]
-    table_name = first_table["name"]
-    columns = [col["name"] for col in first_table["columns"]]
-
-    # Simple keyword-based SQL generation for demo
-    if any(keyword in message.lower() for keyword in ["count", "total", "number"]):
-        return f"SELECT COUNT(*) as total_count FROM {table_name}"
-    elif any(keyword in message.lower() for keyword in ["all", "show", "list"]):
-        column_list = ", ".join(columns[:5])  # Limit to first 5 columns
-        return f"SELECT {column_list} FROM {table_name} LIMIT 10"
-    elif "average" in message.lower() or "avg" in message.lower():
-        # Find numeric columns
-        numeric_cols = [
-            col["name"]
-            for col in first_table["columns"]
-            if col["type"].lower() in ["int", "bigint", "double", "float", "decimal"]
-        ]
-        if numeric_cols:
-            return f"SELECT AVG({numeric_cols[0]}) as average FROM {table_name}"
-
-    # Default query
-    column_list = ", ".join(columns[:3])  # Limit to first 3 columns
-    return f"SELECT {column_list} FROM {table_name} LIMIT 5"
-
 
 @chat_router.post("/new")
 async def new_chat(
@@ -221,15 +225,18 @@ async def new_chat(
     session.add(user_message)
 
     # Process message through nl2sql pipeline with RAG and SQL execution service
-    result = await process_nl2sql_message(payload.message, current_user.id)
+    # Use database type for AWS Athena (raw, agg, default), vpbank for local SQLite
+    db_id = payload.database_type if APP_SETTINGS.use_aws_data else "vpbank"
+    result = await process_nl2sql_message(payload.message, db_id, current_user.id)
 
-    # Add assistant message
+    # Always store human-readable content in the database
+    # Data will be stored separately in ChatDataResult table
     assistant_message = ChatMessage(
         chat_session_id=chat_session.id,
         role="assistant",
-        content=result.content,
-        sql_query=result.sql_query if result.sql_query else None,
-        response_type=result.type,
+        content=result.content,  # Always store human-readable content
+        sql_query=result.sql_query,
+        response_type=result.response_type,
         execution_time=result.execution_time,
         rows_count=result.rows_count,
     )
@@ -237,17 +244,16 @@ async def new_chat(
     session.commit()
     session.refresh(assistant_message)
 
-    # Store data if it's table or chart type (only for assistant messages with JSON data)
-    if result.type in ["table", "chart"] and result.content:
+    # Store data if it's table or chart type (only for assistant messages with data)
+    if result.response_type in ["table", "chart"] and result.data:
         try:
-            # Parse JSON data for storage
-            data_df = pd.read_json(result.content)
+            # Create data result for download functionality
             data_result = ChatDataResult(
                 message_id=assistant_message.id,
-                data_json=result.content,
-                columns=json.dumps(data_df.columns.tolist()),
-                shape_rows=len(data_df),
-                shape_cols=len(data_df.columns),
+                data_json=json.dumps(result.data),
+                columns=json.dumps(list(result.data[0].keys()) if result.data else []),
+                shape_rows=len(result.data),
+                shape_cols=len(result.data[0].keys()) if result.data else 0,
             )
             session.add(data_result)
             session.commit()
@@ -296,15 +302,18 @@ async def continue_chat(
     session.add(user_message)
 
     # Process message through nl2sql pipeline with RAG and SQL execution service
-    result = await process_nl2sql_message(payload.message, current_user.id)
+    # Use database type for AWS Athena (raw, agg, default), vpbank for local SQLite
+    db_id = payload.database_type if APP_SETTINGS.use_aws_data else "vpbank"
+    result = await process_nl2sql_message(payload.message, db_id, current_user.id)
 
-    # Add assistant message
+    # Always store human-readable content in the database
+    # Data will be stored separately in ChatDataResult table
     assistant_message = ChatMessage(
         chat_session_id=chat_session.id,
         role="assistant",
-        content=result.content,
-        sql_query=result.sql_query if result.sql_query else None,
-        response_type=result.type,
+        content=result.content,  # Always store human-readable content
+        sql_query=result.sql_query,
+        response_type=result.response_type,
         execution_time=result.execution_time,
         rows_count=result.rows_count,
     )
@@ -318,16 +327,16 @@ async def continue_chat(
     session.commit()
     session.refresh(assistant_message)
 
-    # Store data if needed (only for assistant messages with JSON data)
-    if result.type in ["table", "chart"] and result.content:
+    # Store data if it's table or chart type (only for assistant messages with data)
+    if result.response_type in ["table", "chart"] and result.data:
         try:
-            data_df = pd.read_json(result.content)
+            # Create data result for download functionality
             data_result = ChatDataResult(
                 message_id=assistant_message.id,
-                data_json=result.content,
-                columns=json.dumps(data_df.columns.tolist()),
-                shape_rows=len(data_df),
-                shape_cols=len(data_df.columns),
+                data_json=json.dumps(result.data),
+                columns=json.dumps(list(result.data[0].keys()) if result.data else []),
+                shape_rows=len(result.data),
+                shape_cols=len(result.data[0].keys()) if result.data else 0,
             )
             session.add(data_result)
             session.commit()
@@ -453,6 +462,54 @@ def delete_chat_by_id(
     return {"message": "Chat deleted successfully"}
 
 
+@chat_router.get("/databases")
+def get_available_databases(
+    current_user: User = Depends(get_current_user),
+):
+    """Get information about available databases for queries"""
+    if APP_SETTINGS.use_aws_data:
+        available_dbs = APP_SETTINGS.get_available_athena_databases()
+        
+        # Get SQL execution service to check database schemas
+        sql_service = get_sql_execution_service()
+        if sql_service:
+            try:
+                all_schemas = sql_service.get_all_database_schemas()
+                return {
+                    "data_source": "aws_athena",
+                    "available_databases": available_dbs,
+                    "schemas": all_schemas,
+                    "auto_selection": True,
+                    "description": {
+                        "raw": "Detailed transaction-level data",
+                        "agg": "Pre-aggregated summary data", 
+                        "default": "Primary database (fallback)"
+                    }
+                }
+            except Exception as e:
+                return {
+                    "data_source": "aws_athena",
+                    "available_databases": available_dbs,
+                    "error": f"Could not retrieve schemas: {str(e)}",
+                    "auto_selection": True
+                }
+        else:
+            return {
+                "data_source": "aws_athena",
+                "available_databases": available_dbs,
+                "error": "SQL execution service not available",
+                "auto_selection": True
+            }
+    else:
+        sqlite_dbs = APP_SETTINGS.SQLITE_DATABASES
+        return {
+            "data_source": "local_sqlite",
+            "available_databases": sqlite_dbs,
+            "auto_selection": False,
+            "description": "Local SQLite databases for development"
+        }
+
+
 @chat_router.get("/data/{message_id}")
 def get_message_data(
     message_id: str,
@@ -480,10 +537,14 @@ def get_message_data(
         raise HTTPException(status_code=404, detail="Message data not found")
 
     data_result = message.data_result
+    
+    # Load and sanitize data from database in case it contains unsanitized values
+    raw_data = json.loads(data_result.data_json)
+    sanitized_data = sanitize_data_for_json(raw_data)
 
     return {
         "message_id": message_id,
-        "data": json.loads(data_result.data_json),
+        "data": sanitized_data,
         "columns": json.loads(data_result.columns),
         "shape": [data_result.shape_rows, data_result.shape_cols],
         "sql_query": message.sql_query,
@@ -518,20 +579,22 @@ def download_message_data(
     if not message or not message.data_result:
         raise HTTPException(status_code=404, detail="Message data not found")
 
-    # Load data from database
+    # Load data from database and sanitize it
     data_result = message.data_result
+    raw_data = json.loads(data_result.data_json)
+    sanitized_data = sanitize_data_for_json(raw_data)
 
     filename = f"message_{current_user.username}_{message_id[:8]}_data.{format}"
 
     if format == "json":
         return StreamingResponse(
-            BytesIO(data_result.data_json.encode()),
+            BytesIO(json.dumps(sanitized_data).encode()),
             media_type="application/json",
             headers={"Content-Disposition": f"attachment; filename={filename}"},
         )
 
     # For other formats, convert to DataFrame first
-    df = pd.read_json(data_result.data_json)
+    df = pd.DataFrame(sanitized_data)
 
     if df.empty:
         raise HTTPException(status_code=400, detail="No data to download")

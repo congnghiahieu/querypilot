@@ -26,7 +26,7 @@ class EXAMPLE_TYPE:
     QAWRULE = "QAWRULE"
     OPENAI_DEMOSTRATION_QA = "NUMBERSIGNQA"
     BASIC_QA = "BASELINEQA"
-
+    
 
 class SELECTOR_TYPE:
     COS_SIMILAR = "COSSIMILAR"
@@ -51,16 +51,27 @@ class LLM:
     GPT_35_TURBO_16K = "gpt-3.5-turbo-16k"
     GPT_35_TURBO_0301 = "gpt-3.5-turbo-0301"
     GPT_4 = "gpt-4"
-    DEEP_SEEK_V3 = "deepseek-v3"
 
     # LLMs that use openai completion api
-    TASK_COMPLETIONS = [TEXT_DAVINCI_003, CODE_DAVINCI_002, DEEP_SEEK_V3]
+    TASK_COMPLETIONS = [
+        TEXT_DAVINCI_003,
+        CODE_DAVINCI_002
+    ]
 
     # LLMs that use openai chat api
-    TASK_CHAT = [GPT_35_TURBO, GPT_35_TURBO_0613, GPT_35_TURBO_16K, GPT_35_TURBO_0301, GPT_4]
+    TASK_CHAT = [
+        GPT_35_TURBO,
+        GPT_35_TURBO_0613,
+        GPT_35_TURBO_16K,
+        GPT_35_TURBO_0301,
+        GPT_4
+    ]
 
     # LLMs that can run in batch
-    BATCH_FORWARD = [TEXT_DAVINCI_003, CODE_DAVINCI_002]
+    BATCH_FORWARD = [
+        TEXT_DAVINCI_003,
+        CODE_DAVINCI_002
+    ]
 
     costs_per_thousand = {
         TEXT_DAVINCI_003: 0.0200,
@@ -69,10 +80,10 @@ class LLM:
         GPT_35_TURBO_0613: 0.0020,
         GPT_35_TURBO_16K: 0.003,
         GPT_35_TURBO_0301: 0.0020,
-        GPT_4: 0.03,
-        DEEP_SEEK_V3: 0.00027,
+        GPT_4: 0.03
     }
 
     # local LLMs
     LLAMA_7B = "llama-7b"
     ALPACA_7B = "alpaca-7b"
+    # TONG_YI_QIAN_WEN = "qwen-v1"

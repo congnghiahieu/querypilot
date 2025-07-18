@@ -4,10 +4,15 @@ from fastapi.staticfiles import StaticFiles
 
 from src.api.auth import auth_router
 from src.api.chat import chat_router
+from src.api.db_info import router as db_info_router
 from src.api.kb import kb_router
 from src.api.metrics import metrics_router
+from src.api.sqlite import sqlite_router
 from src.api.user import user_router
 from src.core.settings import ALLOWED_ORIGINS, STATIC_FOLDER
+
+import logging
+logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
 
 app = FastAPI(title="QueryPilot API", description="A text2sql chatbot API", version="1.0.0")
 
@@ -26,7 +31,9 @@ app.mount("/" + STATIC_FOLDER.strip("/"), StaticFiles(directory=STATIC_FOLDER), 
 
 app.include_router(auth_router)
 app.include_router(chat_router)
+app.include_router(db_info_router)
 app.include_router(kb_router)
+app.include_router(sqlite_router)
 app.include_router(user_router)
 app.include_router(metrics_router)
 

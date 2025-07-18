@@ -1,19 +1,25 @@
-from src.nl2sql.dail_sql.utils.post_process import process_duplication
-from src.nl2sql.llm import ask_deepseek
-
-db_id = "financial"
-
+import sys
+from src.nl2sql.dail_sql.utils.linking_utils.application import (
+    mask_question_with_schema_linking
+)
+from src.nl2sql.dail_sql.utils.utils import sql2skeleton, get_sql_for_database, get_sql_for_athena_database
+from src.nl2sql.dail_sql.prompt.prompt_builder import prompt_factory
+from src.nl2sql.dail_sql.llm.chatgpt import ask_deepseek_sql, ask_deepseek
+from src.nl2sql.dail_sql.utils.enums import REPR_TYPE, EXAMPLE_TYPE, SELECTOR_TYPE
+from src.nl2sql.dail_sql.prompt.PromptReprTemplate import SQLPrompt
+from src.core.settings import PROJECT_ROOT, APP_SETTINGS
 
 def clean_sql_query(sql_str):
     """
     Clean SQL query by extracting only the SQL statement from markdown formatted text.
-
+    
     Args:
         sql_str (str): Raw SQL string that may contain markdown formatting and explanations
-
+        
     Returns:
         str: Clean SQL query
     """
+
     # If the query contains markdown code block
     if "```sql" in sql_str:
         # Extract content between ```sql and ```
@@ -27,53 +33,230 @@ def clean_sql_query(sql_str):
 
     return sql_str
 
-
-def convert_nl2sql(question: str, data, prompt, task_tracker=None, schema_info=None) -> str:
+def auto_link_and_mask(question, tables, columns):
     """
-    Convert natural language to SQL query with optional task tracking.
-
-    Args:
-        question (str): Natural language query
-        data: Data object for processing
-        prompt: Prompt template
-        task_tracker: Optional TaskTracker instance for performance monitoring
-        schema_info: Optional database schema information for better SQL generation
-
-    Returns:
-        str: Generated SQL query
+    Gọi LLM để masking: <mask> cho entity, <unk> cho số.
+    Đồng thời tự build sc_link và cv_link dựa trên vị trí token đã mask.
     """
-    data_item = dict()
-    data_item["db_id"] = db_id
-    data_item["question"] = question
-    data_item["question_toks"] = ""
+    # Ghép schema thành string cho prompt
+    schema_desc = "Tables:\n- " + "\n- ".join(tables) + "\nColumns:\n- " + "\n- ".join(columns)
 
-    max_sequence_len = 65000
-    max_ans_len = 4000
+    prompt = f"""
+        Below is a user question and the database schema.
 
-    tests = [{"db_id": db_id, "question": question, "question_toks": "", "query": ""}]
-    pre_processes_question = data.get_question_json(tests)
+        {schema_desc}
 
-    # Include schema information in the prompt if available
-    if schema_info:
-        pre_processes_question[0]["schema_info"] = schema_info
+        Task:
+        - Replace any word that matches a table or column name with <mask>.
+        - Replace any number or numeric token with <unk>.
+        - Keep other words unchanged.
+        - Output only the masked question.
 
-    question_format = prompt.format(
-        target=pre_processes_question[0],
-        max_seq_len=max_sequence_len,
-        max_ans_len=max_ans_len,
-        scope_factor=100,
-        cross_domain=False,
-    )
+        Question: {question}
+        Masked:
+        """.strip()
 
-    res = ask_deepseek(question_format["prompt"], 0.0)
-    sql = res["response"]
-    sql = " ".join(sql.replace("\n", " ").split())
-    sql = process_duplication(sql)
-    sql = clean_sql_query(sql)
+    # Gọi LLM
+    #response = ask_llm(LLM_MODEL, [prompt], temperature=0.0, n=1)["response"][0].strip()
+    response = ask_deepseek(prompt)
+    masked_question = response
+    print("masked_question", masked_question)
 
-    # Record SQL generation completion if task tracker is provided
-    if task_tracker:
-        task_tracker.record_sql_generation(sql)
+    # Tính toán link
+    tokens = question.split()
+    masked_tokens = masked_question.split()
 
-    print(sql)
-    return sql
+    sc_link = {"q_tab_match": {}, "q_col_match": {}}
+    cv_link = {"num_date_match": [], "cell_match": {}}
+
+    for idx, (orig, masked) in enumerate(zip(tokens, masked_tokens)):
+        if masked == "<mask>":
+            # Nếu LLM mask thì check trong tables hay columns
+            lower = orig.lower().strip("?.,")
+            if any(lower == t.lower() for t in tables):
+                sc_link["q_tab_match"][f"{idx},0"] = "TEM"
+            elif any(lower == c.lower() for c in columns):
+                sc_link["q_col_match"][f"{idx},0"] = "CEM"
+            else:
+                # fallback: gán table
+                sc_link["q_tab_match"][f"{idx},0"] = "TEM"
+        elif masked == "<unk>":
+            cv_link["num_date_match"].append(f"{idx},0")
+
+    return masked_question, sc_link, cv_link
+
+
+import json
+
+class BankingDataLoader:
+    def __init__(self, json_file="data/banking_data.json"):
+        # Construct the full path relative to project root
+        from src.core.settings import PROJECT_ROOT
+        full_path = PROJECT_ROOT / "dataset" / json_file
+        with open(full_path, "r") as f:
+            self._train_json = json.load(f)
+
+    def get_train_json(self):
+        return self._train_json
+
+    def get_train_questions(self):
+        return [item["question"] for item in self._train_json]
+data = BankingDataLoader("converted.json")
+
+def get_tables_input(prompt_obj, schema):
+    """
+    Giúp xác định nên đưa schema dưới dạng DDL (cho SQLPrompt)
+    hay list dict (cho TextPrompt/NumberSignPrompt/...)
+    """
+    if isinstance(prompt_obj, SQLPrompt) or hasattr(prompt_obj, "render_schema"):
+        return schema   # cho render_schema() chạy
+    else:
+        # Convert Spider schema -> list Table objects
+        table_names = schema["table_names_original"]
+        columns = schema["column_names_original"]
+
+        table_columns = {}
+        for tid, col in columns:
+            table_columns.setdefault(tid, []).append(col)
+
+        tables_list = []
+        for tid, tname in enumerate(table_names):
+            tables_list.append(
+                type("Table", (), {
+                    "name": tname,
+                    "schema": table_columns.get(tid, [])
+                })()
+            )
+        return tables_list
+
+def nl2sql(question, context, db_id):
+    try:
+        print(f"question = {question}\ndb_id = {db_id}")
+        
+        # Check if using AWS data source
+        if APP_SETTINGS.use_aws_data:
+            print(f"Using AWS Athena for database: {db_id}")
+            
+            # For Athena, db_id represents the database type (raw, agg, default)
+            # Get SQL execution service for Athena operations
+            from src.core.sql_execution import get_sql_execution_service
+            sql_execution_service = get_sql_execution_service()
+            
+            # Get schema from Athena
+            schema = get_sql_for_athena_database(db_id, sql_execution_service)
+            path_db = f"athena://{db_id}"  # Virtual path for Athena
+            
+        else:
+            # Use local SQLite database
+            path_db = PROJECT_ROOT / "dataset" / f"{db_id}.sqlite"
+            print(f"Using SQLite database path: {path_db}")
+            schema = get_sql_for_database(path_db)
+        
+        # Sau khi có schema
+        table_names = schema["table_names_original"]
+        columns = schema["column_names_original"]
+
+        # Group columns theo table_id
+        table_columns = {}
+        for tid, col in columns:
+            table_columns.setdefault(tid, []).append(col)
+
+        print("Schema:", schema)
+        print("after get id question")
+        tables = [t.lower() for t in table_names]
+        columns = [col_name.lower() for _, col_name in columns]
+
+        # === DSL ===
+        masked_question, sc_link, cv_link = auto_link_and_mask(question, tables, columns)
+
+        print("before mask question")
+        masked_question_final = mask_question_with_schema_linking([
+            {
+                "question_for_copying": question.split(),
+                "sc_link": sc_link,
+                "cv_link": cv_link
+            }
+        ], "<mask>", "<unk>")[0]
+
+        print(f"✅ Masked question: {masked_question_final}")
+  
+        QMS_PromptClass = prompt_factory(
+            repr_type=REPR_TYPE.CODE_REPRESENTATION,
+            k_shot=2,
+            example_format=EXAMPLE_TYPE.QA,
+            selector_type=SELECTOR_TYPE.EUC_DISTANCE_QUESTION_MASK
+        )
+        qms_prompt = QMS_PromptClass(data)
+        print("prompt_factory done")
+
+        target_json = {
+            "question": masked_question_final,
+            "question_for_copying": masked_question_final.split(),
+            "sc_link": sc_link,
+            "cv_link": cv_link
+        }
+        print("✅ target_json:", target_json)
+        print("✅ question_for_copying:", target_json["question_for_copying"])
+        qms_examples = qms_prompt.get_examples(target_json, num_example=2)
+        print("QMS examples:", qms_examples)
+        tables_input = get_tables_input(qms_prompt, schema)
+        prompt1 = qms_prompt.format_question({
+            "question": question,
+            "tables": schema,
+            "db_id": db_id,
+            "path_db": path_db
+        })
+        for ex in qms_examples:
+            prompt1 += "\n\n" + qms_prompt.format_example_only(ex) + "\n " + ex["query"]
+
+        prompt1 += "\n\n-- Chỉ trả về duy nhất câu SQL."
+
+        print("Prompt 1:", prompt1)
+
+        #pre_sql = ask_llm(LLM_MODEL, [prompt1], temperature=0.0, n=1)["response"][0]
+        pre_sql = ask_deepseek_sql(prompt1, db_id)['response']
+        clean_sql = [l.strip() for l in pre_sql.splitlines() if l.strip().upper().startswith("SELECT")][0]
+
+        # === Skeleton ===
+        skeleton_value = sql2skeleton(clean_sql, schema)
+        print("Skeleton:", skeleton_value)
+
+        # === QSS ===
+        QSS_PromptClass = prompt_factory(
+            repr_type=REPR_TYPE.CODE_REPRESENTATION,
+            k_shot=1,
+            example_format=EXAMPLE_TYPE.QA,
+            selector_type=SELECTOR_TYPE.EUC_DISTANCE_MASK_PRE_SKELETON_SIMILARITY_THRESHOLD
+        )
+        qss_prompt = QSS_PromptClass(data)
+        qss_target = target_json.copy()
+        qss_target.update({"pre_skeleton": skeleton_value})
+        qss_examples = qss_prompt.get_examples(qss_target, num_example=1)
+
+        print ("Question gốc: ", question)
+        prompt2 = qss_prompt.format_question({
+            "question": question,
+            "tables": schema,
+            "db_id": db_id,
+            "path_db": path_db
+        })
+        for ex in qms_examples + qss_examples:
+            prompt2 += "\n\n" + qss_prompt.format_example_only(ex) + "\nSELECT " + ex["query"]
+        prompt2 += "\n\n-- Chỉ trả về duy nhất câu SQL."
+
+        print("Prompt 2:", prompt2)
+
+        if context:
+            prompt2 += "\n\n-- Dựa trên các thông tin trong context, hãy tạo câu SQL phù hợp."
+            prompt2 += "\n\n-- Context: " + context
+
+        #final_sql = ask_llm(LLM_MODEL, [prompt2], temperature=0.0, n=1)["response"][0]
+        final_sql = ask_deepseek_sql(prompt2, db_id)['response']
+        print("✅ Final SQL:", final_sql)
+        
+        # Clean and return the SQL query
+        clean_final_sql = clean_sql_query(final_sql)
+        return clean_final_sql
+    except Exception as e:
+        print(f"\n❌ ERROR: {e}", file=sys.stderr)
+        return None

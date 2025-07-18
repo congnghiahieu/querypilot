@@ -19,15 +19,25 @@ DATABASE_URL=postgresql+psycopg2://querypilot:querypilot@localhost:5432/querypil
 docker compose -f docker-compose.dev.yml up -d
 ```
 
+- Database
+Download vpbank.sqlite and put it under dataset directory
+
 - Cài dependencies và chạy
 
 ```bash
 uv sync # nhớ tải uv
 source ./.venv/bin/activate
+make migrate # Initiate db
 make dev # Port 8080
 ```
 
-- Sang folder `frontend` chạy:
+- Clone và sang folder `vp-fe` chạy:
+
+- Tạo file `.env` với nội dung
+
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:8080
+```
 
 ```bash
 npm install
@@ -62,7 +72,7 @@ DEEPSEEK_API_KEY=<real_api_key>
 SECRET_KEY=<real_secret_string>
 CLIENT_URL=http://localhost:3000 # Frontend address for CORS settings
 DATABASE_URL=postgresql+psycopg2://querypilot:querypilot@localhost:5432/querypilot # Recommend run postgreSQL locally using `docker-compose.yml`, run before backend
-
+ 
 # AWS S3 Configuration (only required when ENV=aws)
 AWS_ACCESS_KEY_ID=<your_aws_access_key>
 AWS_SECRET_ACCESS_KEY=<your_aws_secret_key>

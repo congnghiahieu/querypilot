@@ -373,6 +373,8 @@ class RAGService:
 
     def get_context_for_query(self, query: str, user_id: UUID) -> str:
         """Get relevant context from knowledge base for a query"""
+        return None
+
         results = self.search_knowledge_base(query, user_id)
 
         if not results:
