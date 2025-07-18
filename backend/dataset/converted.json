@@ -1,0 +1,4934 @@
+[
+  {
+    "question": "What columns are available in the customer table?",
+    "query": "PRAGMA table_info(t24_customer__s2);",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "4,0": "TEM",
+        "6,0": "TEM"
+      },
+      "q_col_match": {}
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "What",
+      "columns",
+      "are",
+      "available",
+      "in",
+      "the",
+      "customer",
+      "table?"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "PRAGMA table_info(_)"
+  },
+  {
+    "question": "Show me the structure  and meaning of columns in the loan and deposit table",
+    "query": "PRAGMA table_info(t24_ld_loans_and_depo__mnp);",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "1,0": "TEM",
+        "4,0": "TEM",
+        "8,0": "TEM",
+        "10,0": "TEM",
+        "11,0": "TEM"
+      },
+      "q_col_match": {
+        "6,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "me",
+      "the",
+      "structure",
+      "and",
+      "meaning",
+      "of",
+      "columns",
+      "in",
+      "the",
+      "loan",
+      "and",
+      "deposit",
+      "table"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "PRAGMA table_info(_)"
+  },
+  {
+    "question": "What fields are available in the statement entry table?",
+    "query": "PRAGMA table_info(t24_stmt_entry__fa);",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "4,0": "TEM",
+        "7,0": "TEM"
+      },
+      "q_col_match": {}
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "What",
+      "fields",
+      "are",
+      "available",
+      "in",
+      "the",
+      "statement",
+      "entry",
+      "table?"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "PRAGMA table_info(_)"
+  },
+  {
+    "question": "Describe the TBL_LD table structure",
+    "query": "PRAGMA table_info(TBL_LD);",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "2,0": "TEM"
+      },
+      "q_col_match": {}
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Describe",
+      "the",
+      "TBL_LD",
+      "table",
+      "structure"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "PRAGMA table_info(_)"
+  },
+  {
+    "question": "What information is stored in the insurance agent table?",
+    "query": "PRAGMA table_info(banca_aia_agent_info__mnp);",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "4,0": "TEM",
+        "7,0": "TEM"
+      },
+      "q_col_match": {}
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "What",
+      "information",
+      "is",
+      "stored",
+      "in",
+      "the",
+      "insurance",
+      "agent",
+      "table?"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "PRAGMA table_info(_)"
+  },
+  {
+    "question": "Show all customers in the private segment",
+    "query": "SELECT customer_code, segment FROM t24_customer__s2 WHERE segment = 'private';",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "3,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM",
+        "6,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "all",
+      "customers",
+      "in",
+      "the",
+      "private",
+      "segment"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ from _ where _"
+  },
+  {
+    "question": "List all customer segments available in the database",
+    "query": "SELECT DISTINCT segment FROM t24_customer__s2 ORDER BY segment;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "2,0": "TEM",
+        "5,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "List",
+      "all",
+      "customer",
+      "segments",
+      "available",
+      "in",
+      "the",
+      "database"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select distinct _ from _ order by _ asc"
+  },
+  {
+    "question": "How many customers are in each segment?",
+    "query": "SELECT segment, COUNT(*) as customer_count FROM t24_customer__s2 GROUP BY segment ORDER BY customer_count DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "4,0": "TEM"
+      },
+      "q_col_match": {
+        "6,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "How",
+      "many",
+      "customers",
+      "are",
+      "in",
+      "each",
+      "segment?"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) from _ group by _ order by _ desc"
+  },
+  {
+    "question": "Find customers who have multiple loan contracts",
+    "query": "SELECT c.customer_code, c.segment, COUNT(l.contract_no_) as contract_count FROM t24_customer__s2 c JOIN t24_ld_loans_and_depo__mnp l ON c.customer_code = l.customer_id GROUP BY c.customer_code, c.segment HAVING COUNT(l.contract_no_) > 1;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "5,0": "TEM"
+      },
+      "q_col_match": {}
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "customers",
+      "who",
+      "have",
+      "multiple",
+      "loan",
+      "contracts"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) from _ group by _ having count ( _ ) > _"
+  },
+  {
+    "question": "Show customers with their total debt amount from TBL_LD",
+    "query": "SELECT customer_id, segment, SUM(total_stmt_amt_lcy) as total_debt FROM TBL_LD GROUP BY customer_id, segment ORDER BY total_debt DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "8,0": "TEM"
+      },
+      "q_col_match": {
+        "4,0": "CEM",
+        "5,0": "CEM",
+        "6,0": "CEM",
+        "7,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "customers",
+      "with",
+      "their",
+      "total",
+      "debt",
+      "amount",
+      "from",
+      "TBL_LD"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) from _ group by _ order by _ desc"
+  },
+  {
+    "question": "List customers by segment with their contract counts",
+    "query": "SELECT c.segment, COUNT(DISTINCT c.customer_code) as customers, COUNT(l.contract_no_) as total_contracts FROM t24_customer__s2 c LEFT JOIN t24_ld_loans_and_depo__mnp l ON c.customer_code = l.customer_id GROUP BY c.segment;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "3,0": "CEM",
+        "6,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "List",
+      "customers",
+      "by",
+      "segment",
+      "with",
+      "their",
+      "contract",
+      "counts"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( distinct _ ) , count ( _ ) from _ left join _ group by _"
+  },
+  {
+    "question": "Show customer distribution across different currency types",
+    "query": "SELECT c.segment, l.currency, COUNT(*) as contract_count FROM t24_customer__s2 c JOIN t24_ld_loans_and_depo__mnp l ON c.customer_code = l.customer_id GROUP BY c.segment, l.currency ORDER BY c.segment, contract_count DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "1,0": "TEM"
+      },
+      "q_col_match": {
+        "5,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "customer",
+      "distribution",
+      "across",
+      "different",
+      "currency",
+      "types"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) from _ group by _ order by _ , contract_count desc"
+  },
+  {
+    "question": "What is the total outstanding debt amount by customer segment?",
+    "query": "SELECT segment, SUM(total_stmt_amt_lcy) as total_debt, COUNT(DISTINCT customer_id) as customer_count FROM TBL_LD GROUP BY segment ORDER BY total_debt DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "8,0": "TEM"
+      },
+      "q_col_match": {
+        "3,0": "CEM",
+        "4,0": "CEM",
+        "5,0": "CEM",
+        "6,0": "CEM",
+        "9,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "What",
+      "is",
+      "the",
+      "total",
+      "outstanding",
+      "debt",
+      "amount",
+      "by",
+      "customer",
+      "segment?"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) , count ( distinct _ ) from _ group by _ order by _ desc"
+  },
+  {
+    "question": "Show the top 10 customers with highest debt amounts",
+    "query": "SELECT customer_id, segment, SUM(total_stmt_amt_lcy) as total_debt FROM TBL_LD GROUP BY customer_id, segment ORDER BY total_debt DESC LIMIT 10;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "7,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "the",
+      "top",
+      "10",
+      "customers",
+      "with",
+      "highest",
+      "debt",
+      "amounts"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) from _ group by _ order by _ desc limit _"
+  },
+  {
+    "question": "Find all loan contracts with their customer segments",
+    "query": "SELECT l.contract_no_, l.customer_id, c.segment, l.currency, l.value_date FROM t24_ld_loans_and_depo__mnp l JOIN t24_customer__s2 c ON l.customer_id = c.customer_code;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "2,0": "TEM",
+        "6,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "all",
+      "loan",
+      "contracts",
+      "with",
+      "their",
+      "customer",
+      "segments"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ from _ "
+  },
+  {
+    "question": "Calculate average debt amount per customer by segment",
+    "query": "SELECT segment, AVG(total_stmt_amt_lcy) as avg_debt, COUNT(DISTINCT customer_id) as customer_count FROM TBL_LD GROUP BY segment ORDER BY avg_debt DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "5,0": "TEM"
+      },
+      "q_col_match": {
+        "2,0": "CEM",
+        "3,0": "CEM",
+        "4,0": "CEM",
+        "7,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Calculate",
+      "average",
+      "debt",
+      "amount",
+      "per",
+      "customer",
+      "by",
+      "segment"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , avg ( _ ) , count ( distinct _ ) from _ group by _ order by _ desc"
+  },
+  {
+    "question": "Show debt distribution by currency and segment",
+    "query": "SELECT t.segment, t.currency, SUM(t.total_stmt_amt_lcy) as total_debt, COUNT(*) as record_count FROM TBL_LD t GROUP BY t.segment, t.currency ORDER BY t.segment, total_debt DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "5,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM",
+        "4,0": "CEM",
+        "6,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "debt",
+      "distribution",
+      "by",
+      "currency",
+      "and",
+      "segment"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) , count ( _ ) from _ group by _ order by _ , total_debt desc"
+  },
+  {
+    "question": "Find customers with debt amounts above 1 billion VND",
+    "query": "SELECT customer_id, segment, SUM(total_stmt_amt_lcy) as total_debt FROM TBL_LD GROUP BY customer_id, segment HAVING SUM(total_stmt_amt_lcy) > 1000000000 ORDER BY total_debt DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "3,0": "CEM",
+        "6,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "customers",
+      "with",
+      "debt",
+      "amounts",
+      "above",
+      "1",
+      "billion",
+      "VND"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) from _ group by _ having sum ( _ ) > _ order by _ desc"
+  },
+  {
+    "question": "Show loan contracts by category and customer segment",
+    "query": "SELECT c.segment, l.category, COUNT(*) as contract_count FROM t24_customer__s2 c JOIN t24_ld_loans_and_depo__mnp l ON c.customer_code = l.customer_id GROUP BY c.segment, l.category ORDER BY c.segment, contract_count DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "1,0": "TEM",
+        "5,0": "TEM",
+        "6,0": "TEM"
+      },
+      "q_col_match": {
+        "4,0": "CEM",
+        "7,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "loan",
+      "contracts",
+      "by",
+      "category",
+      "and",
+      "customer",
+      "segment"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) from _ group by _ order by _ , contract_count desc"
+  },
+  {
+    "question": "Calculate debt concentration by company code",
+    "query": "SELECT co_code, SUM(total_stmt_amt_lcy) as total_debt, COUNT(DISTINCT customer_id) as customer_count FROM TBL_LD GROUP BY co_code ORDER BY total_debt DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "1,0": "CEM",
+        "5,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Calculate",
+      "debt",
+      "concentration",
+      "by",
+      "company",
+      "code"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) , count ( distinct _ ) from _ group by _ order by _ desc"
+  },
+  {
+    "question": "Show customers with contracts in multiple currencies",
+    "query": "SELECT customer_id, COUNT(DISTINCT currency) as currency_count, GROUP_CONCAT(DISTINCT currency) as currencies FROM t24_ld_loans_and_depo__mnp GROUP BY customer_id HAVING COUNT(DISTINCT currency) > 1;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "4,0": "TEM"
+      },
+      "q_col_match": {}
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "customers",
+      "with",
+      "contracts",
+      "in",
+      "multiple",
+      "currencies"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( distinct _ ) , group_concat ( distinct _ ) from _ group by _ having count ( distinct _ ) > _"
+  },
+  {
+    "question": "Find the oldest and newest loan contracts",
+    "query": "SELECT MIN(value_date) as oldest_contract, MAX(value_date) as newest_contract FROM t24_ld_loans_and_depo__mnp;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "3,0": "TEM",
+        "5,0": "TEM"
+      },
+      "q_col_match": {}
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "the",
+      "oldest",
+      "and",
+      "newest",
+      "loan",
+      "contracts"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select min ( _ ) , max ( _ ) from _"
+  },
+  {
+    "question": "Show debt trends by year from TBL_LD",
+    "query": "SELECT year, SUM(total_stmt_amt_lcy) as total_debt, COUNT(DISTINCT customer_id) as unique_customers FROM TBL_LD GROUP BY year ORDER BY year;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "6,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM",
+        "4,0": "CEM",
+        "5,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "debt",
+      "trends",
+      "by",
+      "year",
+      "from",
+      "TBL_LD"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) , count ( distinct _ ) from _ group by _ order by _ asc"
+  },
+  {
+    "question": "Calculate total transaction amount by month from statement entries",
+    "query": "SELECT year, month, SUM(amt_lcy) as total_amount, COUNT(*) as transaction_count FROM t24_stmt_entry__fa GROUP BY year, month ORDER BY year, month;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "1,0": "CEM",
+        "2,0": "CEM",
+        "3,0": "CEM",
+        "5,0": "CEM",
+        "6,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Calculate",
+      "total",
+      "transaction",
+      "amount",
+      "by",
+      "month",
+      "from",
+      "statement",
+      "entries"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) , count ( _ ) from _ group by _ order by _ asc , _"
+  },
+  {
+    "question": "Find the largest transactions in the statement entries",
+    "query": "SELECT stmt_entry_id, transaction_code, our_reference, amt_lcy, booking_date FROM t24_stmt_entry__fa ORDER BY amt_lcy DESC LIMIT 10;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "4,0": "TEM"
+      },
+      "q_col_match": {}
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "the",
+      "largest",
+      "transactions",
+      "in",
+      "the",
+      "statement",
+      "entries"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ from _ order by _ desc limit _"
+  },
+  {
+    "question": "Show transaction patterns by transaction code",
+    "query": "SELECT transaction_code, COUNT(*) as transaction_count, SUM(amt_lcy) as total_amount, AVG(amt_lcy) as avg_amount FROM t24_stmt_entry__fa GROUP BY transaction_code ORDER BY transaction_count DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "1,0": "CEM",
+        "4,0": "CEM",
+        "5,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "transaction",
+      "patterns",
+      "by",
+      "transaction",
+      "code"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) , sum ( _ ) , avg ( _ ) from _ group by _ order by _ desc"
+  },
+  {
+    "question": "Calculate daily transaction volumes for the current year",
+    "query": "SELECT year, month, day, SUM(amt_lcy) as daily_volume, COUNT(*) as transaction_count FROM t24_stmt_entry__fa WHERE year = 2024 GROUP BY year, month, day ORDER BY year, month, day;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "2,0": "CEM",
+        "4,0": "CEM",
+        "6,0": "CEM",
+        "7,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Calculate",
+      "daily",
+      "transaction",
+      "volumes",
+      "for",
+      "the",
+      "current",
+      "year"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) , count ( _ ) from _ where _ group by _ order by _ asc , _"
+  },
+  {
+    "question": "Find transactions above average amount",
+    "query": "SELECT stmt_entry_id, transaction_code, amt_lcy, booking_date FROM t24_stmt_entry__fa WHERE amt_lcy > (SELECT AVG(amt_lcy) FROM t24_stmt_entry__fa) ORDER BY amt_lcy DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "4,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "transactions",
+      "above",
+      "average",
+      "amount"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ from _ where _ > ( select avg ( _ ) from _ ) order by _ desc"
+  },
+  {
+    "question": "Show monthly transaction trends by year",
+    "query": "SELECT year, month, SUM(amt_lcy) as monthly_volume, COUNT(*) as transaction_count FROM t24_stmt_entry__fa GROUP BY year, month ORDER BY year, month;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "2,0": "CEM",
+        "5,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "monthly",
+      "transaction",
+      "trends",
+      "by",
+      "year"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) , count ( _ ) from _ group by _ order by _ asc , _"
+  },
+  {
+    "question": "Calculate transaction statistics by booking date",
+    "query": "SELECT booking_date, COUNT(*) as transaction_count, SUM(amt_lcy) as total_amount, MIN(amt_lcy) as min_amount, MAX(amt_lcy) as max_amount FROM t24_stmt_entry__fa GROUP BY booking_date ORDER BY booking_date DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "1,0": "CEM",
+        "4,0": "CEM",
+        "5,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Calculate",
+      "transaction",
+      "statistics",
+      "by",
+      "booking",
+      "date"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) , sum ( _ ) , min ( _ ) , max ( _ ) from _ group by _ order by _ desc"
+  },
+  {
+    "question": "Find unique transaction codes and their descriptions",
+    "query": "SELECT DISTINCT transaction_code, COUNT(*) as usage_count FROM t24_stmt_entry__fa GROUP BY transaction_code ORDER BY usage_count DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "4,0": "TEM"
+      },
+      "q_col_match": {
+        "2,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "unique",
+      "transaction",
+      "codes",
+      "and",
+      "their",
+      "descriptions"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select distinct _ , count ( _ ) from _ group by _ order by _ desc"
+  },
+  {
+    "question": "List all insurance agents by region",
+    "query": "SELECT region, COUNT(*) as agent_count, COUNT(CASE WHEN status = 'Active' THEN 1 END) as active_agents FROM banca_aia_agent_info__mnp GROUP BY region ORDER BY agent_count DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "1,0": "CEM",
+        "5,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "List",
+      "all",
+      "insurance",
+      "agents",
+      "by",
+      "region"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) , count ( case when _ then _ end ) from _ group by _ order by _ desc"
+  },
+  {
+    "question": "Show agent performance by branch",
+    "query": "SELECT branch_name, COUNT(*) as total_agents, COUNT(CASE WHEN allow_sale = 'Y' THEN 1 END) as selling_agents FROM banca_aia_agent_info__mnp GROUP BY branch_name ORDER BY total_agents DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "1,0": "TEM"
+      },
+      "q_col_match": {
+        "4,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "agent",
+      "performance",
+      "by",
+      "branch"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) , count ( case when _ then _ end ) from _ group by _ order by _ desc"
+  },
+  {
+    "question": "Find active insurance agents with sales permission",
+    "query": "SELECT producer_code, producer_name, branch_name, region, bank_agent_type FROM banca_aia_agent_info__mnp WHERE status = 'Active' AND allow_sale = 'Y';",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {}
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "active",
+      "insurance",
+      "agents",
+      "with",
+      "sales",
+      "permission"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ from _ where _"
+  },
+  {
+    "question": "Calculate agent distribution by bank agent type",
+    "query": "SELECT bank_agent_type, COUNT(*) as agent_count, COUNT(CASE WHEN status = 'Active' THEN 1 END) as active_count FROM banca_aia_agent_info__mnp GROUP BY bank_agent_type;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "1,0": "TEM",
+        "5,0": "TEM"
+      },
+      "q_col_match": {
+        "4,0": "CEM",
+        "6,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Calculate",
+      "agent",
+      "distribution",
+      "by",
+      "bank",
+      "agent",
+      "type"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) , count ( case when _ then _ end ) from _ group by _"
+  },
+  {
+    "question": "Show company code distribution in loan contracts",
+    "query": "SELECT co_code, COUNT(*) as contract_count, COUNT(DISTINCT customer_id) as unique_customers FROM t24_ld_loans_and_depo__mnp GROUP BY co_code ORDER BY contract_count DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "4,0": "TEM",
+        "5,0": "TEM"
+      },
+      "q_col_match": {
+        "2,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "company",
+      "code",
+      "distribution",
+      "in",
+      "loan",
+      "contracts"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) , count ( distinct _ ) from _ group by _ order by _ desc"
+  },
+  {
+    "question": "Find agents recruited in the last year",
+    "query": "SELECT producer_code, producer_name, first_contract_date, recruit_name, branch_name FROM banca_aia_agent_info__mnp WHERE first_contract_date >= date('now', '-1 year');",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "3,0": "TEM"
+      },
+      "q_col_match": {
+        "5,0": "CEM",
+        "6,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "agents",
+      "recruited",
+      "in",
+      "the",
+      "last",
+      "year"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ from _ where _ >= date ( _ )"
+  },
+  {
+    "question": "Show loan application status distribution",
+    "query": "SELECT ld_confirm, COUNT(*) as application_count FROM edoc_alf_new_data_loan__mnp GROUP BY ld_confirm;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "1,0": "TEM"
+      },
+      "q_col_match": {
+        "3,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "loan",
+      "application",
+      "status",
+      "distribution"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) from _ group by _"
+  },
+  {
+    "question": "Compare debt amounts year-over-year by segment",
+    "query": "SELECT segment, year, SUM(total_stmt_amt_lcy) as yearly_debt FROM TBL_LD GROUP BY segment, year ORDER BY segment, year;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "1,0": "CEM",
+        "5,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Compare",
+      "debt",
+      "amounts",
+      "year-over-year",
+      "by",
+      "segment"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) from _ group by _ order by _ asc , _"
+  },
+  {
+    "question": "Calculate monthly debt collection trends",
+    "query": "SELECT year, month, SUM(total_stmt_amt_lcy) as monthly_debt, COUNT(DISTINCT customer_id) as customers FROM TBL_LD GROUP BY year, month ORDER BY year, month;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "2,0": "CEM",
+        "3,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Calculate",
+      "monthly",
+      "debt",
+      "collection",
+      "trends"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) , count ( distinct _ ) from _ group by _ order by _ asc , _"
+  },
+  {
+    "question": "Show seasonal transaction patterns by quarter",
+    "query": "SELECT year, CASE WHEN month IN (1,2,3) THEN 'Q1' WHEN month IN (4,5,6) THEN 'Q2' WHEN month IN (7,8,9) THEN 'Q3' ELSE 'Q4' END as quarter, SUM(amt_lcy) as quarterly_volume FROM t24_stmt_entry__fa GROUP BY year, quarter ORDER BY year, quarter;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "2,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "seasonal",
+      "transaction",
+      "patterns",
+      "by",
+      "quarter"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , case when _ in ( _ ) then _ when _ in ( _ ) then _ when _ in ( _ ) then _ else _ end , sum ( _ ) from _ group by _ , quarter order by _ asc , quarter"
+  },
+  {
+    "question": "Calculate quarterly growth rates in loan portfolio",
+    "query": "SELECT year, CASE WHEN month IN (1,2,3) THEN 'Q1' WHEN month IN (4,5,6) THEN 'Q2' WHEN month IN (7,8,9) THEN 'Q3' ELSE 'Q4' END as quarter, SUM(total_stmt_amt_lcy) as quarterly_debt FROM TBL_LD GROUP BY year, quarter ORDER BY year, quarter;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "4,0": "TEM",
+        "5,0": "TEM"
+      },
+      "q_col_match": {}
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Calculate",
+      "quarterly",
+      "growth",
+      "rates",
+      "in",
+      "loan",
+      "portfolio"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , case when _ in ( _ ) then _ when _ in ( _ ) then _ when _ in ( _ ) then _ else _ end , sum ( _ ) from _ group by _ , quarter order by _ asc , quarter"
+  },
+  {
+    "question": "Find peak transaction months across all years",
+    "query": "SELECT month, AVG(monthly_total) as avg_monthly_volume FROM (SELECT year, month, SUM(amt_lcy) as monthly_total FROM t24_stmt_entry__fa GROUP BY year, month) GROUP BY month ORDER BY avg_monthly_volume DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "2,0": "CEM",
+        "5,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "peak",
+      "transaction",
+      "months",
+      "across",
+      "all",
+      "years"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , avg ( monthly_total ) from ( select _ , sum ( _ ) from _ group by _ ) group by _ order by _ desc"
+  },
+  {
+    "question": "Show debt concentration by customer and time period",
+    "query": "SELECT customer_id, year, month, SUM(total_stmt_amt_lcy) as monthly_debt FROM TBL_LD GROUP BY customer_id, year, month HAVING SUM(total_stmt_amt_lcy) > 100000000 ORDER BY monthly_debt DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "4,0": "TEM",
+        "5,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM",
+        "6,0": "CEM",
+        "7,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "debt",
+      "concentration",
+      "by",
+      "customer",
+      "and",
+      "time",
+      "period"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) from _ group by _ having sum ( _ ) > _ order by _ desc"
+  },
+  {
+    "question": "Rank customers by total debt amount with their segment information",
+    "query": "SELECT customer_id, segment, SUM(total_stmt_amt_lcy) as total_debt, ROW_NUMBER() OVER (ORDER BY SUM(total_stmt_amt_lcy) DESC) as debt_rank FROM TBL_LD GROUP BY customer_id, segment ORDER BY total_debt DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "3,0": "CEM",
+        "4,0": "CEM",
+        "5,0": "CEM",
+        "8,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Rank",
+      "customers",
+      "by",
+      "total",
+      "debt",
+      "amount",
+      "with",
+      "their",
+      "segment",
+      "information"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) , row_number ( ) over ( order by _ ( _ ) desc ) from _ group by _ order by _ desc"
+  },
+  {
+    "question": "Calculate customer lifetime value by segment with transaction history",
+    "query": "SELECT c.segment, COUNT(DISTINCT c.customer_code) as customers, SUM(t.total_stmt_amt_lcy) as total_debt_value, AVG(t.total_stmt_amt_lcy) as avg_customer_value FROM t24_customer__s2 c JOIN TBL_LD t ON c.customer_code = t.customer_id GROUP BY c.segment ORDER BY total_debt_value DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "1,0": "TEM"
+      },
+      "q_col_match": {
+        "3,0": "CEM",
+        "5,0": "CEM",
+        "7,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Calculate",
+      "customer",
+      "lifetime",
+      "value",
+      "by",
+      "segment",
+      "with",
+      "transaction",
+      "history"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( distinct _ ) , sum ( _ ) , avg ( _ ) from _ group by _ order by _ desc"
+  },
+  {
+    "question": "Find customers who have more than 3 loan contracts",
+    "query": "SELECT c.customer_code, c.segment, COUNT(l.contract_no_) AS num_contracts FROM t24_customer__s2 c JOIN t24_ld_loans_and_depo__mnp l ON c.customer_code = l.customer_id GROUP BY c.customer_code, c.segment HAVING COUNT(l.contract_no_) > 3;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "7,0": "TEM"
+      },
+      "q_col_match": {}
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "customers",
+      "who",
+      "have",
+      "more",
+      "than",
+      "3",
+      "loan",
+      "contracts"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) from _ group by _ having count ( _ ) > _"
+  },
+  {
+    "question": "Get the total debt amount for each customer segment",
+    "query": "SELECT segment, SUM(total_stmt_amt_lcy) AS total_debt FROM TBL_LD GROUP BY segment ORDER BY total_debt DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "7,0": "TEM"
+      },
+      "q_col_match": {
+        "2,0": "CEM",
+        "3,0": "CEM",
+        "4,0": "CEM",
+        "5,0": "CEM",
+        "8,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Get",
+      "the",
+      "total",
+      "debt",
+      "amount",
+      "for",
+      "each",
+      "customer",
+      "segment"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) from _ group by _ order by _ desc"
+  },
+  {
+    "question": "Retrieve top 5 customers with highest transaction amounts this month",
+    "query": "SELECT our_reference, amt_lcy, booking_date FROM t24_stmt_entry__fa WHERE strftime('%m', booking_date) = strftime('%m', 'now') ORDER BY amt_lcy DESC LIMIT 5;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "6,0": "CEM",
+        "9,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Retrieve",
+      "top",
+      "5",
+      "customers",
+      "with",
+      "highest",
+      "transaction",
+      "amounts",
+      "this",
+      "month"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ from _ where strftime ( _ ) = strftime ( _ ) order by _ desc limit _"
+  },
+  {
+    "question": "List customers who have both loan and deposit contracts",
+    "query": "SELECT DISTINCT c.customer_code, c.segment FROM t24_customer__s2 c JOIN t24_ld_loans_and_depo__mnp l ON c.customer_code = l.customer_id WHERE l.category IN ('LOAN', 'DEPOSIT');",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "5,0": "TEM",
+        "6,0": "TEM"
+      },
+      "q_col_match": {}
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "List",
+      "customers",
+      "who",
+      "have",
+      "both",
+      "loan",
+      "and",
+      "deposit",
+      "contracts"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select distinct _ from _ where _ in ( _ )"
+  },
+  {
+    "question": "Show average overdue amount by loan product type",
+    "query": "SELECT loan_product, AVG(total_amount_overdue) AS avg_overdue FROM edoc_alf_new_data_loan__mnp GROUP BY loan_product;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "5,0": "TEM"
+      },
+      "q_col_match": {
+        "2,0": "CEM",
+        "3,0": "CEM",
+        "6,0": "CEM",
+        "7,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "average",
+      "overdue",
+      "amount",
+      "by",
+      "loan",
+      "product",
+      "type"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , avg ( _ ) from _ group by _"
+  },
+  {
+    "question": "List loan applications with overdue more than 90 days",
+    "query": "SELECT ld_code, out_of_date FROM edoc_alf_new_data_loan__mnp WHERE out_of_date > 90;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "1,0": "TEM"
+      },
+      "q_col_match": {
+        "4,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "List",
+      "loan",
+      "applications",
+      "with",
+      "overdue",
+      "more",
+      "than",
+      "90",
+      "days"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ from _ where _"
+  },
+  {
+    "question": "Show top 5 loan applications with the highest total overdue amount",
+    "query": "SELECT ld_code, total_amount_overdue FROM edoc_alf_new_data_loan__mnp ORDER BY total_amount_overdue DESC LIMIT 5;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "3,0": "TEM"
+      },
+      "q_col_match": {
+        "8,0": "CEM",
+        "9,0": "CEM",
+        "10,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "top",
+      "5",
+      "loan",
+      "applications",
+      "with",
+      "the",
+      "highest",
+      "total",
+      "overdue",
+      "amount"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ from _ order by _ desc limit _"
+  },
+  {
+    "question": "Find loan applications where total overdue amount is above 5 million and repayment is not proposed",
+    "query": "SELECT ld_code, total_amount_overdue FROM edoc_alf_new_data_loan__mnp WHERE total_amount_overdue > 5000000 AND amount_proposed_to_repay IS NULL;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "1,0": "TEM",
+        "11,0": "TEM"
+      },
+      "q_col_match": {
+        "4,0": "CEM",
+        "5,0": "CEM",
+        "6,0": "CEM",
+        "12,0": "CEM",
+        "15,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "loan",
+      "applications",
+      "where",
+      "total",
+      "overdue",
+      "amount",
+      "is",
+      "above",
+      "5",
+      "million",
+      "and",
+      "repayment",
+      "is",
+      "not",
+      "proposed"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ from _ where _ is null"
+  },
+  {
+    "question": "Get average overdue days grouped by loan product",
+    "query": "SELECT loan_product, AVG(out_of_date) AS avg_overdue_days FROM edoc_alf_new_data_loan__mnp WHERE out_of_date IS NOT NULL GROUP BY loan_product;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "6,0": "TEM"
+      },
+      "q_col_match": {
+        "2,0": "CEM",
+        "7,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Get",
+      "average",
+      "overdue",
+      "days",
+      "grouped",
+      "by",
+      "loan",
+      "product"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , avg ( _ ) from _ where _ is not null group by _"
+  },
+  {
+    "question": "Find loans that are confirmed and currently overdue",
+    "query": "SELECT ld_code, total_amount_overdue FROM edoc_alf_new_data_loan__mnp WHERE ld_confirm = 'YES' AND total_amount_overdue > 0;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "1,0": "TEM",
+        "5,0": "TEM"
+      },
+      "q_col_match": {
+        "7,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "loans",
+      "that",
+      "are",
+      "confirmed",
+      "and",
+      "currently",
+      "overdue"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ from _ where _"
+  },
+  {
+    "question": "Show number of overdue loans per reason of debt collection",
+    "query": "SELECT reasons_for_debt_collect, COUNT(*) AS overdue_count FROM edoc_alf_new_data_loan__mnp WHERE total_amount_overdue > 0 GROUP BY reasons_for_debt_collect;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "4,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM",
+        "2,0": "CEM",
+        "3,0": "CEM",
+        "5,0": "CEM",
+        "6,0": "CEM",
+        "7,0": "CEM",
+        "8,0": "CEM",
+        "9,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "number",
+      "of",
+      "overdue",
+      "loans",
+      "per",
+      "reason",
+      "of",
+      "debt",
+      "collection"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) from _ where _ group by _"
+  },
+  {
+    "question": "List loan codes with overdue amount higher than proposed repayment amount",
+    "query": "SELECT ld_code, total_amount_overdue, amount_proposed_to_repay FROM edoc_alf_new_data_loan__mnp WHERE amount_proposed_to_repay IS NOT NULL AND amount_proposed_to_repay < total_amount_overdue;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "1,0": "TEM"
+      },
+      "q_col_match": {
+        "4,0": "CEM",
+        "5,0": "CEM",
+        "8,0": "CEM",
+        "9,0": "CEM",
+        "10,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "List",
+      "loan",
+      "codes",
+      "with",
+      "overdue",
+      "amount",
+      "higher",
+      "than",
+      "proposed",
+      "repayment",
+      "amount"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ from _ where _ is not null and _"
+  },
+  {
+    "question": "Get count of loans that are overdue and have early repayment fee applied",
+    "query": "SELECT COUNT(*) AS risky_loans FROM edoc_alf_new_data_loan__mnp WHERE total_amount_overdue > 0 AND early_repayment_fee > 0;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "1,0": "TEM",
+        "3,0": "TEM",
+        "7,0": "TEM"
+      },
+      "q_col_match": {
+        "2,0": "CEM",
+        "6,0": "CEM",
+        "9,0": "CEM",
+        "10,0": "CEM",
+        "11,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Get",
+      "count",
+      "of",
+      "loans",
+      "that",
+      "are",
+      "overdue",
+      "and",
+      "have",
+      "early",
+      "repayment",
+      "fee",
+      "applied"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select count ( _ ) from _ where _"
+  },
+  {
+    "question": "Show total amount overdue per loan product",
+    "query": "SELECT loan_product, SUM(total_amount_overdue) AS total_overdue FROM edoc_alf_new_data_loan__mnp GROUP BY loan_product ORDER BY total_overdue DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "5,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM",
+        "2,0": "CEM",
+        "3,0": "CEM",
+        "4,0": "CEM",
+        "6,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "total",
+      "amount",
+      "overdue",
+      "per",
+      "loan",
+      "product"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) from _ group by _ order by _ desc"
+  },
+  {
+    "question": "Find loans with overdue status but current interest still applied",
+    "query": "SELECT ld_code, current_interest, total_amount_overdue FROM edoc_alf_new_data_loan__mnp WHERE total_amount_overdue > 0 AND current_interest > 0;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "1,0": "TEM"
+      },
+      "q_col_match": {
+        "3,0": "CEM",
+        "4,0": "CEM",
+        "6,0": "CEM",
+        "7,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "loans",
+      "with",
+      "overdue",
+      "status",
+      "but",
+      "current",
+      "interest",
+      "still",
+      "applied"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ from _ where _"
+  },
+  {
+    "question": "Get the number of overdue loans grouped by repayment method",
+    "query": "SELECT debt_payment_method, COUNT(*) AS num_overdue FROM edoc_alf_new_data_loan__mnp WHERE total_amount_overdue > 0 GROUP BY debt_payment_method;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "5,0": "TEM"
+      },
+      "q_col_match": {
+        "2,0": "CEM",
+        "3,0": "CEM",
+        "4,0": "CEM",
+        "8,0": "CEM",
+        "9,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Get",
+      "the",
+      "number",
+      "of",
+      "overdue",
+      "loans",
+      "grouped",
+      "by",
+      "repayment",
+      "method"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) from _ where _ group by _"
+  },
+  {
+    "question": "Find customers with overdue amounts above 5 million but no repayment proposed",
+    "query": "SELECT customer_id, total_amount_overdue FROM edoc_alf_new_data_loan__mnp WHERE total_amount_overdue > 5000000 AND amount_proposed_to_repay IS NULL;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "3,0": "CEM",
+        "9,0": "CEM",
+        "10,0": "CEM",
+        "11,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "customers",
+      "with",
+      "overdue",
+      "amounts",
+      "above",
+      "5",
+      "million",
+      "but",
+      "no",
+      "repayment",
+      "proposed"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ from _ where _ is null"
+  },
+  {
+    "question": "Get average overdue days by loan product",
+    "query": "SELECT loan_product, AVG(out_of_date) AS avg_delay FROM edoc_alf_new_data_loan__mnp WHERE out_of_date IS NOT NULL GROUP BY loan_product;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "5,0": "TEM"
+      },
+      "q_col_match": {
+        "2,0": "CEM",
+        "6,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Get",
+      "average",
+      "overdue",
+      "days",
+      "by",
+      "loan",
+      "product"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , avg ( _ ) from _ where _ is not null group by _"
+  },
+  {
+    "question": "Show confirmed loans that are overdue and have early repayment fees",
+    "query": "SELECT ld_code, current_outstanding_balance, early_repayment_fee FROM edoc_alf_new_data_loan__mnp WHERE ld_confirm = 'YES' AND total_amount_overdue > 0 AND early_repayment_fee > 0;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "2,0": "TEM",
+        "6,0": "TEM"
+      },
+      "q_col_match": {
+        "5,0": "CEM",
+        "8,0": "CEM",
+        "9,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "confirmed",
+      "loans",
+      "that",
+      "are",
+      "overdue",
+      "and",
+      "have",
+      "early",
+      "repayment",
+      "fees"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ from _ where _"
+  },
+  {
+    "question": "Find loan applications with both overdue and early repayment fee marked as 'QD'",
+    "query": "SELECT ld_code, total_amount_overdue, early_repayment_fee_qd FROM edoc_alf_new_data_loan__mnp WHERE total_amount_overdue > 0 AND early_repayment_fee_qd > 0;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "1,0": "TEM",
+        "6,0": "TEM"
+      },
+      "q_col_match": {
+        "5,0": "CEM",
+        "7,0": "CEM",
+        "8,0": "CEM",
+        "9,0": "CEM",
+        "11,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "loan",
+      "applications",
+      "with",
+      "both",
+      "overdue",
+      "and",
+      "early",
+      "repayment",
+      "fee",
+      "marked",
+      "as",
+      "'QD'"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ from _ where _"
+  },
+  {
+    "question": "Find the top 10 transactions with the highest local currency amount",
+    "query": "SELECT stmt_entry_id, our_reference, amt_lcy, booking_date FROM t24_stmt_entry__fa ORDER BY amt_lcy DESC LIMIT 10;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "9,0": "CEM",
+        "10,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "the",
+      "top",
+      "10",
+      "transactions",
+      "with",
+      "the",
+      "highest",
+      "local",
+      "currency",
+      "amount"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ from _ order by _ desc limit _"
+  },
+  {
+    "question": "Show the number of transactions per day in the current month",
+    "query": "SELECT booking_date, COUNT(*) AS transaction_count FROM t24_stmt_entry__fa WHERE strftime('%m', booking_date) = strftime('%m', 'now') GROUP BY booking_date ORDER BY booking_date;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "7,0": "TEM"
+      },
+      "q_col_match": {
+        "2,0": "CEM",
+        "3,0": "CEM",
+        "5,0": "CEM",
+        "6,0": "CEM",
+        "9,0": "CEM",
+        "10,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "the",
+      "number",
+      "of",
+      "transactions",
+      "per",
+      "day",
+      "in",
+      "the",
+      "current",
+      "month"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) from _ where strftime ( _ ) = strftime ( _ ) group by _ order by _ asc"
+  },
+  {
+    "question": "Get the total transaction amount in local currency by transaction code",
+    "query": "SELECT transaction_code, SUM(amt_lcy) AS total_amount FROM t24_stmt_entry__fa GROUP BY transaction_code ORDER BY total_amount DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "5,0": "TEM"
+      },
+      "q_col_match": {
+        "2,0": "CEM",
+        "3,0": "CEM",
+        "4,0": "CEM",
+        "7,0": "CEM",
+        "9,0": "CEM",
+        "10,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Get",
+      "the",
+      "total",
+      "transaction",
+      "amount",
+      "in",
+      "local",
+      "currency",
+      "by",
+      "transaction",
+      "code"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) from _ group by _ order by _ desc"
+  },
+  {
+    "question": "Find the average transaction amount for each day in the past week",
+    "query": "SELECT booking_date, AVG(amt_lcy) AS avg_transaction_amount FROM t24_stmt_entry__fa WHERE booking_date >= date('now', '-7 days') GROUP BY booking_date ORDER BY booking_date;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "8,0": "TEM"
+      },
+      "q_col_match": {
+        "3,0": "CEM",
+        "4,0": "CEM",
+        "5,0": "CEM",
+        "7,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "the",
+      "average",
+      "transaction",
+      "amount",
+      "for",
+      "each",
+      "day",
+      "in",
+      "the",
+      "past",
+      "week"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , avg ( _ ) from _ where _ >= date ( _ ) group by _ order by _ asc"
+  },
+  {
+    "question": "Show transaction codes with more than 100 transactions this month",
+    "query": "SELECT transaction_code, COUNT(*) AS txn_count FROM t24_stmt_entry__fa WHERE strftime('%m', booking_date) = strftime('%m', 'now')   AND strftime('%Y', booking_date) = strftime('%Y', 'now') GROUP BY transaction_code HAVING COUNT(*) > 100;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "1,0": "CEM",
+        "9,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "transaction",
+      "codes",
+      "with",
+      "more",
+      "than",
+      "100",
+      "transactions",
+      "this",
+      "month"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) from _ where strftime ( _ ) = strftime ( _ ) and strftime ( _ ) = strftime ( _ ) group by _ having count ( _ ) > _"
+  },
+  {
+    "question": "List transactions that occurred on weekends",
+    "query": "SELECT stmt_entry_id, booking_date, amt_lcy FROM t24_stmt_entry__fa WHERE strftime('%w', booking_date) IN ('0', '6');",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "4,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "List",
+      "transactions",
+      "that",
+      "occurred",
+      "on",
+      "weekends"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ from _ where strftime ( _ ) in ( _ )"
+  },
+  {
+    "question": "Calculate monthly total transaction amount for the current year",
+    "query": "SELECT strftime('%m', booking_date) AS month, SUM(amt_lcy) AS monthly_total FROM t24_stmt_entry__fa WHERE strftime('%Y', booking_date) = strftime('%Y', 'now') GROUP BY month ORDER BY month;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "2,0": "CEM",
+        "3,0": "CEM",
+        "4,0": "CEM",
+        "5,0": "CEM",
+        "7,0": "CEM",
+        "8,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Calculate",
+      "monthly",
+      "total",
+      "transaction",
+      "amount",
+      "for",
+      "the",
+      "current",
+      "year"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select strftime ( _ ) , sum ( _ ) from _ where strftime ( _ ) = strftime ( _ ) group by _ order by _ asc"
+  },
+  {
+    "question": "Find the earliest and latest transaction dates in the system",
+    "query": "SELECT MIN(booking_date) AS earliest, MAX(booking_date) AS latest FROM t24_stmt_entry__fa;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "3,0": "TEM",
+        "7,0": "TEM"
+      },
+      "q_col_match": {
+        "5,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "the",
+      "earliest",
+      "and",
+      "latest",
+      "transaction",
+      "dates",
+      "in",
+      "the",
+      "system"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select min ( _ ) , max ( _ ) from _"
+  },
+  {
+    "question": "Identify transactions above 100 million VND in the last 30 days",
+    "query": "SELECT stmt_entry_id, our_reference, amt_lcy, booking_date FROM t24_stmt_entry__fa WHERE booking_date >= date('now', '-30 days') AND amt_lcy > 100000000;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "6,0": "TEM"
+      },
+      "q_col_match": {
+        "8,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Identify",
+      "transactions",
+      "above",
+      "100",
+      "million",
+      "VND",
+      "in",
+      "the",
+      "last",
+      "30",
+      "days"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ from _ where _ >= date ( _ ) and _"
+  },
+  {
+    "question": "Count number of unique transaction codes used in the last 3 months",
+    "query": "SELECT COUNT(DISTINCT transaction_code) AS unique_txn_codes FROM t24_stmt_entry__fa WHERE booking_date >= date('now', '-3 months');",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "0,0": "TEM",
+        "7,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM",
+        "2,0": "CEM",
+        "4,0": "CEM",
+        "9,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Count",
+      "number",
+      "of",
+      "unique",
+      "transaction",
+      "codes",
+      "used",
+      "in",
+      "the",
+      "last",
+      "3",
+      "months"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select count ( distinct _ ) from _ where _ >= date ( _ )"
+  },
+  {
+    "question": "List the total outstanding loan balance by loan product",
+    "query": "SELECT loan_product, SUM(current_outstanding_balance) AS total_outstanding FROM edoc_alf_new_data_loan__mnp GROUP BY loan_product ORDER BY total_outstanding DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "4,0": "TEM",
+        "7,0": "TEM"
+      },
+      "q_col_match": {
+        "2,0": "CEM",
+        "3,0": "CEM",
+        "5,0": "CEM",
+        "8,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "List",
+      "the",
+      "total",
+      "outstanding",
+      "loan",
+      "balance",
+      "by",
+      "loan",
+      "product"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) from _ group by _ order by _ desc"
+  },
+  {
+    "question": "Find the average early repayment fee for each loan product",
+    "query": "SELECT loan_product, AVG(early_repayment_fee) AS avg_fee FROM edoc_alf_new_data_loan__mnp GROUP BY loan_product;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "8,0": "TEM"
+      },
+      "q_col_match": {
+        "3,0": "CEM",
+        "4,0": "CEM",
+        "5,0": "CEM",
+        "6,0": "CEM",
+        "9,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "the",
+      "average",
+      "early",
+      "repayment",
+      "fee",
+      "for",
+      "each",
+      "loan",
+      "product"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , avg ( _ ) from _ group by _"
+  },
+  {
+    "question": "Get total amount due for collection per loan product",
+    "query": "SELECT loan_product, SUM(total_amount_due_coll) AS total_due FROM edoc_alf_new_data_loan__mnp GROUP BY loan_product ORDER BY total_due DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "7,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM",
+        "2,0": "CEM",
+        "3,0": "CEM",
+        "4,0": "CEM",
+        "5,0": "CEM",
+        "6,0": "CEM",
+        "8,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Get",
+      "total",
+      "amount",
+      "due",
+      "for",
+      "collection",
+      "per",
+      "loan",
+      "product"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) from _ group by _ order by _ desc"
+  },
+  {
+    "question": "Show number of active loan contracts by loan product",
+    "query": "SELECT loan_product, COUNT(*) AS num_contracts FROM edoc_alf_new_data_loan__mnp WHERE current_outstanding_balance > 0 GROUP BY loan_product ORDER BY num_contracts DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "4,0": "TEM",
+        "7,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM",
+        "2,0": "CEM",
+        "8,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "number",
+      "of",
+      "active",
+      "loan",
+      "contracts",
+      "by",
+      "loan",
+      "product"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) from _ where _ group by _ order by _ desc"
+  },
+  {
+    "question": "Find total overdue loan amount grouped by loan product",
+    "query": "SELECT loan_product, SUM(total_amount_overdue) AS total_overdue FROM edoc_alf_new_data_loan__mnp GROUP BY loan_product ORDER BY total_overdue DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "3,0": "TEM",
+        "7,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM",
+        "2,0": "CEM",
+        "4,0": "CEM",
+        "8,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "total",
+      "overdue",
+      "loan",
+      "amount",
+      "grouped",
+      "by",
+      "loan",
+      "product"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) from _ group by _ order by _ desc"
+  },
+  {
+    "question": "Show average interest rate per loan product",
+    "query": "SELECT loan_product, AVG(current_interest) AS avg_interest FROM edoc_alf_new_data_loan__mnp GROUP BY loan_product;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "5,0": "TEM"
+      },
+      "q_col_match": {
+        "2,0": "CEM",
+        "3,0": "CEM",
+        "4,0": "CEM",
+        "6,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "average",
+      "interest",
+      "rate",
+      "per",
+      "loan",
+      "product"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , avg ( _ ) from _ group by _"
+  },
+  {
+    "question": "Rank loan products by total confirmed disbursed value",
+    "query": "SELECT loan_product, COUNT(*) AS confirmed_loans FROM edoc_alf_new_data_loan__mnp WHERE ld_confirm = 'YES' GROUP BY loan_product ORDER BY confirmed_loans DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "1,0": "TEM"
+      },
+      "q_col_match": {
+        "4,0": "CEM",
+        "7,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Rank",
+      "loan",
+      "products",
+      "by",
+      "total",
+      "confirmed",
+      "disbursed",
+      "value"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) from _ where _ group by _ order by _ desc"
+  },
+  {
+    "question": "Get average proposed repayment amount by loan product",
+    "query": "SELECT loan_product, AVG(amount_proposed_to_repay) AS avg_proposed FROM edoc_alf_new_data_loan__mnp WHERE amount_proposed_to_repay IS NOT NULL GROUP BY loan_product;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "6,0": "TEM"
+      },
+      "q_col_match": {
+        "2,0": "CEM",
+        "3,0": "CEM",
+        "4,0": "CEM",
+        "7,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Get",
+      "average",
+      "proposed",
+      "repayment",
+      "amount",
+      "by",
+      "loan",
+      "product"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , avg ( _ ) from _ where _ is not null group by _"
+  },
+  {
+    "question": "Show total statement debt amount by year and loan product",
+    "query": "SELECT year, loan_product, SUM(total_stmt_amt_lcy) AS yearly_total FROM TBL_LD GROUP BY year, loan_product ORDER BY year, yearly_total DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "7,0": "TEM",
+        "8,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM",
+        "3,0": "CEM",
+        "4,0": "CEM",
+        "6,0": "CEM",
+        "9,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "total",
+      "statement",
+      "debt",
+      "amount",
+      "by",
+      "year",
+      "and",
+      "loan",
+      "product"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) from _ group by _ order by _ , yearly_total desc"
+  },
+  {
+    "question": "Find loan products with average overdue period above 60 days",
+    "query": "SELECT loan_product, AVG(out_of_date) AS avg_overdue FROM edoc_alf_new_data_loan__mnp WHERE out_of_date IS NOT NULL GROUP BY loan_product HAVING AVG(out_of_date) > 60;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "1,0": "TEM"
+      },
+      "q_col_match": {
+        "5,0": "CEM",
+        "6,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "loan",
+      "products",
+      "with",
+      "average",
+      "overdue",
+      "period",
+      "above",
+      "60",
+      "days"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , avg ( _ ) from _ where _ is not null group by _ having avg ( _ ) > _"
+  },
+  {
+    "question": "Find customers with more than 3 loan or deposit contracts",
+    "query": "SELECT customer_id, COUNT(contract_no_) AS contract_count FROM t24_ld_loans_and_depo__mnp GROUP BY customer_id HAVING COUNT(contract_no_) > 3;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "6,0": "TEM"
+      },
+      "q_col_match": {
+        "7,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "customers",
+      "with",
+      "more",
+      "than",
+      "3",
+      "loan",
+      "or",
+      "deposit",
+      "contracts"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) from _ group by _ having count ( _ ) > _"
+  },
+  {
+    "question": "List customers whose total debt is below 5 million VND",
+    "query": "SELECT customer_id, SUM(total_stmt_amt_lcy) AS total_debt FROM TBL_LD GROUP BY customer_id HAVING SUM(total_stmt_amt_lcy) < 5000000;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "3,0": "CEM",
+        "4,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "List",
+      "customers",
+      "whose",
+      "total",
+      "debt",
+      "is",
+      "below",
+      "5",
+      "million",
+      "VND"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) from _ group by _ having sum ( _ ) < _"
+  },
+  {
+    "question": "Show customer segments with average debt amount above 100 million VND",
+    "query": "SELECT segment, AVG(total_stmt_amt_lcy) AS avg_debt FROM TBL_LD GROUP BY segment HAVING AVG(total_stmt_amt_lcy) > 100000000;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "1,0": "TEM"
+      },
+      "q_col_match": {
+        "5,0": "CEM",
+        "6,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "customer",
+      "segments",
+      "with",
+      "average",
+      "debt",
+      "amount",
+      "above",
+      "100",
+      "million",
+      "VND"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , avg ( _ ) from _ group by _ having avg ( _ ) > _"
+  },
+  {
+    "question": "Find customers with overdue loans and no early repayment activity",
+    "query": "SELECT customer_id FROM edoc_alf_new_data_loan__mnp WHERE total_amount_overdue > 0 AND early_repayment_fee = 0 GROUP BY customer_id;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "4,0": "TEM",
+        "5,0": "TEM"
+      },
+      "q_col_match": {
+        "3,0": "CEM",
+        "6,0": "CEM",
+        "7,0": "CEM",
+        "8,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "customers",
+      "with",
+      "overdue",
+      "loans",
+      "and",
+      "no",
+      "early",
+      "repayment",
+      "activity"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ from _ where _ group by _"
+  },
+  {
+    "question": "Identify customers with frequent large-value transactions",
+    "query": "SELECT our_reference, COUNT(*) AS txn_count FROM t24_stmt_entry__fa WHERE amt_lcy > 100000000 GROUP BY our_reference HAVING COUNT(*) > 5;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {}
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Identify",
+      "customers",
+      "with",
+      "frequent",
+      "large-value",
+      "transactions"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) from _ where _ group by _ having count ( _ ) > _"
+  },
+  {
+    "question": "Get average number of contracts per customer by segment",
+    "query": "SELECT c.segment, AVG(sub.contract_count) AS avg_contracts FROM t24_customer__s2 c JOIN (SELECT customer_id, COUNT(*) AS contract_count FROM t24_ld_loans_and_depo__mnp GROUP BY customer_id) sub ON c.customer_code = sub.customer_id GROUP BY c.segment;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "6,0": "TEM"
+      },
+      "q_col_match": {
+        "2,0": "CEM",
+        "3,0": "CEM",
+        "5,0": "CEM",
+        "8,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Get",
+      "average",
+      "number",
+      "of",
+      "contracts",
+      "per",
+      "customer",
+      "by",
+      "segment"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , avg ( sub.contract_count ) from _ join ( select _ , count ( _ ) from _ group by _ ) sub on _ = sub.customer_id group by _"
+  },
+  {
+    "question": "Count number of active insurance agents per region",
+    "query": "SELECT region, COUNT(*) AS active_agents FROM banca_aia_agent_info__mnp WHERE status = 'ACTIVE' GROUP BY region;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "0,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM",
+        "2,0": "CEM",
+        "6,0": "CEM",
+        "7,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Count",
+      "number",
+      "of",
+      "active",
+      "insurance",
+      "agents",
+      "per",
+      "region"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) from _ where _ group by _"
+  },
+  {
+    "question": "List branch names with the highest number of active bancassurance agents",
+    "query": "SELECT branch_name, COUNT(*) AS num_agents FROM banca_aia_agent_info__mnp WHERE status = 'ACTIVE' GROUP BY branch_name ORDER BY num_agents DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "1,0": "CEM",
+        "6,0": "CEM",
+        "7,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "List",
+      "branch",
+      "names",
+      "with",
+      "the",
+      "highest",
+      "number",
+      "of",
+      "active",
+      "bancassurance",
+      "agents"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) from _ where _ group by _ order by _ desc"
+  },
+  {
+    "question": "Find number of agents whose first contract started in 2024 by branch",
+    "query": "SELECT branch_name, COUNT(*) AS new_agents_2024 FROM banca_aia_agent_info__mnp WHERE EXTRACT(YEAR FROM first_contract_date) = 2024 GROUP BY branch_name;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "8,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM",
+        "2,0": "CEM",
+        "5,0": "CEM",
+        "6,0": "CEM",
+        "11,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [
+        "9,0"
+      ],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "number",
+      "of",
+      "agents",
+      "whose",
+      "first",
+      "contract",
+      "started",
+      "in",
+      "2024",
+      "by",
+      "branch"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) from _ where extract ( _ from _ ) = _ group by _"
+  },
+  {
+    "question": "Show branches with the highest number of agents on leave",
+    "query": "SELECT branch_name, COUNT(*) AS on_leave_count FROM banca_aia_agent_info__mnp WHERE on_leave_from IS NOT NULL GROUP BY branch_name ORDER BY on_leave_count DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "5,0": "CEM",
+        "6,0": "CEM",
+        "8,0": "CEM",
+        "9,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "branches",
+      "with",
+      "the",
+      "highest",
+      "number",
+      "of",
+      "agents",
+      "on",
+      "leave"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) from _ where _ is not null group by _ order by _ desc"
+  },
+  {
+    "question": "List regions with more than 10 terminated bancassurance agents",
+    "query": "SELECT region, COUNT(*) AS terminated_count FROM banca_aia_agent_info__mnp WHERE terminate_date IS NOT NULL GROUP BY region HAVING COUNT(*) > 10;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {}
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "List",
+      "regions",
+      "with",
+      "more",
+      "than",
+      "10",
+      "terminated",
+      "bancassurance",
+      "agents"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) from _ where _ is not null group by _ having count ( _ ) > _"
+  },
+  {
+    "question": "Count number of agents by bank_role in each region",
+    "query": "SELECT region, bank_role, COUNT(*) AS num_agents FROM banca_aia_agent_info__mnp GROUP BY region, bank_role;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "0,0": "TEM",
+        "6,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM",
+        "2,0": "CEM",
+        "5,0": "CEM",
+        "8,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Count",
+      "number",
+      "of",
+      "agents",
+      "by",
+      "bank_role",
+      "in",
+      "each",
+      "region"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) from _ group by _"
+  },
+  {
+    "question": "List branches with agents having the longest tenure (earliest contract dates)",
+    "query": "SELECT branch_name, MIN(first_contract_date) AS earliest_start FROM banca_aia_agent_info__mnp GROUP BY branch_name ORDER BY earliest_start ASC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "9,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "List",
+      "branches",
+      "with",
+      "agents",
+      "having",
+      "the",
+      "longest",
+      "tenure",
+      "(earliest",
+      "contract",
+      "dates)"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , min ( _ ) from _ group by _ order by _ asc"
+  },
+  {
+    "question": "Find number of bancassurance agents by gender and region",
+    "query": "SELECT region, gender, COUNT(*) AS agent_count FROM banca_aia_agent_info__mnp GROUP BY region, gender;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "7,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM",
+        "2,0": "CEM",
+        "6,0": "CEM",
+        "8,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "number",
+      "of",
+      "bancassurance",
+      "agents",
+      "by",
+      "gender",
+      "and",
+      "region"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) from _ group by _"
+  },
+  {
+    "question": "Show average number of agents per branch in each region",
+    "query": "SELECT region, COUNT(*) / COUNT(DISTINCT branch_name) AS avg_agents_per_branch FROM banca_aia_agent_info__mnp GROUP BY region;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "7,0": "TEM"
+      },
+      "q_col_match": {
+        "2,0": "CEM",
+        "3,0": "CEM",
+        "5,0": "CEM",
+        "6,0": "CEM",
+        "9,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "average",
+      "number",
+      "of",
+      "agents",
+      "per",
+      "branch",
+      "in",
+      "each",
+      "region"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) / count ( distinct _ ) from _ group by _"
+  },
+  {
+    "question": "List agents who returned from leave in the last 30 days",
+    "query": "SELECT producer_code, producer_name, branch_name, on_leave_to FROM banca_aia_agent_info__mnp WHERE on_leave_to >= date('now', '-30 days');",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "6,0": "TEM"
+      },
+      "q_col_match": {
+        "4,0": "CEM",
+        "5,0": "CEM",
+        "8,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "List",
+      "agents",
+      "who",
+      "returned",
+      "from",
+      "leave",
+      "in",
+      "the",
+      "last",
+      "30",
+      "days"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ from _ where _ >= date ( _ )"
+  },
+  {
+    "question": "Find total number of loans currently in debt collection process",
+    "query": "SELECT COUNT(*) AS num_in_collection FROM edoc_alf_new_data_loan__mnp WHERE debt_collection_account IS NOT NULL;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "4,0": "TEM",
+        "6,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM",
+        "2,0": "CEM",
+        "3,0": "CEM",
+        "7,0": "CEM",
+        "8,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "total",
+      "number",
+      "of",
+      "loans",
+      "currently",
+      "in",
+      "debt",
+      "collection",
+      "process"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select count ( _ ) from _ where _ is not null"
+  },
+  {
+    "question": "Get the top 5 loan contracts with the highest overdue amount",
+    "query": "SELECT ld_code, total_amount_overdue FROM edoc_alf_new_data_loan__mnp ORDER BY total_amount_overdue DESC LIMIT 5;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "4,0": "TEM"
+      },
+      "q_col_match": {
+        "9,0": "CEM",
+        "10,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Get",
+      "the",
+      "top",
+      "5",
+      "loan",
+      "contracts",
+      "with",
+      "the",
+      "highest",
+      "overdue",
+      "amount"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ from _ order by _ desc limit _"
+  },
+  {
+    "question": "Show number of overdue loans per debt collection reason",
+    "query": "SELECT reasons_for_debt_collect, COUNT(*) AS num_cases FROM edoc_alf_new_data_loan__mnp WHERE total_amount_overdue > 0 GROUP BY reasons_for_debt_collect;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "4,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM",
+        "2,0": "CEM",
+        "3,0": "CEM",
+        "5,0": "CEM",
+        "6,0": "CEM",
+        "7,0": "CEM",
+        "8,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "number",
+      "of",
+      "overdue",
+      "loans",
+      "per",
+      "debt",
+      "collection",
+      "reason"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) from _ where _ group by _"
+  },
+  {
+    "question": "Find total overdue amount grouped by loan product",
+    "query": "SELECT loan_product, SUM(total_amount_overdue) AS total_overdue FROM edoc_alf_new_data_loan__mnp GROUP BY loan_product ORDER BY total_overdue DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "6,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM",
+        "2,0": "CEM",
+        "3,0": "CEM",
+        "7,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "total",
+      "overdue",
+      "amount",
+      "grouped",
+      "by",
+      "loan",
+      "product"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) from _ group by _ order by _ desc"
+  },
+  {
+    "question": "Count number of loans marked as PD confirmed",
+    "query": "SELECT COUNT(*) AS pd_confirmed_loans FROM edoc_alf_new_data_loan__mnp WHERE pd_confirm = 'YES';",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "0,0": "TEM",
+        "3,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM",
+        "2,0": "CEM",
+        "5,0": "CEM",
+        "6,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Count",
+      "number",
+      "of",
+      "loans",
+      "marked",
+      "as",
+      "PD",
+      "confirmed"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select count ( _ ) from _ where _"
+  },
+  {
+    "question": "Show average overdue amount by customer segment",
+    "query": "SELECT segment, AVG(total_stmt_amt_lcy) AS avg_overdue FROM TBL_LD GROUP BY segment;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "5,0": "TEM"
+      },
+      "q_col_match": {
+        "2,0": "CEM",
+        "3,0": "CEM",
+        "6,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "average",
+      "overdue",
+      "amount",
+      "by",
+      "customer",
+      "segment"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , avg ( _ ) from _ group by _"
+  },
+  {
+    "question": "List customers with multiple confirmed PD loans",
+    "query": "SELECT customer_id, COUNT(*) AS pd_loan_count FROM edoc_alf_new_data_loan__mnp WHERE pd_confirm = 'YES' GROUP BY customer_id HAVING COUNT(*) > 1;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "6,0": "TEM"
+      },
+      "q_col_match": {
+        "5,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "List",
+      "customers",
+      "with",
+      "multiple",
+      "confirmed",
+      "PD",
+      "loans"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) from _ where _ group by _ having count ( _ ) > _"
+  },
+  {
+    "question": "Find loans with both overdue and current interest applied",
+    "query": "SELECT ld_code, customer_id, total_amount_overdue, current_interest FROM edoc_alf_new_data_loan__mnp WHERE total_amount_overdue > 0 AND current_interest > 0;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "1,0": "TEM",
+        "5,0": "TEM"
+      },
+      "q_col_match": {
+        "4,0": "CEM",
+        "6,0": "CEM",
+        "7,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "loans",
+      "with",
+      "both",
+      "overdue",
+      "and",
+      "current",
+      "interest",
+      "applied"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ from _ where _"
+  },
+  {
+    "question": "List segments with the highest number of customers holding loan contracts",
+    "query": "SELECT c.segment, COUNT(DISTINCT l.customer_id) AS customer_count FROM t24_customer__s2 c JOIN t24_ld_loans_and_depo__mnp l ON c.customer_code = l.customer_id GROUP BY c.segment ORDER BY customer_count DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "9,0": "TEM"
+      },
+      "q_col_match": {
+        "5,0": "CEM",
+        "6,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "List",
+      "segments",
+      "with",
+      "the",
+      "highest",
+      "number",
+      "of",
+      "customers",
+      "holding",
+      "loan",
+      "contracts"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( distinct _ ) from _ group by _ order by _ desc"
+  },
+  {
+    "question": "Show average total debt per customer by segment",
+    "query": "SELECT segment, AVG(total_stmt_amt_lcy) AS avg_debt FROM TBL_LD GROUP BY segment ORDER BY avg_debt DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "5,0": "TEM"
+      },
+      "q_col_match": {
+        "2,0": "CEM",
+        "3,0": "CEM",
+        "4,0": "CEM",
+        "7,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "average",
+      "total",
+      "debt",
+      "per",
+      "customer",
+      "by",
+      "segment"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , avg ( _ ) from _ group by _ order by _ desc"
+  },
+  {
+    "question": "Find 'Mass Affluent' customers with total debt over 1 billion VND",
+    "query": "SELECT customer_id, total_stmt_amt_lcy FROM TBL_LD WHERE segment = 'Mass Affluent' AND total_stmt_amt_lcy > 1000000000;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "5,0": "CEM",
+        "6,0": "CEM",
+        "7,0": "CEM",
+        "8,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "'Mass",
+      "Affluent'",
+      "customers",
+      "with",
+      "total",
+      "debt",
+      "over",
+      "1",
+      "billion",
+      "VND"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ from _ where _"
+  },
+  {
+    "question": "Count number of loan contracts per customer for each segment",
+    "query": "SELECT c.segment, l.customer_id, COUNT(*) AS contract_count FROM t24_customer__s2 c JOIN t24_ld_loans_and_depo__mnp l ON c.customer_code = l.customer_id GROUP BY c.segment, l.customer_id;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "0,0": "TEM",
+        "3,0": "TEM",
+        "6,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM",
+        "2,0": "CEM",
+        "5,0": "CEM",
+        "7,0": "CEM",
+        "9,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Count",
+      "number",
+      "of",
+      "loan",
+      "contracts",
+      "per",
+      "customer",
+      "for",
+      "each",
+      "segment"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) from _ group by _"
+  },
+  {
+    "question": "Find customers with more than 3 active loan contracts",
+    "query": "SELECT customer_id, COUNT(*) AS active_contracts FROM t24_ld_loans_and_depo__mnp GROUP BY customer_id HAVING COUNT(*) > 3;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "7,0": "TEM"
+      },
+      "q_col_match": {}
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "customers",
+      "with",
+      "more",
+      "than",
+      "3",
+      "active",
+      "loan",
+      "contracts"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) from _ group by _ having count ( _ ) > _"
+  },
+  {
+    "question": "Get total debt by year and segment",
+    "query": "SELECT year, segment, SUM(total_stmt_amt_lcy) AS yearly_total FROM TBL_LD GROUP BY year, segment ORDER BY year DESC, yearly_total DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "5,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM",
+        "2,0": "CEM",
+        "4,0": "CEM",
+        "6,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Get",
+      "total",
+      "debt",
+      "by",
+      "year",
+      "and",
+      "segment"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) from _ group by _ order by _ desc , yearly_total desc"
+  },
+  {
+    "question": "List segments with highest average debt per contract",
+    "query": "SELECT segment, AVG(total_stmt_amt_lcy) AS avg_per_contract FROM TBL_LD GROUP BY segment ORDER BY avg_per_contract DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "5,0": "CEM",
+        "6,0": "CEM",
+        "7,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "List",
+      "segments",
+      "with",
+      "highest",
+      "average",
+      "debt",
+      "per",
+      "contract"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , avg ( _ ) from _ group by _ order by _ desc"
+  },
+  {
+    "question": "Find customers who signed loan contracts this year",
+    "query": "SELECT customer_id, contract_no_, value_date FROM t24_ld_loans_and_depo__mnp WHERE EXTRACT(YEAR FROM value_date) = EXTRACT(YEAR FROM CURRENT_DATE);",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "4,0": "TEM"
+      },
+      "q_col_match": {
+        "7,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "customers",
+      "who",
+      "signed",
+      "loan",
+      "contracts",
+      "this",
+      "year"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ from _ where extract ( _ from _ ) = extract ( _ from current_date )"
+  },
+  {
+    "question": "Show total debt per customer with more than one loan contract",
+    "query": "SELECT customer_id, SUM(total_stmt_amt_lcy) AS total_debt FROM TBL_LD GROUP BY customer_id HAVING COUNT(contract_no_) > 1;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "4,0": "TEM",
+        "9,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM",
+        "2,0": "CEM",
+        "3,0": "CEM",
+        "10,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "total",
+      "debt",
+      "per",
+      "customer",
+      "with",
+      "more",
+      "than",
+      "one",
+      "loan",
+      "contract"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) from _ group by _ having count ( _ ) > _"
+  },
+  {
+    "question": "Rank customers by total debt across all segments",
+    "query": "SELECT customer_id, segment, SUM(total_stmt_amt_lcy) AS total_debt FROM TBL_LD GROUP BY customer_id, segment ORDER BY total_debt DESC LIMIT 10;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "3,0": "CEM",
+        "4,0": "CEM",
+        "6,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Rank",
+      "customers",
+      "by",
+      "total",
+      "debt",
+      "across",
+      "all",
+      "segments"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) from _ group by _ order by _ desc limit _"
+  },
+  {
+    "question": "List customers with total loan balance above 2 billion VND",
+    "query": "SELECT customer_id, SUM(total_stmt_amt_lcy) AS total_debt FROM TBL_LD GROUP BY customer_id HAVING SUM(total_stmt_amt_lcy) > 2000000000;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "4,0": "TEM",
+        "7,0": "TEM"
+      },
+      "q_col_match": {
+        "3,0": "CEM",
+        "5,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "List",
+      "customers",
+      "with",
+      "total",
+      "loan",
+      "balance",
+      "above",
+      "2",
+      "billion",
+      "VND"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) from _ group by _ having sum ( _ ) > _"
+  },
+  {
+    "question": "Show total loan balance by customer segment",
+    "query": "SELECT segment, SUM(total_stmt_amt_lcy) AS total_balance FROM TBL_LD GROUP BY segment ORDER BY total_balance DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "2,0": "TEM",
+        "5,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM",
+        "3,0": "CEM",
+        "6,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "total",
+      "loan",
+      "balance",
+      "by",
+      "customer",
+      "segment"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) from _ group by _ order by _ desc"
+  },
+  {
+    "question": "Find average loan value per contract by segment",
+    "query": "SELECT segment, AVG(total_stmt_amt_lcy) AS avg_per_contract FROM TBL_LD GROUP BY segment ORDER BY avg_per_contract DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "2,0": "TEM"
+      },
+      "q_col_match": {
+        "3,0": "CEM",
+        "4,0": "CEM",
+        "5,0": "CEM",
+        "7,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "average",
+      "loan",
+      "value",
+      "per",
+      "contract",
+      "by",
+      "segment"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , avg ( _ ) from _ group by _ order by _ desc"
+  },
+  {
+    "question": "Identify customers with more than 3 active contracts",
+    "query": "SELECT customer_id, COUNT(*) AS num_contracts FROM TBL_LD GROUP BY customer_id HAVING COUNT(*) > 3;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {}
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Identify",
+      "customers",
+      "with",
+      "more",
+      "than",
+      "3",
+      "active",
+      "contracts"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) from _ group by _ having count ( _ ) > _"
+  },
+  {
+    "question": "Show total loan balance per year",
+    "query": "SELECT year, SUM(total_stmt_amt_lcy) AS yearly_total FROM TBL_LD GROUP BY year ORDER BY year;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "2,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM",
+        "3,0": "CEM",
+        "4,0": "CEM",
+        "5,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "total",
+      "loan",
+      "balance",
+      "per",
+      "year"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) from _ group by _ order by _ asc"
+  },
+  {
+    "question": "Find top 5 customers with highest loan balance in 2024",
+    "query": "SELECT customer_id, SUM(total_stmt_amt_lcy) AS total_2024 FROM TBL_LD WHERE year = 2024 GROUP BY customer_id ORDER BY total_2024 DESC LIMIT 5;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "6,0": "TEM",
+        "8,0": "TEM"
+      },
+      "q_col_match": {
+        "7,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [
+        "9,0"
+      ],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "top",
+      "5",
+      "customers",
+      "with",
+      "highest",
+      "loan",
+      "balance",
+      "in",
+      "2024"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) from _ where _ group by _ order by _ desc limit _"
+  },
+  {
+    "question": "List total loan balance by currency type",
+    "query": "SELECT currency, SUM(total_stmt_amt_lcy) AS total_balance FROM TBL_LD GROUP BY currency ORDER BY total_balance DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "2,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM",
+        "3,0": "CEM",
+        "5,0": "CEM",
+        "6,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "List",
+      "total",
+      "loan",
+      "balance",
+      "by",
+      "currency",
+      "type"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) from _ group by _ order by _ desc"
+  },
+  {
+    "question": "Compare average loan per contract between segments",
+    "query": "SELECT segment, AVG(total_stmt_amt_lcy) AS avg_loan FROM TBL_LD GROUP BY segment ORDER BY avg_loan DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "2,0": "TEM"
+      },
+      "q_col_match": {
+        "3,0": "CEM",
+        "4,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Compare",
+      "average",
+      "loan",
+      "per",
+      "contract",
+      "between",
+      "segments"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , avg ( _ ) from _ group by _ order by _ desc"
+  },
+  {
+    "question": "Find customers who received loans in more than 2 years",
+    "query": "SELECT customer_id, COUNT(DISTINCT year) AS active_years FROM TBL_LD GROUP BY customer_id HAVING COUNT(DISTINCT year) > 2;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "4,0": "TEM",
+        "5,0": "TEM",
+        "8,0": "TEM"
+      },
+      "q_col_match": {}
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "customers",
+      "who",
+      "received",
+      "loans",
+      "in",
+      "more",
+      "than",
+      "2",
+      "years"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( distinct _ ) from _ group by _ having count ( distinct _ ) > _"
+  },
+  {
+    "question": "Show total loan balance by branch code (co_code)",
+    "query": "SELECT co_code, SUM(total_stmt_amt_lcy) AS total_balance FROM TBL_LD GROUP BY co_code ORDER BY total_balance DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "2,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM",
+        "3,0": "CEM",
+        "5,0": "CEM",
+        "6,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "total",
+      "loan",
+      "balance",
+      "by",
+      "branch",
+      "code",
+      "(co_code)"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) from _ group by _ order by _ desc"
+  },
+  {
+    "question": "List all loans disbursed today",
+    "query": "SELECT customer_id, contract_no_, total_stmt_amt_lcy FROM TBL_LD WHERE date(year || '-' || month || '-' || day) = date('now');",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "2,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "List",
+      "all",
+      "loans",
+      "disbursed",
+      "today"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ from _ where date ( _ || _ || _ || _ || _ ) = date ( _ )"
+  },
+  {
+    "question": "Show total loan disbursement amount today",
+    "query": "SELECT SUM(total_stmt_amt_lcy) AS total_today FROM TBL_LD WHERE date(year || '-' || month || '-' || day) = date('now');",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "2,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM",
+        "4,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "total",
+      "loan",
+      "disbursement",
+      "amount",
+      "today"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select sum ( _ ) from _ where date ( _ || _ || _ || _ || _ ) = date ( _ )"
+  },
+  {
+    "question": "Count the number of loan contracts issued today",
+    "query": "SELECT COUNT(*) AS num_contracts FROM TBL_LD WHERE date(year || '-' || month || '-' || day) = date('now');",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "0,0": "TEM",
+        "4,0": "TEM"
+      },
+      "q_col_match": {
+        "2,0": "CEM",
+        "3,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Count",
+      "the",
+      "number",
+      "of",
+      "loan",
+      "contracts",
+      "issued",
+      "today"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select count ( _ ) from _ where date ( _ || _ || _ || _ || _ ) = date ( _ )"
+  },
+  {
+    "question": "Find average loan amount disbursed today",
+    "query": "SELECT AVG(total_stmt_amt_lcy) AS avg_loan_today FROM TBL_LD WHERE date(year || '-' || month || '-' || day) = date('now');",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "2,0": "TEM"
+      },
+      "q_col_match": {
+        "3,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "average",
+      "loan",
+      "amount",
+      "disbursed",
+      "today"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select avg ( _ ) from _ where date ( _ || _ || _ || _ || _ ) = date ( _ )"
+  },
+  {
+    "question": "List segments with loans disbursed today",
+    "query": "SELECT DISTINCT segment FROM TBL_LD WHERE date(year || '-' || month || '-' || day) = date('now');",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "3,0": "TEM"
+      },
+      "q_col_match": {}
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "List",
+      "segments",
+      "with",
+      "loans",
+      "disbursed",
+      "today"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select distinct _ from _ where date ( _ || _ || _ || _ || _ ) = date ( _ )"
+  },
+  {
+    "question": "Show loan disbursement per segment for today",
+    "query": "SELECT segment, SUM(total_stmt_amt_lcy) AS segment_total FROM TBL_LD WHERE date(year || '-' || month || '-' || day) = date('now') GROUP BY segment ORDER BY segment_total DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "1,0": "TEM"
+      },
+      "q_col_match": {
+        "3,0": "CEM",
+        "4,0": "CEM",
+        "5,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "loan",
+      "disbursement",
+      "per",
+      "segment",
+      "for",
+      "today"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) from _ where date ( _ || _ || _ || _ || _ ) = date ( _ ) group by _ order by _ desc"
+  },
+  {
+    "question": "List top 5 customers with highest loan disbursement today",
+    "query": "SELECT customer_id, SUM(total_stmt_amt_lcy) AS total_disbursed FROM TBL_LD WHERE date(year || '-' || month || '-' || day) = date('now') GROUP BY customer_id ORDER BY total_disbursed DESC LIMIT 5;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "6,0": "TEM"
+      },
+      "q_col_match": {}
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "List",
+      "top",
+      "5",
+      "customers",
+      "with",
+      "highest",
+      "loan",
+      "disbursement",
+      "today"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) from _ where date ( _ || _ || _ || _ || _ ) = date ( _ ) group by _ order by _ desc limit _"
+  },
+  {
+    "question": "Get number of loan contracts by currency today",
+    "query": "SELECT currency, COUNT(*) AS num_contracts FROM TBL_LD WHERE date(year || '-' || month || '-' || day) = date('now') GROUP BY currency;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "3,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM",
+        "2,0": "CEM",
+        "6,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Get",
+      "number",
+      "of",
+      "loan",
+      "contracts",
+      "by",
+      "currency",
+      "today"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) from _ where date ( _ || _ || _ || _ || _ ) = date ( _ ) group by _"
+  },
+  {
+    "question": "Show total disbursed loan amount by branch code today",
+    "query": "SELECT co_code, SUM(total_stmt_amt_lcy) AS total_branch_disbursed FROM TBL_LD WHERE date(year || '-' || month || '-' || day) = date('now') GROUP BY co_code ORDER BY total_branch_disbursed DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "3,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM",
+        "4,0": "CEM",
+        "6,0": "CEM",
+        "7,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "total",
+      "disbursed",
+      "loan",
+      "amount",
+      "by",
+      "branch",
+      "code",
+      "today"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) from _ where date ( _ || _ || _ || _ || _ ) = date ( _ ) group by _ order by _ desc"
+  },
+  {
+    "question": "Find loan contracts disbursed today with value over 1 billion VND",
+    "query": "SELECT contract_no_, customer_id, total_stmt_amt_lcy FROM TBL_LD WHERE total_stmt_amt_lcy > 1000000000 AND date(year || '-' || month || '-' || day) = date('now');",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "1,0": "TEM"
+      },
+      "q_col_match": {
+        "6,0": "CEM",
+        "7,0": "CEM",
+        "8,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "loan",
+      "contracts",
+      "disbursed",
+      "today",
+      "with",
+      "value",
+      "over",
+      "1",
+      "billion",
+      "VND"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ from _ where _ and date ( _ || _ || _ || _ || _ ) = date ( _ )"
+  },
+  {
+    "question": "Show total transaction amount for today",
+    "query": "SELECT SUM(amt_lcy) AS total_today FROM t24_stmt_entry__fa WHERE booking_date = DATE('now');",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "1,0": "CEM",
+        "2,0": "CEM",
+        "3,0": "CEM",
+        "4,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "total",
+      "transaction",
+      "amount",
+      "for",
+      "today"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select sum ( _ ) from _ where _ = date ( _ )"
+  },
+  {
+    "question": "List transaction codes with total amount processed today",
+    "query": "SELECT transaction_code, SUM(amt_lcy) AS total_amount FROM t24_stmt_entry__fa WHERE booking_date = DATE('now') GROUP BY transaction_code ORDER BY total_amount DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "1,0": "CEM",
+        "4,0": "CEM",
+        "5,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "List",
+      "transaction",
+      "codes",
+      "with",
+      "total",
+      "amount",
+      "processed",
+      "today"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) from _ where _ = date ( _ ) group by _ order by _ desc"
+  },
+  {
+    "question": "Find number of transactions recorded today",
+    "query": "SELECT COUNT(*) AS transaction_count FROM t24_stmt_entry__fa WHERE booking_date = DATE('now');",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "1,0": "CEM",
+        "2,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "number",
+      "of",
+      "transactions",
+      "recorded",
+      "today"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select count ( _ ) from _ where _ = date ( _ )"
+  },
+  {
+    "question": "Get average transaction value for today",
+    "query": "SELECT AVG(amt_lcy) AS avg_txn_today FROM t24_stmt_entry__fa WHERE booking_date = DATE('now');",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "2,0": "CEM",
+        "3,0": "CEM",
+        "4,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Get",
+      "average",
+      "transaction",
+      "value",
+      "for",
+      "today"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select avg ( _ ) from _ where _ = date ( _ )"
+  },
+  {
+    "question": "List top 5 transactions by value for today",
+    "query": "SELECT stmt_entry_id, our_reference, amt_lcy FROM t24_stmt_entry__fa WHERE booking_date = DATE('now') ORDER BY amt_lcy DESC LIMIT 5;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "5,0": "CEM",
+        "6,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "List",
+      "top",
+      "5",
+      "transactions",
+      "by",
+      "value",
+      "for",
+      "today"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ from _ where _ = date ( _ ) order by _ desc limit _"
+  },
+  {
+    "question": "Show total transaction volume by hour for today",
+    "query": "SELECT strftime('%H', booking_date || ' 00:00:00') AS hour, SUM(amt_lcy) AS total_hourly FROM t24_stmt_entry__fa WHERE booking_date = DATE('now') GROUP BY hour ORDER BY hour;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "1,0": "CEM",
+        "2,0": "CEM",
+        "6,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "total",
+      "transaction",
+      "volume",
+      "by",
+      "hour",
+      "for",
+      "today"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select strftime ( _ || _ ) , sum ( _ ) from _ where _ = date ( _ ) group by hour order by _ asc"
+  },
+  {
+    "question": "Get total transaction value per customer (our_reference) for today",
+    "query": "SELECT our_reference, SUM(amt_lcy) AS total_amount FROM t24_stmt_entry__fa WHERE booking_date = DATE('now') GROUP BY our_reference ORDER BY total_amount DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "5,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM",
+        "2,0": "CEM",
+        "3,0": "CEM",
+        "4,0": "CEM",
+        "7,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Get",
+      "total",
+      "transaction",
+      "value",
+      "per",
+      "customer",
+      "(our_reference)",
+      "for",
+      "today"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) from _ where _ = date ( _ ) group by _ order by _ desc"
+  },
+  {
+    "question": "Find total number of unique transaction codes used today",
+    "query": "SELECT COUNT(DISTINCT transaction_code) AS unique_txn_codes FROM t24_stmt_entry__fa WHERE booking_date = DATE('now');",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "1,0": "CEM",
+        "2,0": "CEM",
+        "3,0": "CEM",
+        "5,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "total",
+      "number",
+      "of",
+      "unique",
+      "transaction",
+      "codes",
+      "used",
+      "today"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select count ( distinct _ ) from _ where _ = date ( _ )"
+  },
+  {
+    "question": "Show min, max, and average transaction amount for today",
+    "query": "SELECT MIN(amt_lcy) AS min_txn, MAX(amt_lcy) AS max_txn, AVG(amt_lcy) AS avg_txn FROM t24_stmt_entry__fa WHERE booking_date = DATE('now');",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "3,0": "TEM"
+      },
+      "q_col_match": {
+        "5,0": "CEM",
+        "6,0": "CEM",
+        "7,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "min,",
+      "max,",
+      "and",
+      "average",
+      "transaction",
+      "amount",
+      "for",
+      "today"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select min ( _ ) , max ( _ ) , avg ( _ ) from _ where _ = date ( _ )"
+  },
+  {
+    "question": "List transaction codes that generated more than 10 billion VND today",
+    "query": "SELECT transaction_code, SUM(amt_lcy) AS total_amount FROM t24_stmt_entry__fa WHERE booking_date = DATE('now') GROUP BY transaction_code HAVING SUM(amt_lcy) > 10000000000;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "1,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "List",
+      "transaction",
+      "codes",
+      "that",
+      "generated",
+      "more",
+      "than",
+      "10",
+      "billion",
+      "VND",
+      "today"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) from _ where _ = date ( _ ) group by _ having sum ( _ ) > _"
+  },
+  {
+    "question": "List all users who made a transaction today",
+    "query": "SELECT DISTINCT our_reference FROM t24_stmt_entry__fa WHERE booking_date = DATE('now');",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "5,0": "TEM"
+      },
+      "q_col_match": {
+        "1,0": "CEM",
+        "6,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "List",
+      "all",
+      "users",
+      "who",
+      "made",
+      "a",
+      "transaction",
+      "today"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select distinct _ from _ where _ = date ( _ )"
+  },
+  {
+    "question": "Find the user with the highest transaction amount today",
+    "query": "SELECT our_reference, SUM(amt_lcy) AS total_amount FROM t24_stmt_entry__fa WHERE booking_date = DATE('now') GROUP BY our_reference ORDER BY total_amount DESC LIMIT 1;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "6,0": "CEM",
+        "7,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "the",
+      "user",
+      "with",
+      "the",
+      "highest",
+      "transaction",
+      "amount",
+      "today"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) from _ where _ = date ( _ ) group by _ order by _ desc limit _"
+  },
+  {
+    "question": "Show average transaction value per user for today",
+    "query": "SELECT our_reference, AVG(amt_lcy) AS avg_amount FROM t24_stmt_entry__fa WHERE booking_date = DATE('now') GROUP BY our_reference;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "2,0": "CEM",
+        "3,0": "CEM",
+        "4,0": "CEM",
+        "6,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "average",
+      "transaction",
+      "value",
+      "per",
+      "user",
+      "for",
+      "today"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , avg ( _ ) from _ where _ = date ( _ ) group by _"
+  },
+  {
+    "question": "List users with more than 5 transactions today",
+    "query": "SELECT our_reference, COUNT(*) AS txn_count FROM t24_stmt_entry__fa WHERE booking_date = DATE('now') GROUP BY our_reference HAVING COUNT(*) > 5;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {}
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "List",
+      "users",
+      "with",
+      "more",
+      "than",
+      "5",
+      "transactions",
+      "today"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( _ ) from _ where _ = date ( _ ) group by _ having count ( _ ) > _"
+  },
+  {
+    "question": "Get total transaction amount for each user today sorted descending",
+    "query": "SELECT our_reference, SUM(amt_lcy) AS total_today FROM t24_stmt_entry__fa WHERE booking_date = DATE('now') GROUP BY our_reference ORDER BY total_today DESC;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "1,0": "CEM",
+        "2,0": "CEM",
+        "3,0": "CEM",
+        "4,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Get",
+      "total",
+      "transaction",
+      "amount",
+      "for",
+      "each",
+      "user",
+      "today",
+      "sorted",
+      "descending"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) from _ where _ = date ( _ ) group by _ order by _ desc"
+  },
+  {
+    "question": "Show the user with the largest single transaction today",
+    "query": "SELECT our_reference, amt_lcy FROM t24_stmt_entry__fa WHERE booking_date = DATE('now') ORDER BY amt_lcy DESC LIMIT 1;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "7,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "the",
+      "user",
+      "with",
+      "the",
+      "largest",
+      "single",
+      "transaction",
+      "today"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ from _ where _ = date ( _ ) order by _ desc limit _"
+  },
+  {
+    "question": "Find users who made transactions below 1 million VND only today",
+    "query": "SELECT our_reference FROM t24_stmt_entry__fa WHERE booking_date = DATE('now') GROUP BY our_reference HAVING MAX(amt_lcy) < 1000000;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "6,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Find",
+      "users",
+      "who",
+      "made",
+      "transactions",
+      "below",
+      "1",
+      "million",
+      "VND",
+      "only",
+      "today"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ from _ where _ = date ( _ ) group by _ having max ( _ ) < _"
+  },
+  {
+    "question": "Count how many users made transactions using each transaction code today",
+    "query": "SELECT transaction_code, COUNT(DISTINCT our_reference) AS user_count FROM t24_stmt_entry__fa WHERE booking_date = DATE('now') GROUP BY transaction_code;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {
+        "0,0": "TEM"
+      },
+      "q_col_match": {
+        "8,0": "CEM",
+        "9,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Count",
+      "how",
+      "many",
+      "users",
+      "made",
+      "transactions",
+      "using",
+      "each",
+      "transaction",
+      "code",
+      "today"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , count ( distinct _ ) from _ where _ = date ( _ ) group by _"
+  },
+  {
+    "question": "List users whose total transaction amount today exceeds 5 billion VND",
+    "query": "SELECT our_reference, SUM(amt_lcy) AS total_amount FROM t24_stmt_entry__fa WHERE booking_date = DATE('now') GROUP BY our_reference HAVING total_amount > 5000000000;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "3,0": "CEM",
+        "4,0": "CEM",
+        "5,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "List",
+      "users",
+      "whose",
+      "total",
+      "transaction",
+      "amount",
+      "today",
+      "exceeds",
+      "5",
+      "billion",
+      "VND"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , sum ( _ ) from _ where _ = date ( _ ) group by _ having total_amount > _"
+  },
+  {
+    "question": "Show min, max transaction amount per user for today",
+    "query": "SELECT our_reference, MIN(amt_lcy) AS min_amt, MAX(amt_lcy) AS max_amt FROM t24_stmt_entry__fa WHERE booking_date = DATE('now') GROUP BY our_reference;",
+    "db_id": "vp_bank",
+    "sc_link": {
+      "q_tab_match": {},
+      "q_col_match": {
+        "3,0": "CEM",
+        "4,0": "CEM",
+        "5,0": "CEM",
+        "7,0": "CEM"
+      }
+    },
+    "cv_link": {
+      "num_date_match": [],
+      "cell_match": {}
+    },
+    "question_for_copying": [
+      "Show",
+      "min,",
+      "max",
+      "transaction",
+      "amount",
+      "per",
+      "user",
+      "for",
+      "today"
+    ],
+    "path_db": "/Users/cognaiger/Documents/vpbank2025/dailvp/database/vpbank/vpbank.sqlite",
+    "pre_skeleton": "select _ , min ( _ ) , max ( _ ) from _ where _ = date ( _ ) group by _"
+  }
+]

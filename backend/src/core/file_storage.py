@@ -233,16 +233,14 @@ class S3FileStorage(FileStorageInterface):
 
 
 class FileStorageFactory:
-    """Factory to create appropriate file storage based on environment"""
+    """Factory to create appropriate file storage based on granular setting"""
 
     @staticmethod
     def create_storage() -> FileStorageInterface:
-        if APP_SETTINGS.is_local:
-            return LocalFileStorage()
-        elif APP_SETTINGS.is_aws:
+        if APP_SETTINGS.use_aws_storage:
             return S3FileStorage()
         else:
-            raise ValueError(f"Unsupported storage environment: {APP_SETTINGS.ENV}")
+            return LocalFileStorage()
 
 
 # Global file storage instance

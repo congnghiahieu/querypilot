@@ -294,6 +294,8 @@ class RAGService:
         self, query: str, user_id: UUID, max_context_length: int = 4000
     ) -> str:
         """Get relevant context from knowledge base for a query"""
+        return None
+
         results = self.search_knowledge_base(query, user_id)
 
         if not results:
