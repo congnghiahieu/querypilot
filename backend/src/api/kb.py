@@ -13,7 +13,7 @@ from src.core.db import get_session
 from src.core.file_storage import S3FileStorage, file_storage
 from src.core.rag import rag_service
 from src.core.settings import ALLOWED_EXTENSIONS, APP_SETTINGS, MAX_FILE_SIZE
-from src.models.knowledge_base import KnowledgeBase, KnowledgeBaseInsight
+from src.models.knowledge_base import KnowledgeBase
 from src.models.user import User
 
 kb_router = APIRouter(prefix="/kb", tags=["Knowledge Base"])
@@ -27,7 +27,9 @@ class FileInfo(BaseModel):
     upload_date: str
     file_type: str
     processing_status: str
-    has_insight: bool
+    chunks_count: Optional[int] = None
+    text_length: Optional[int] = None
+    processing_time: Optional[float] = None
 
 
 class KnowledgeBaseResponse(BaseModel):
@@ -39,32 +41,14 @@ class KnowledgeBaseResponse(BaseModel):
     upload_date: str
     processing_status: str
     download_url: str
-    insight: Optional["KnowledgeBaseInsightResponse"] = None
-
-
-class KnowledgeBaseInsightResponse(BaseModel):
-    summary: str
-    key_insights: list[str]
-    entities: list[str]
-    topics: list[str]
+    chunks_count: Optional[int] = None
+    text_length: Optional[int] = None
     processing_time: Optional[float] = None
 
 
 class TextUploadRequest(BaseModel):
     text: str
     title: str = "Text Input"
-
-
-def process_document_insights(
-    file_path: str, file_type: str, kb_id: str, filename: str, user_id: UUID
-) -> dict:
-    """
-    Process document using RAG service to extract insights
-    """
-    try:
-        return rag_service.process_document(file_path, file_type, kb_id, filename, user_id)
-    except Exception as e:
-        raise Exception(f"Error processing document: {str(e)}")
 
 
 def validate_file(file: UploadFile) -> None:
@@ -141,7 +125,7 @@ async def upload_file(
                     )
 
                     # Process the temporary file
-                    insights = rag_service.process_document(
+                    rag_result = rag_service.process_document(
                         temp_file_path,
                         file_extension,
                         str(kb_entry.id),
@@ -153,7 +137,7 @@ async def upload_file(
                     os.unlink(temp_file_path)
             else:
                 # For local storage, use the file path directly
-                insights = rag_service.process_document(
+                rag_result = rag_service.process_document(
                     storage_info["file_path"],
                     file_extension,
                     str(kb_entry.id),
@@ -161,21 +145,9 @@ async def upload_file(
                     current_user.id,
                 )
 
-            # Create insight entry
-            insight = KnowledgeBaseInsight(
-                knowledge_base_id=kb_entry.id,
-                summary=insights["summary"],
-                key_insights=str(insights["key_insights"]),
-                entities=str(insights.get("entities", [])),
-                topics=str(insights.get("topics", [])),
-                processed_content=insights.get("processed_content"),
-                processing_time=insights.get("processing_time"),
-            )
-
-            session.add(insight)
-            kb_entry.processing_status = "completed"
+            # Update knowledge base with RAG results
+            kb_entry.update_from_rag_result(rag_result)
             session.commit()
-            session.refresh(insight)
 
         except Exception as e:
             print(f"Error processing document: {e}")
@@ -195,15 +167,9 @@ async def upload_file(
             upload_date=kb_entry.upload_date.isoformat(),
             processing_status=kb_entry.processing_status,
             download_url=file_storage.get_file_url(kb_entry.file_path),
-            insight=KnowledgeBaseInsightResponse(
-                summary=insight.summary,
-                key_insights=insight.get_key_insights(),
-                entities=insight.get_entities(),
-                topics=insight.get_topics(),
-                processing_time=insight.processing_time,
-            )
-            if insight
-            else None,
+            chunks_count=kb_entry.chunks_count,
+            text_length=kb_entry.text_length,
+            processing_time=kb_entry.processing_time,
         )
 
     except Exception as e:
@@ -236,22 +202,10 @@ def upload_text_kb(
 
     try:
         # Process text using RAG
-        insights_data = rag_service.process_text(payload.text, str(kb_record.id), current_user.id)
+        rag_result = rag_service.process_text(payload.text, str(kb_record.id), current_user.id)
 
-        # Create insight record
-        insight = KnowledgeBaseInsight(
-            knowledge_base_id=kb_record.id,
-            summary=insights_data["summary"],
-            key_insights=json.dumps(insights_data["key_insights"]),
-            entities=json.dumps(insights_data.get("entities", [])),
-            topics=json.dumps(insights_data.get("topics", [])),
-            processed_content=insights_data.get("processed_content", ""),
-            processing_time=insights_data.get("processing_time", 0.0),
-        )
-        session.add(insight)
-
-        # Update processing status
-        kb_record.processing_status = "completed"
+        # Update knowledge base with RAG results
+        kb_record.update_from_rag_result(rag_result)
         session.commit()
 
         return {
@@ -260,7 +214,9 @@ def upload_text_kb(
             "title": payload.title,
             "size": len(payload.text.encode("utf-8")),
             "processing_status": kb_record.processing_status,
-            "chunks_count": insights_data.get("chunks_count", 0),
+            "chunks_count": kb_record.chunks_count,
+            "text_length": kb_record.text_length,
+            "processing_time": kb_record.processing_time,
         }
 
     except Exception as e:
@@ -294,20 +250,22 @@ def list_kb(
                 upload_date=kb.upload_date.isoformat(),
                 file_type=kb.file_type,
                 processing_status=kb.processing_status,
-                has_insight=kb.insight is not None,
+                chunks_count=kb.chunks_count,
+                text_length=kb.text_length,
+                processing_time=kb.processing_time,
             )
         )
 
     return files_info
 
 
-@kb_router.get("/{kb_id}/insight")
-def get_kb_insight(
+@kb_router.get("/{kb_id}/stats")
+def get_kb_stats(
     kb_id: str,
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
-    """Get insight for a knowledge base file"""
+    """Get processing statistics for a knowledge base file"""
     try:
         kb_uuid = UUID(kb_id)
     except ValueError:
@@ -323,17 +281,73 @@ def get_kb_insight(
     if not kb_record:
         raise HTTPException(status_code=404, detail="Knowledge base not found")
 
-    if not kb_record.insight:
-        raise HTTPException(status_code=404, detail="Insight not found")
+    return kb_record.get_processing_stats()
 
-    insight = kb_record.insight
-    return KnowledgeBaseInsightResponse(
-        summary=insight.summary,
-        key_insights=json.loads(insight.key_insights),
-        entities=json.loads(insight.entities) if insight.entities else None,
-        topics=json.loads(insight.topics) if insight.topics else None,
-        processing_time=insight.processing_time,
+
+@kb_router.get("/{kb_id}/search")
+def search_in_kb(
+    kb_id: str,
+    query: str,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+    k: int = 5,
+):
+    """Search within a specific knowledge base"""
+    try:
+        kb_uuid = UUID(kb_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid knowledge base ID format")
+
+    statement = (
+        select(KnowledgeBase)
+        .where(KnowledgeBase.id == kb_uuid)
+        .where(KnowledgeBase.user_id == current_user.id)
     )
+    kb_record = session.exec(statement).first()
+
+    if not kb_record:
+        raise HTTPException(status_code=404, detail="Knowledge base not found")
+
+    try:
+        # Search in the user's knowledge base
+        results = rag_service.search_knowledge_base(query, current_user.id, k)
+
+        # Filter results to only include the specific knowledge base
+        filtered_results = [
+            result for result in results 
+            if result.get("kb_id") == str(kb_uuid)
+        ]
+
+        return {
+            "query": query,
+            "kb_id": kb_id,
+            "kb_filename": kb_record.filename,
+            "results": filtered_results,
+            "total_results": len(filtered_results)
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error searching knowledge base: {str(e)}")
+
+
+@kb_router.get("/search")
+def search_all_kb(
+    query: str,
+    current_user: User = Depends(get_current_user),
+    k: int = 10,
+):
+    """Search across all knowledge bases for the user"""
+    try:
+        results = rag_service.search_knowledge_base(query, current_user.id, k)
+
+        return {
+            "query": query,
+            "results": results,
+            "total_results": len(results)
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error searching knowledge bases: {str(e)}")
 
 
 @kb_router.delete("/{kb_id}")
@@ -363,8 +377,9 @@ async def delete_knowledge_base(
         # Delete from vector store
         rag_service.remove_knowledge_base(str(kb_entry.id), current_user.id)
 
-        # Delete file from storage
-        file_storage.delete_file(kb_entry.file_path)
+        # Delete file from storage (if not text input)
+        if kb_entry.file_path:
+            file_storage.delete_file(kb_entry.file_path)
 
         # Delete from database
         session.delete(kb_entry)
@@ -398,6 +413,10 @@ async def download_file(
     if not kb_entry:
         raise HTTPException(status_code=404, detail="Knowledge base entry not found")
 
+    # Check if it's a text input (no file to download)
+    if not kb_entry.file_path:
+        raise HTTPException(status_code=400, detail="This is a text input, no file to download")
+
     # Handle download based on storage type
     if APP_SETTINGS.is_aws:
         assert isinstance(file_storage, S3FileStorage)
@@ -411,3 +430,15 @@ async def download_file(
         # For local storage, return static file URL
         download_url = file_storage.get_file_url(kb_entry.file_path)
         return RedirectResponse(url=download_url)
+
+
+@kb_router.get("/stats")
+def get_user_kb_stats(
+    current_user: User = Depends(get_current_user),
+):
+    """Get overall statistics for user's knowledge bases"""
+    try:
+        stats = rag_service.get_document_stats(current_user.id)
+        return stats
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting statistics: {str(e)}")

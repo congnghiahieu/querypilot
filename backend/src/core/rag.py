@@ -15,9 +15,6 @@ from src.core.settings import (
     CHUNK_OVERLAP,
     CHUNK_SIZE,
     EMBEDDING_MODEL,
-    LLM_CLIENT,
-    LLM_MODEL_NAME,
-    MAX_CONTEXT_TOKENS,
     VECTOR_STORE_FOLDER,
 )
 
@@ -51,21 +48,8 @@ class DocumentProcessor:
             text = f"Dataset with {len(df)} rows and {len(df.columns)} columns.\n"
             text += f"Columns: {', '.join(df.columns.tolist())}\n\n"
 
-            # Add sample data and statistics
-            text += "Sample data:\n"
-            text += df.head().to_string() + "\n\n"
-
-            # Add basic statistics for numeric columns
-            numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
-            if numeric_cols:
-                text += "Statistical summary for numeric columns:\n"
-                text += df[numeric_cols].describe().to_string() + "\n\n"
-
-            # Add value counts for categorical columns
-            categorical_cols = df.select_dtypes(include=["object"]).columns.tolist()
-            for col in categorical_cols[:3]:  # Limit to first 3 categorical columns
-                text += f"Value counts for {col}:\n"
-                text += df[col].value_counts().head().to_string() + "\n\n"
+            text += "Data:\n"
+            text += df.to_string() + "\n\n"
 
             return text.strip()
         except Exception as e:
@@ -81,10 +65,8 @@ class DocumentProcessor:
             for sheet_name in excel_file.sheet_names:
                 df = pd.read_excel(file_path, sheet_name=sheet_name)
                 text += f"Sheet: {sheet_name}\n"
-                text += f"Size: {len(df)} rows, {len(df.columns)} columns\n"
-                text += f"Columns: {', '.join(df.columns.tolist())}\n"
-                text += "Sample data:\n"
-                text += df.head().to_string() + "\n\n"
+                text += "Data:\n"
+                text += df.to_string() + "\n\n"
 
             return text.strip()
         except Exception as e:
@@ -254,19 +236,17 @@ class RAGService:
             vector_store = VectorStore(user_id)
             vector_store.add_documents(kb_id, chunks, filename)
 
-            # Generate insights using LLM
-            insights = self._generate_insights(text)
-
             processing_time = time.time() - start_time
 
             return {
-                "summary": insights["summary"],
-                "key_insights": insights["key_insights"],
-                "entities": insights.get("entities", []),
-                "topics": insights.get("topics", []),
+                "status": "success",
+                "message": f"Document '{filename}' processed successfully",
                 "processing_time": processing_time,
                 "chunks_count": len(chunks),
-                "processed_content": text[:2000],  # Store first 2000 chars for reference
+                "text_length": len(text),
+                "processed_content": text[:500] + "..." if len(text) > 500 else text,
+                "kb_id": kb_id,
+                "filename": filename,
             }
 
         except Exception as e:
@@ -284,82 +264,21 @@ class RAGService:
             vector_store = VectorStore(user_id)
             vector_store.add_documents(kb_id, chunks, "text_input")
 
-            # Generate insights using LLM
-            insights = self._generate_insights(text)
-
             processing_time = time.time() - start_time
 
             return {
-                "summary": insights["summary"],
-                "key_insights": insights["key_insights"],
-                "entities": insights.get("entities", []),
-                "topics": insights.get("topics", []),
+                "status": "success",
+                "message": "Text processed successfully",
                 "processing_time": processing_time,
                 "chunks_count": len(chunks),
-                "processed_content": text[:2000],
+                "text_length": len(text),
+                "processed_content": text[:500] + "..." if len(text) > 500 else text,
+                "kb_id": kb_id,
+                "filename": "text_input"
             }
 
         except Exception as e:
             raise Exception(f"Error processing text: {str(e)}")
-
-    def _generate_insights(self, text: str) -> dict[str, Any]:
-        """Generate insights from text using LLM"""
-        try:
-            # Truncate text if too long
-            if len(text) > MAX_CONTEXT_TOKENS * 4:  # Rough estimate
-                text = text[: MAX_CONTEXT_TOKENS * 4]
-
-            prompt = f"""
-            Please analyze the following document and provide insights in JSON format:
-
-            Document:
-            {text}
-
-            Please provide:
-            1. A concise summary (2-3 sentences)
-            2. Key insights (3-5 important points)
-            3. Entities (people, organizations, locations, etc.)
-            4. Topics (main themes or subjects)
-
-            Format your response as JSON with keys: summary, key_insights, entities, topics
-            """
-
-            response = LLM_CLIENT.chat.completions.create(
-                model=LLM_MODEL_NAME,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.3,
-                max_tokens=1000,
-            )
-
-            result = response.choices[0].message.content
-
-            # Try to parse JSON response
-            try:
-                insights = json.loads(result)
-                return insights
-            except json.JSONDecodeError:
-                # Fallback if JSON parsing fails
-                return {
-                    "summary": "Document processed successfully. Detailed analysis available.",
-                    "key_insights": [
-                        "Document contains valuable information",
-                        "Successfully processed and indexed",
-                    ],
-                    "entities": [],
-                    "topics": ["General content"],
-                }
-
-        except Exception as e:
-            print(f"Error generating insights: {e}")
-            return {
-                "summary": "Document processed successfully. Detailed analysis available.",
-                "key_insights": [
-                    "Document contains valuable information",
-                    "Successfully processed and indexed",
-                ],
-                "entities": [],
-                "topics": ["General content"],
-            }
 
     def search_knowledge_base(self, query: str, user_id: UUID, k: int = 5) -> list[dict[str, Any]]:
         """Search knowledge base for relevant context"""
@@ -371,7 +290,9 @@ class RAGService:
         vector_store = VectorStore(user_id)
         vector_store.remove_documents(kb_id)
 
-    def get_context_for_query(self, query: str, user_id: UUID) -> str:
+    def get_context_for_query(
+        self, query: str, user_id: UUID, max_context_length: int = 4000
+    ) -> str:
         """Get relevant context from knowledge base for a query"""
         return None
 
@@ -381,11 +302,87 @@ class RAGService:
             return ""
 
         context_parts = []
+        current_length = 0
+
         for result in results:
-            context_parts.append(f"From {result['filename']}: {result['text']}")
+            context_part = f"From {result['filename']}: {result['text']}"
+
+            # Check if adding this context would exceed limit
+            if current_length + len(context_part) > max_context_length:
+                # Truncate the last part to fit
+                remaining_length = max_context_length - current_length
+                if remaining_length > 100:  # Only add if meaningful length
+                    context_part = context_part[:remaining_length] + "..."
+                    context_parts.append(context_part)
+                break
+
+            context_parts.append(context_part)
+            current_length += len(context_part) + 2  # +2 for \n\n
 
         return "\n\n".join(context_parts)
 
+    def get_document_stats(self, user_id: UUID) -> dict[str, Any]:
+        """Get statistics about user's documents"""
+        vector_store = VectorStore(user_id)
+
+        if not vector_store.metadata:
+            return {
+                "total_documents": 0,
+                "total_chunks": 0,
+                "knowledge_bases": {},
+                "file_types": {},
+            }
+
+        # Count by knowledge base
+        kb_stats = {}
+        file_type_stats = {}
+
+        for meta in vector_store.metadata:
+            kb_id = meta["kb_id"]
+            filename = meta["filename"]
+
+            # KB stats
+            if kb_id not in kb_stats:
+                kb_stats[kb_id] = {"chunks": 0, "files": set()}
+            kb_stats[kb_id]["chunks"] += 1
+            kb_stats[kb_id]["files"].add(filename)
+
+            # File type stats
+            if filename != "text_input":
+                file_ext = filename.split(".")[-1].lower() if "." in filename else "unknown"
+                file_type_stats[file_ext] = file_type_stats.get(file_ext, 0) + 1
+
+        # Convert sets to counts
+        for kb_id in kb_stats:
+            kb_stats[kb_id]["files"] = len(kb_stats[kb_id]["files"])
+
+        return {
+            "total_documents": len(set(meta["filename"] for meta in vector_store.metadata)),
+            "total_chunks": len(vector_store.metadata),
+            "knowledge_bases": kb_stats,
+            "file_types": file_type_stats,
+            "vector_count": vector_store.index.ntotal if vector_store.index else 0,
+        }
 
 # Global RAG service instance
 rag_service = RAGService()
+
+if __name__ == "__main__":
+    # Example usage
+    # Process document
+    # result = rag_service.process_document("/home/phong/VScode/HackathonVPB/Kiến thức cơ bản.pdf", "pdf", "kb_123", "report.pdf", 200)
+    # print(f"Processed {result['chunks_count']} chunks in {result['processing_time']:.2f}s")
+
+    # Get context for query
+    # context = rag_service.get_context_for_query("Cổ phiếu là gì", 100)
+    # print(f"Context for query: {context[:500]}...")  # Print first 500 characters
+    # # Get stats
+    # stats = rag_service.get_document_stats(100)
+    # print(f"Total documents: {stats['total_documents']}")
+
+    # result = rag_service.process_document("/home/phong/Downloads/knowledgebase_upload_sample.xlsx", "xlsx", "vpbank_ex", "knowledgebase_upload_sample", 200)
+    # print(f"Processed {result['chunks_count']} chunks in {result['processing_time']:.2f}s")
+
+    # context = rag_service.get_context_for_query("Tài sản khách hàng", 200)
+    # print(f"Context for query: {context}...")  # Print first 500 characters
+    rag_service.remove_knowledge_base("kb_123", 200)
